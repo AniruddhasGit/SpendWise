@@ -1,0 +1,33 @@
+# Render blueprint for the always-on SpendWise showcase.
+# Deploys the SAME container as AWS (one image serves the FastAPI API and the
+# built React client), but on Render with free HTTPS. The AWS version — the
+# full ECS/RDS/OIDC pipeline — lives in the SpendWise_AWS repo.
+#
+# Render tracks the `main` branch: a push to main redeploys automatically.
+#
+# The database is NOT provisioned here. The app's security model needs two roles
+# (an owner that runs migrations and owns the tables, and a runtime role that is
+# not superuser and holds no BYPASSRLS — the isolation guarantee is asserted at
+# boot). Point these at a free persistent Postgres (Neon recommended; see
+# README "Deploying the showcase"). `?ssl=require` is mandatory for asyncpg.
+services:
+  - type: web
+    name: spendwise
+    runtime: docker
+    plan: free
+    branch: main
+    autoDeploy: true
+    healthCheckPath: /healthz
+    envVars:
+      - key: DATABASE_URL            # runtime (app) role
+        sync: false
+      - key: MIGRATION_DATABASE_URL  # owner role; runs alembic at boot
+        sync: false
+      - key: JWT_SECRET
+        generateValue: true
+      - key: BOOTSTRAP_ADMIN_EMAIL
+        value: admin@spendwise.app
+      - key: COOKIE_SECURE           # Render serves HTTPS, so this is true here
+        value: "true"
+      - key: UVICORN_WORKERS         # free tier is small; one worker, one limiter
+        value: "1"

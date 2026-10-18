@@ -1,0 +1,697 @@
+{
+  "spec_of_record": true,
+  "note": "schema.sql, security.sql and TRACEABILITY.tsv are GENERATED from this file by generate.py (SW-ADR-066). A hand patch to a generated file is erased by the next build, silently — and until 2026-08-05 there WAS no next build, so a hand patch simply became the artifact. That is how the isolation hole SW-ADR-129 closes got in. Verify with: py \"docs/06 DataModel/generate.py\" --check",
+  "postgres_minimum": "14",
+  "tables": {
+    "users": {
+      "rls": false,
+      "source": "SRC-001 §6.2",
+      "note": "Outside RLS by SW-ADR-097 — a policy keyed on the request identity cannot serve a pre-authentication lookup. CR-001 added deleted_at: closing an account is SOFT. The unique index on lower(email) stays TOTAL, so a closed account keeps its address - a partial index would let someone return under the same address and leave two rows sharing one, which every lookup would then have to disambiguate correctly forever (SW-ADR-150).",
+      "columns": [
+        {
+          "name": "id",
+          "type": "BIGINT GENERATED ALWAYS AS IDENTITY",
+          "nullability": "NOT NULL",
+          "default": null,
+          "check": null,
+          "source": "SW-ADR-023"
+        },
+        {
+          "name": "email",
+          "type": "TEXT",
+          "nullability": "NOT NULL",
+          "default": null,
+          "check": "char_length(email) <= 254",
+          "source": "SRC-001 §6.2 · SW-ADR-084"
+        },
+        {
+          "name": "password_hash",
+          "type": "TEXT",
+          "nullability": "NOT NULL",
+          "default": null,
+          "check": null,
+          "source": "SRC-001 §6.2"
+        },
+        {
+          "name": "display_name",
+          "type": "TEXT",
+          "nullability": "NOT NULL",
+          "default": null,
+          "check": "char_length(display_name) BETWEEN 1 AND 100",
+          "source": "SRC-001 §6.2 · SW-ADR-084"
+        },
+        {
+          "name": "role",
+          "type": "TEXT",
+          "nullability": "NOT NULL",
+          "default": "'user'",
+          "check": "role IN ('user','admin')",
+          "source": "SRC-001 §4.1 · SW-ADR-028"
+        },
+        {
+          "name": "currency",
+          "type": "TEXT",
+          "nullability": "NOT NULL",
+          "default": "'INR'",
+          "check": "currency = 'INR'",
+          "source": "SW-ADR-029"
+        },
+        {
+          "name": "is_active",
+          "type": "BOOLEAN",
+          "nullability": "NOT NULL",
+          "default": "true",
+          "check": null,
+          "source": "SRC-001 §6.2"
+        },
+        {
+          "name": "created_at",
+          "type": "TIMESTAMPTZ",
+          "nullability": "NOT NULL",
+          "default": "now()",
+          "check": null,
+          "source": "SW-ADR-076"
+        },
+        {
+          "name": "deleted_at",
+          "type": "TIMESTAMPTZ",
+          "nullability": "NULL",
+          "default": null,
+          "check": null,
+          "source": "CR-001 / SW-ADR-150 - SOFT deletion. The row and everything it owns survive; only sign-in stops. NULL means the account is live, so the common case needs no predicate and an accidental omission fails OPEN, which is why the column is a timestamp and not a boolean: a boolean tells you an account was closed, a timestamp tells you when, and 'when' is the question an administrator restoring it actually has."
+        }
+      ]
+    },
+    "sessions": {
+      "rls": true,
+      "source": "SRC-001 §6.3",
+      "note": "Protected. The identity column is user_id.",
+      "columns": [
+        {
+          "name": "id",
+          "type": "BIGINT GENERATED ALWAYS AS IDENTITY",
+          "nullability": "NOT NULL",
+          "default": null,
+          "check": null,
+          "source": "SW-ADR-023"
+        },
+        {
+          "name": "user_id",
+          "type": "BIGINT",
+          "nullability": "NOT NULL",
+          "default": null,
+          "check": null,
+          "source": "SRC-001 §6.3"
+        },
+        {
+          "name": "issued_at",
+          "type": "TIMESTAMPTZ",
+          "nullability": "NOT NULL",
+          "default": "now()",
+          "check": null,
+          "source": "SW-ADR-076"
+        },
+        {
+          "name": "last_seen_at",
+          "type": "TIMESTAMPTZ",
+          "nullability": "NOT NULL",
+          "default": "now()",
+          "check": null,
+          "source": "SW-ADR-076"
+        },
+        {
+          "name": "expires_at",
+          "type": "TIMESTAMPTZ",
+          "nullability": "NOT NULL",
+          "default": null,
+          "check": null,
+          "source": "SW-ADR-099"
+        },
+        {
+          "name": "revoked_at",
+          "type": "TIMESTAMPTZ",
+          "nullability": "NULL",
+          "default": null,
+          "check": null,
+          "source": "SW-ADR-076 — NULLABLE: SRC-001 §5.3 defines active as revoked_at IS NULL"
+        },
+        {
+          "name": "user_agent",
+          "type": "TEXT",
+          "nullability": "NULL",
+          "default": null,
+          "check": "user_agent IS NULL OR char_length(user_agent) <= 500",
+          "source": "SRC-001 §6.3"
+        },
+        {
+          "name": "ip",
+          "type": "INET",
+          "nullability": "NULL",
+          "default": null,
+          "check": null,
+          "source": "SRC-001 §6.3 · never returned by any admin model (SW-ADR-106)"
+        }
+      ],
+      "identity_column": "user_id"
+    },
+    "password_resets": {
+      "rls": false,
+      "source": "SRC-001 §6.4",
+      "note": "Outside RLS by SW-ADR-071 — redeeming a code is unauthenticated by definition.",
+      "columns": [
+        {
+          "name": "id",
+          "type": "BIGINT GENERATED ALWAYS AS IDENTITY",
+          "nullability": "NOT NULL",
+          "default": null,
+          "check": null,
+          "source": "SW-ADR-023"
+        },
+        {
+          "name": "user_id",
+          "type": "BIGINT",
+          "nullability": "NOT NULL",
+          "default": null,
+          "check": null,
+          "source": "SRC-001 §6.4"
+        },
+        {
+          "name": "token_hash",
+          "type": "TEXT",
+          "nullability": "NOT NULL",
+          "default": null,
+          "check": "char_length(token_hash) = 64",
+          "source": "SW-ADR-032 · SW-ADR-084"
+        },
+        {
+          "name": "expires_at",
+          "type": "TIMESTAMPTZ",
+          "nullability": "NOT NULL",
+          "default": null,
+          "check": null,
+          "source": "SRC-001 §10.7"
+        },
+        {
+          "name": "used_at",
+          "type": "TIMESTAMPTZ",
+          "nullability": "NULL",
+          "default": null,
+          "check": null,
+          "source": "SW-ADR-076 — NULLABLE: non-null means consumed"
+        },
+        {
+          "name": "created_by_admin_id",
+          "type": "BIGINT",
+          "nullability": "NOT NULL",
+          "default": null,
+          "check": null,
+          "source": "SRC-001 §6.4"
+        }
+      ]
+    },
+    "categories": {
+      "rls": true,
+      "source": "SRC-001 §6.5",
+      "note": "Protected.",
+      "columns": [
+        {
+          "name": "id",
+          "type": "BIGINT GENERATED ALWAYS AS IDENTITY",
+          "nullability": "NOT NULL",
+          "default": null,
+          "check": null,
+          "source": "SW-ADR-023"
+        },
+        {
+          "name": "user_id",
+          "type": "BIGINT",
+          "nullability": "NOT NULL",
+          "default": null,
+          "check": null,
+          "source": "SRC-001 §6.5"
+        },
+        {
+          "name": "name",
+          "type": "TEXT",
+          "nullability": "NOT NULL",
+          "default": null,
+          "check": "char_length(name) BETWEEN 1 AND 50",
+          "source": "SW-ADR-084"
+        },
+        {
+          "name": "color",
+          "type": "TEXT",
+          "nullability": "NOT NULL",
+          "default": null,
+          "check": "color ~ '^#[0-9a-f]{6}$'",
+          "source": "SW-ADR-034 · SW-ADR-084"
+        },
+        {
+          "name": "created_at",
+          "type": "TIMESTAMPTZ",
+          "nullability": "NOT NULL",
+          "default": "now()",
+          "check": null,
+          "source": "SW-ADR-076"
+        }
+      ],
+      "identity_column": "user_id"
+    },
+    "expenses": {
+      "rls": true,
+      "source": "SRC-001 §6.6",
+      "note": "Protected. The money table.",
+      "columns": [
+        {
+          "name": "id",
+          "type": "BIGINT GENERATED ALWAYS AS IDENTITY",
+          "nullability": "NOT NULL",
+          "default": null,
+          "check": null,
+          "source": "SW-ADR-023"
+        },
+        {
+          "name": "user_id",
+          "type": "BIGINT",
+          "nullability": "NOT NULL",
+          "default": null,
+          "check": null,
+          "source": "SRC-001 §6.6"
+        },
+        {
+          "name": "category_id",
+          "type": "BIGINT",
+          "nullability": "NULL",
+          "default": null,
+          "check": null,
+          "source": "SRC-001 §6.6 — nullable; §7.2 nulls it on category delete"
+        },
+        {
+          "name": "amount_paise",
+          "type": "BIGINT",
+          "nullability": "NOT NULL",
+          "default": null,
+          "check": "amount_paise > 0 AND amount_paise <= 1000000000000",
+          "source": "SW-ADR-029 · SW-ADR-079"
+        },
+        {
+          "name": "currency",
+          "type": "TEXT",
+          "nullability": "NOT NULL",
+          "default": "'INR'",
+          "check": "currency = 'INR'",
+          "source": "SW-ADR-013 — snapshotted at write time"
+        },
+        {
+          "name": "description",
+          "type": "TEXT",
+          "nullability": "NULL",
+          "default": null,
+          "check": "description IS NULL OR char_length(description) <= 500",
+          "source": "SW-ADR-115"
+        },
+        {
+          "name": "spent_on",
+          "type": "DATE",
+          "nullability": "NOT NULL",
+          "default": null,
+          "check": "spent_on BETWEEN DATE '2000-01-01' AND DATE '2100-12-31'",
+          "source": "SRC-001 §6.6 · SW-ADR-111"
+        },
+        {
+          "name": "receipt_key",
+          "type": "TEXT",
+          "nullability": "NULL",
+          "default": null,
+          "check": "receipt_key IS NULL OR char_length(receipt_key) <= 512",
+          "source": "SRC-001 §6.6"
+        },
+        {
+          "name": "created_at",
+          "type": "TIMESTAMPTZ",
+          "nullability": "NOT NULL",
+          "default": "now()",
+          "check": null,
+          "source": "SW-ADR-076"
+        },
+        {
+          "name": "updated_at",
+          "type": "TIMESTAMPTZ",
+          "nullability": "NULL",
+          "default": null,
+          "check": null,
+          "source": "SW-ADR-076 — NULLABLE until first update"
+        }
+      ],
+      "identity_column": "user_id"
+    },
+    "admin_audit_log": {
+      "rls": false,
+      "source": "SRC-001 §6.7",
+      "note": "No RLS: admin-only, and immutable at the database (SW-ADR-083). Carries NO foreign keys (SW-ADR-083) so it outlives its subjects.",
+      "columns": [
+        {
+          "name": "id",
+          "type": "BIGINT GENERATED ALWAYS AS IDENTITY",
+          "nullability": "NOT NULL",
+          "default": null,
+          "check": null,
+          "source": "SW-ADR-023"
+        },
+        {
+          "name": "admin_id",
+          "type": "BIGINT",
+          "nullability": "NOT NULL",
+          "default": null,
+          "check": null,
+          "source": "SRC-001 §6.7 — NO foreign key, by SW-ADR-083"
+        },
+        {
+          "name": "action",
+          "type": "TEXT",
+          "nullability": "NOT NULL",
+          "default": null,
+          "check": "action IN ('password_reset_issued','sessions_revoked','user_deactivated','user_reactivated','role_changed','bootstrap_admin_claimed','users_list_viewed','sessions_list_viewed','audit_log_viewed')",
+          "source": "SW-ADR-105 — a closed allowlist of nine"
+        },
+        {
+          "name": "target_user_id",
+          "type": "BIGINT",
+          "nullability": "NULL",
+          "default": null,
+          "check": null,
+          "source": "SRC-001 §6.7 — NO foreign key"
+        },
+        {
+          "name": "details",
+          "type": "JSONB",
+          "nullability": "NOT NULL",
+          "default": "'{}'::jsonb",
+          "check": null,
+          "source": "SW-ADR-105 — shape validated per action BEFORE the write"
+        },
+        {
+          "name": "created_at",
+          "type": "TIMESTAMPTZ",
+          "nullability": "NOT NULL",
+          "default": "now()",
+          "check": null,
+          "source": "SW-ADR-076"
+        }
+      ]
+    },
+    "app_meta": {
+      "rls": false,
+      "source": "SW-ADR-125",
+      "note": "One row. Holds the signing-secret fingerprint so rotation revokes sessions automatically.",
+      "columns": [
+        {
+          "name": "id",
+          "type": "SMALLINT",
+          "nullability": "NOT NULL",
+          "default": "1",
+          "check": "id = 1",
+          "source": "SW-ADR-125 — single row enforced by the check"
+        },
+        {
+          "name": "jwt_secret_fingerprint",
+          "type": "TEXT",
+          "nullability": "NOT NULL",
+          "default": null,
+          "check": "char_length(jwt_secret_fingerprint) = 64",
+          "source": "SW-ADR-125"
+        },
+        {
+          "name": "updated_at",
+          "type": "TIMESTAMPTZ",
+          "nullability": "NOT NULL",
+          "default": "now()",
+          "check": null,
+          "source": "SW-ADR-076"
+        }
+      ]
+    }
+  },
+  "foreign_keys": [
+    {
+      "table": "sessions",
+      "column": "user_id",
+      "references": "users(id)",
+      "on_delete": "CASCADE",
+      "source": "SRC-001 §6.9"
+    },
+    {
+      "table": "password_resets",
+      "column": "user_id",
+      "references": "users(id)",
+      "on_delete": "CASCADE",
+      "source": "SRC-001 §6.9"
+    },
+    {
+      "table": "categories",
+      "column": "user_id",
+      "references": "users(id)",
+      "on_delete": "CASCADE",
+      "source": "SRC-001 §6.9"
+    },
+    {
+      "table": "expenses",
+      "column": "user_id",
+      "references": "users(id)",
+      "on_delete": "CASCADE",
+      "source": "SRC-001 §6.9"
+    },
+    {
+      "table": "expenses",
+      "column": "(category_id, user_id)",
+      "references": "categories((id, user_id))",
+      "on_delete": "NO ACTION",
+      "source": "SW-ADR-072 — composite. NO ACTION because SET NULL would null user_id too, which is NOT NULL. The service nulls category_id explicitly inside the delete transaction."
+    }
+  ],
+  "indexes": [
+    {
+      "table": "users",
+      "definition": "UNIQUE (lower(email))",
+      "source": "SW-ADR-027 — case-insensitive identity"
+    },
+    {
+      "table": "sessions",
+      "definition": "(user_id)",
+      "source": "SRC-001 §6.8"
+    },
+    {
+      "table": "sessions",
+      "definition": "(last_seen_at)",
+      "source": "SRC-001 §6.8"
+    },
+    {
+      "table": "sessions",
+      "definition": "(revoked_at) WHERE revoked_at IS NULL",
+      "source": "SW-ADR-039 — partial; satisfiable only because SW-ADR-076 made the column nullable"
+    },
+    {
+      "table": "password_resets",
+      "definition": "UNIQUE (token_hash)",
+      "source": "SW-ADR-032"
+    },
+    {
+      "table": "password_resets",
+      "definition": "(user_id, expires_at)",
+      "source": "SW-ADR-039"
+    },
+    {
+      "table": "categories",
+      "definition": "UNIQUE (id, user_id)",
+      "source": "SW-ADR-072 — the target of the composite FK"
+    },
+    {
+      "table": "categories",
+      "definition": "UNIQUE (user_id, lower(name))",
+      "source": "SW-ADR-033"
+    },
+    {
+      "table": "categories",
+      "definition": "(user_id)",
+      "source": "SW-ADR-039"
+    },
+    {
+      "table": "expenses",
+      "definition": "(user_id, spent_on DESC)",
+      "source": "SRC-001 §6.8"
+    },
+    {
+      "table": "expenses",
+      "definition": "(user_id, category_id)",
+      "source": "SRC-001 §6.8"
+    },
+    {
+      "table": "admin_audit_log",
+      "definition": "(admin_id, created_at DESC)",
+      "source": "SW-ADR-039"
+    },
+    {
+      "table": "admin_audit_log",
+      "definition": "(target_user_id)",
+      "source": "SW-ADR-039"
+    },
+    {
+      "table": "users",
+      "definition": "(deleted_at) WHERE deleted_at IS NULL",
+      "source": "SW-ADR-150 - partial, like ix_sessions_revoked_at: live accounts are the ones every request looks up, closed ones accumulate forever, and indexing them would grow the index without ever being read"
+    }
+  ],
+  "admin_access": {
+    "source": "SW-ADR-129 (supersedes SW-ADR-077, restores SW-ADR-043) · SRC-001 §4.5",
+    "note": "An admin sees counts and dates, never an amount or a description. A row-level policy has NO column dimension and therefore cannot express that; a function's return type can. `app.is_admin` is consulted by no policy on a money table and is never set on a request-scoped connection. SECURITY DEFINER alone is NOT sufficient: FORCE ROW LEVEL SECURITY subjects the table owner to its own policies, so the definer function saw only the CALLER's rows and returned (0, NULL) for every other account - silently, and looking exactly like a correct privacy-respecting answer. It now swaps app.user_id to the target for the length of the query and restores it, and refuses to run when the GUC is unset (SW-ADR-149). CR-001 REVERSED SRC-001 4.2's admin row at the client's instruction: an administrator may now see how much a person spends over time, and still may not see what they spent it on. admin_user_daily returns day, total_paise and entries - no category, no description, no row (SW-ADR-151).",
+    "policies_on_money_tables": false,
+    "functions": [
+      {
+        "name": "admin_expense_stats",
+        "purpose": "expenses: an admin reads COUNT and LAST ACTIVITY DATE only (SW-ADR-129). This is the whole of admin access to the money table.",
+        "args": "target_user_id BIGINT",
+        "argtypes": "BIGINT",
+        "returns": "expense_count BIGINT, last_activity DATE",
+        "body": "SELECT count(*)::bigint, max(spent_on)\n      FROM expenses WHERE user_id = target_user_id;"
+      },
+      {
+        "name": "admin_user_sessions",
+        "purpose": "sessions: an admin sees WHO IS SIGNED IN (SRC-001 §4.2) and nothing about where from. `sessions` carries exactly one policy, keyed on app.user_id, so an admin querying it directly sees only their own - the capability the matrix grants was unreachable. The RETURN TYPE carries no ip and no user_agent, which makes SW-ADR-106 structurally true at the DATABASE rather than only in a Pydantic model.",
+        "args": "target_user_id BIGINT",
+        "argtypes": "BIGINT",
+        "returns": "id BIGINT, user_id BIGINT, issued_at TIMESTAMPTZ, last_seen_at TIMESTAMPTZ, expires_at TIMESTAMPTZ, revoked_at TIMESTAMPTZ",
+        "body": "SELECT s.id, s.user_id, s.issued_at, s.last_seen_at, s.expires_at, s.revoked_at\n      FROM sessions s\n     WHERE s.user_id = target_user_id\n       AND s.revoked_at IS NULL\n       AND s.expires_at > now()\n     ORDER BY s.last_seen_at DESC, s.id DESC;"
+      },
+      {
+        "name": "admin_revoke_sessions",
+        "purpose": "sessions: FORCE SIGN SOMEONE OUT (SRC-001 §4.2), and the revocation SW-ADR-100 (2) requires in the same transaction as a deactivation. Without this the UPDATE matched zero rows under RLS and REPORTED SUCCESS - a force-sign-out that signs nobody out, and an audit row claiming it did.",
+        "args": "target_user_id BIGINT",
+        "argtypes": "BIGINT",
+        "returns": "revoked BIGINT",
+        "body": "WITH gone AS (\n        UPDATE sessions SET revoked_at = now()\n         WHERE user_id = target_user_id AND revoked_at IS NULL\n        RETURNING 1\n    )\n    SELECT count(*)::bigint FROM gone;"
+      },
+      {
+        "name": "admin_user_daily",
+        "purpose": "expenses: an admin reads one person's SPENDING PER DAY (CR-001, SW-ADR-151). THREE COLUMNS AND NO FOURTH - there is no category_id, no description and no expense id, so 'what did they spend it on' is unanswerable through this function at any granularity. That is the line the client drew when they granted amount visibility: 'the expenses that are happening not the categories spent on'. The RETURN TYPE is what enforces it, exactly as SW-ADR-129 established for the count - a principle pointed at a line that moved, not a principle abandoned.",
+        "args": "target_user_id BIGINT, from_date DATE, to_date DATE",
+        "argtypes": "BIGINT, DATE, DATE",
+        "returns": "day DATE, total_paise BIGINT, entries BIGINT",
+        "body": "SELECT e.spent_on, sum(e.amount_paise)::bigint, count(e.id)::bigint\n      FROM expenses e\n     WHERE e.user_id = target_user_id\n       AND e.spent_on BETWEEN from_date AND to_date\n     GROUP BY e.spent_on\n     ORDER BY e.spent_on;"
+      }
+    ]
+  },
+  "grants": {
+    "source": "SW-ADR-137 · SW-ADR-081",
+    "note": "There were NO table grants at all until 2026-08-05, so every query by the runtime role would have failed with permission denied - and verify_invariants.sql would still have printed all-green, because it only ever checked what the role CANNOT do. RLS narrows a grant; with no grant it was protecting a door already welded shut.",
+    "schema_usage": [
+      "spendwise_app"
+    ],
+    "tables": [
+      {
+        "privileges": "SELECT, INSERT, UPDATE, DELETE",
+        "on": [
+          "expenses",
+          "categories",
+          "sessions"
+        ],
+        "to": "spendwise_app",
+        "why": "full CRUD, narrowed by RLS"
+      },
+      {
+        "privileges": "SELECT, INSERT, UPDATE",
+        "on": [
+          "users",
+          "password_resets"
+        ],
+        "to": "spendwise_app",
+        "why": "no DELETE, and the reason SURVIVED the record that first gave it: SW-ADR-107 ruled out user deletion in v1 and was SUPERSEDED by SW-ADR-150, which added deletion in its SOFT form - an UPDATE setting deleted_at, not a DELETE. So the runtime role still needs no DELETE on users, and now cannot destroy an account even when a person asks it to. password_resets is pruned by the owner (SW-ADR-122)."
+      },
+      {
+        "privileges": "SELECT, INSERT",
+        "on": [
+          "admin_audit_log"
+        ],
+        "to": "spendwise_app",
+        "why": "append-only; UPDATE and DELETE are revoked and a trigger raises (SW-ADR-083)"
+      },
+      {
+        "privileges": "SELECT, UPDATE",
+        "on": [
+          "app_meta"
+        ],
+        "to": "spendwise_app",
+        "why": "one row; the signing-secret fingerprint is rewritten on rotation (SW-ADR-125)"
+      },
+      {
+        "privileges": "SELECT",
+        "on": [
+          "alembic_version"
+        ],
+        "to": "spendwise_app",
+        "why": "/readyz reports the running migration revision (P-OPS-03, E0-S10 AC2) and it runs as the RUNTIME role. SELECT only: the runtime role still holds no DDL and cannot alter migration state, so SW-ADR-081's two-URL separation is untouched. Added 2026-08-05, when /readyz was written and returned 503 permission denied - the acceptance criterion had named the revision since the Bible was written and nothing had ever granted the role that could read it.",
+        "created_by": "alembic, not this schema - so the GRANT is emitted at the END of the baseline migration, after Alembic has created its own version table"
+      }
+    ]
+  },
+  "cluster": {
+    "source": "SW-ADR-008 (one RDS from day one) · SW-ADR-068 (two databases inside it) · SW-ADR-081",
+    "note": "Roles and databases CANNOT be created by Alembic: CREATE DATABASE will not run inside a transaction, and the owner role has no privilege to create roles. They are created once, by the client, as the RDS master user - which is why this generates a separate bootstrap script rather than a migration.",
+    "roles": [
+      {
+        "name": "spendwise_owner",
+        "purpose": "Owns every table. Runs Alembic. NEVER serves a request.",
+        "attributes": "LOGIN NOSUPERUSER NOCREATEDB NOCREATEROLE NOBYPASSRLS INHERIT",
+        "why": "It owns the tables, so FORCE ROW LEVEL SECURITY is what stops it bypassing its own policies during a data migration (SW-ADR-081)."
+      },
+      {
+        "name": "spendwise_app",
+        "purpose": "What the application connects as. Serves every request.",
+        "attributes": "LOGIN NOSUPERUSER NOCREATEDB NOCREATEROLE NOBYPASSRLS INHERIT",
+        "why": "Owns NO table, is NOT superuser, holds NO BYPASSRLS - asserted against the catalog at boot (P-OPS-02). If it owned the tables it could ALTER TABLE ... NO FORCE ROW LEVEL SECURITY, which is the guarantee removing itself."
+      }
+    ],
+    "databases": [
+      {
+        "name": "spendwise",
+        "owner": "spendwise_owner",
+        "purpose": "DEV. What the application connects to."
+      },
+      {
+        "name": "spendwise_test",
+        "owner": "spendwise_owner",
+        "purpose": "The test database. The seeder REFUSES to run against any database not named spendwise_test (SW-ADR-086), and CV-24's per-case TRUNCATE ... RESTART IDENTITY CASCADE only ever touches this one."
+      }
+    ],
+    "rds_notes": [
+      "The RDS master user is NOT a superuser - it holds `rds_superuser`. Everything below works under that; nothing here needs true superuser.",
+      "RDS FORCES SSL. Both connection strings need it. For asyncpg via SQLAlchemy the parameter is `?ssl=require` - NOT libpq's `sslmode=require`, which asyncpg does not accept and which fails at connect time with an unhelpful error.",
+      "PostgreSQL 15 and later no longer grant CREATE on schema `public` to PUBLIC. Creating each database WITH OWNER spendwise_owner is what gives the owner rights over its public schema.",
+      "Run this ONCE, as the master user, connected to the default `postgres` database. It is idempotent: every statement is guarded, so re-running it is safe."
+    ],
+    "how_to_run": [
+      "Run it with psql, passing the passwords as variables so they never enter this file:",
+      "",
+      "    psql \"host=YOUR-ENDPOINT.rds.amazonaws.com port=5432 dbname=postgres user=MASTER sslmode=require\" \\",
+      "         -v spendwise_owner_password=\"OWNER_PASSWORD_HERE\" \\",
+      "         -v spendwise_app_password=\"APP_PASSWORD_HERE\" \\",
+      "         -f \"docs/30 Deployment/rds_bootstrap.sql\"",
+      "",
+      "psql already ships with the PostgreSQL install on this machine. Its full path is",
+      "printed by:",
+      "",
+      "    where.exe psql        (or look under C:/Program Files/PostgreSQL/*/bin/)",
+      "",
+      "pgAdmin will NOT run this file. The :'name' variables and the \\gexec meta-command",
+      "are psql features, not SQL - pgAdmin silently does the wrong thing with both. Use",
+      "psql, or run the statements by hand with each :'..._password' replaced by a quoted",
+      "literal and each CREATE DATABASE executed directly instead of through \\gexec.",
+      "",
+      "Generate the two passwords with:",
+      "",
+      "    py -c \"import secrets; print(secrets.token_urlsafe(24))\"",
+      "",
+      "They go into .env, which is gitignored, and into SSM Parameter Store as SecureString",
+      "for the deploy - prep-queue items 7 and 14. They never enter git."
+    ]
+  }
+}

@@ -1,0 +1,2062 @@
+{
+  "spec_of_record": true,
+  "source": "SW-ADR-138",
+  "note": "The API contract's spec of record. The PRD's §6 route table, §6.1 worked payloads, §6.2 conventions and §6.3 serialisation, docs/03 PRD/api/error_codes.md, and docs/06 DataModel/seed/expected_summary.json are all GENERATED from this file by generate_api.py. (An earlier version of this sentence also named an openapi.yaml, which was never written - a false claim inside the one document whose stated purpose is to be the place that cannot drift. Found by the fourth uncoached slice.) Hand-writing a payload into Markdown is exactly as driftable as the prose it replaces - the first attempt omitted a required field, contradicted itself on null vs 0, named two categories that do not exist, printed an array out of the order the same page mandates, and cited the wrong ADR for the one number that is never waivable. Verify with: py \"docs/03 PRD/api/generate_api.py\" --check",
+  "seed_fixture": {
+    "source": "SW-ADR-010 · docs/06 DataModel/seed/README.md · SW-ADR-092 (the category list)",
+    "note": "The category assignment was unstated until 2026-08-05, so any test asserting on by_category had to invent one. Assigned here, in the spec of record, so the seed and the expected payload cannot disagree.",
+    "today_mocked": "2026-08-05",
+    "timezone": "Asia/Kolkata",
+    "person": "A",
+    "expenses": [
+      {
+        "spent_on": "2026-08-01",
+        "amount_paise": 125000,
+        "category_id": 3,
+        "description": "Auto to office"
+      },
+      {
+        "spent_on": "2026-08-03",
+        "amount_paise": 34050,
+        "category_id": 5,
+        "description": "Pharmacy"
+      },
+      {
+        "spent_on": "2026-08-03",
+        "amount_paise": 210000,
+        "category_id": 1,
+        "description": "Weekly shop"
+      },
+      {
+        "spent_on": "2026-08-05",
+        "amount_paise": 9999,
+        "category_id": null,
+        "description": null
+      }
+    ],
+    "people": [
+      {
+        "person": "A",
+        "email": "a@spendwise.test",
+        "display_name": "Person A",
+        "password": "correct-horse-battery-staple",
+        "role": "user",
+        "registration_order": 1,
+        "why": "A registers FIRST. expected_summary.json names category_id 1, 3 and 5, which are only A's Groceries/Transport/Health if A's eight seeded categories take identity values 1-8."
+      },
+      {
+        "person": "B",
+        "email": "b@spendwise.test",
+        "display_name": "Person B",
+        "password": "correct-horse-battery-staple",
+        "role": "user",
+        "registration_order": 2,
+        "why": "B exists because a single-person seed cannot prove isolation, which is what the gate is for. B owns their own expenses and their own eight categories (ids 9-16)."
+      }
+    ],
+    "bootstrap_admin": {
+      "email": "admin@spendwise.test",
+      "registered": false,
+      "note": "`BOOTSTRAP_ADMIN_EMAIL` is set in the gate environment to an address NOBODY REGISTERS. The seed creates exactly TWO people.",
+      "why": "An earlier version of this block seeded a third ADMIN account and justified it as 'P-ACC-02 refuses to start with zero admins'. **That misread P-ACC-02**, which says the application refuses to start when no administrator exists *and the variable is unset*. Setting the variable with zero administrators starts perfectly well - setting it is what P-ACC-02 requires; registering a third account is not. On the strength of that misreading the block contradicted `SRC-001` ERRATUM E-6 ('two users seeded'), CONSTITUTION Art IX.4 and the binary criterion Bible E0-S4 AC1 ('exactly 2 people') - overriding the TOP of the authority order from a document one level below it. Found by the fifth uncoached slice, contradiction C2.",
+      "source": "SRC-001 ERRATUM E-6 · CONSTITUTION Art IX.4 · Bible E0-S4 · P-ACC-02"
+    },
+    "expenses_by_person": {
+      "note": "Person A's four expenses are the gate fixture. Person B's two exist so that Bible E0-S7 AC6 - 'as B, the list endpoint returns exactly B's seeded count and no row of A's' - has an expected value. It had none until 2026-08-05: the seed README said B has 'their own separate expenses' and never said which, so that criterion could not be written as a failing test first, which Art IX.1 requires.",
+      "A": [
+        {
+          "spent_on": "2026-08-01",
+          "amount_paise": 125000,
+          "category_id": 3,
+          "description": "Auto to office"
+        },
+        {
+          "spent_on": "2026-08-03",
+          "amount_paise": 34050,
+          "category_id": 5,
+          "description": "Pharmacy"
+        },
+        {
+          "spent_on": "2026-08-03",
+          "amount_paise": 210000,
+          "category_id": 1,
+          "description": "Weekly shop"
+        },
+        {
+          "spent_on": "2026-08-05",
+          "amount_paise": 9999,
+          "category_id": null,
+          "description": null
+        }
+      ],
+      "B": [
+        {
+          "spent_on": "2026-08-02",
+          "amount_paise": 50000,
+          "category_id": 9,
+          "description": "B's groceries",
+          "note": "category 9 is B's OWN Groceries - B's eight categories take ids 9-16"
+        },
+        {
+          "spent_on": "2026-08-04",
+          "amount_paise": 75000,
+          "category_id": null,
+          "description": null,
+          "note": "uncategorised, so B exercises the synthetic bucket too"
+        }
+      ],
+      "counts": {
+        "A": 4,
+        "B": 2,
+        "why": "Deliberately different, so a test that leaks A's rows into B's list fails on the count alone."
+      }
+    }
+  },
+  "categories": {
+    "source": "SW-ADR-092 (the eight, in this order) · SW-ADR-131 (the synthetic bucket)",
+    "seeded": [
+      {
+        "id": 1,
+        "name": "Groceries",
+        "color": "#4a7c59"
+      },
+      {
+        "id": 2,
+        "name": "Food & Dining",
+        "color": "#b5543b"
+      },
+      {
+        "id": 3,
+        "name": "Transport",
+        "color": "#3e6b8f"
+      },
+      {
+        "id": 4,
+        "name": "Rent & Utilities",
+        "color": "#9c7a2f"
+      },
+      {
+        "id": 5,
+        "name": "Health",
+        "color": "#2e7d8a"
+      },
+      {
+        "id": 6,
+        "name": "Entertainment",
+        "color": "#7b4b94"
+      },
+      {
+        "id": 7,
+        "name": "Shopping",
+        "color": "#a04c72"
+      },
+      {
+        "id": 8,
+        "name": "Other",
+        "color": "#7d8471"
+      }
+    ],
+    "synthetic": {
+      "id": null,
+      "name": "Uncategorised",
+      "color": "#928a85",
+      "always_last": true
+    }
+  },
+  "gate": {
+    "source": "SW-ADR-010 · Bible E0-S9 · SIT-E0-S9-01",
+    "note": "The never-waivable day-one assertion. The range is 1-31 August, per SW-ADR-010 and the executable SIT case; an earlier hand-written example used 1-5 August and disagreed with both.",
+    "request": "GET /api/expenses/summary?from=2026-08-01&to=2026-08-31",
+    "from": "2026-08-01",
+    "to": "2026-08-31",
+    "as_of": "2026-08-05",
+    "as_of_note": "THE DAY THE GATE IS EVALUATED ON, and until 2026-08-06 it was stated nowhere. days_elapsed is min(to, today) - from + 1, so the divisor grows by one every midnight: 75810 on the 5th, 63175 on the 6th, 54150 on the 7th. The VALUE was pinned and the DATE it was pinned to was not, so the in-process gate tests read the system clock and passed for exactly one day. Found when they went red at midnight with no code change behind them. Every runner of the gate MUST set APP_TODAY_OVERRIDE to this date; the browser tests always did, which is why only half the suite fell over.",
+    "assert_field": "daily_average_paise",
+    "assert_value": 75810,
+    "rounding": "half-up, in integers: (2*total + elapsed) // (2*elapsed)",
+    "rounding_source": "SW-ADR-010",
+    "range_inclusive_source": "SW-ADR-085",
+    "wrong_answers": {
+      "75809": "truncation instead of half-up - fails the gate by one paisa",
+      "94762": "dividing by count (4 rows) instead of days elapsed (5)"
+    }
+  },
+  "error_codes": {
+    "source": "SW-ADR-138, discharging SW-ADR-051's own consequence that a stable code is the only thing that lets the PRD write a binary acceptance criterion for an error path",
+    "envelope": "{\"error\": {\"code\": \"...\", \"message\": \"...\", \"field\": \"...\"}}",
+    "field_note": "`field` carries the CLIENT's name for the input - `amount`, never `amount_paise`.",
+    "codes": [
+      {
+        "code": "VALIDATION_ERROR",
+        "status": 422,
+        "has_field": true,
+        "when": "any input fails a stated rule"
+      },
+      {
+        "code": "NOT_FOUND",
+        "status": 404,
+        "has_field": false,
+        "when": "not-yours or not-found, on every verb (P-PRV-03)"
+      },
+      {
+        "code": "UNAUTHENTICATED",
+        "status": 401,
+        "has_field": false,
+        "when": "no credential presented"
+      },
+      {
+        "code": "SESSION_INVALID",
+        "status": 401,
+        "has_field": false,
+        "when": "credential presented but revoked, expired, idle-timed-out, signed with a rotated secret, or **otherwise unverifiable** — a bad signature, alg=none, a missing claim or a structurally broken token. UNAUTHENTICATED is only for no credential at all, so a tampered token has exactly one code that fits."
+      },
+      {
+        "code": "ACCOUNT_DEACTIVATED",
+        "status": 401,
+        "has_field": false,
+        "when": "valid session, is_active false"
+      },
+      {
+        "code": "FORBIDDEN",
+        "status": 403,
+        "has_field": false,
+        "when": "authenticated but the role does not hold the capability"
+      },
+      {
+        "code": "EMAIL_TAKEN",
+        "status": 409,
+        "has_field": true,
+        "when": "registration against an existing address, subject to SW-ADR-102's enumeration posture"
+      },
+      {
+        "code": "CONFLICT",
+        "status": 409,
+        "has_field": true,
+        "when": "duplicate category name; last-administrator guard"
+      },
+      {
+        "code": "RATE_LIMITED",
+        "status": 429,
+        "has_field": false,
+        "when": "a rate limit is hit; carries Retry-After"
+      },
+      {
+        "code": "BAD_REQUEST",
+        "status": 400,
+        "has_field": false,
+        "when": "malformed body that never reaches validation"
+      },
+      {
+        "code": "INTERNAL",
+        "status": 500,
+        "has_field": false,
+        "when": "unhandled; the message is generic and never carries detail"
+      }
+    ],
+    "messages": {
+      "source": "SW-ADR-140 - SIT-E2-S7-02 requires '422 naming the cap', which is a binary assertion on a string nothing specified.",
+      "note": "One message per rule. The `field` column names which input a pairwise rule reports. `field.required` and `field.type` were missing until 2026-08-05: the registry was written with the argument that '422 naming the cap' is a binary assertion on a string nothing specified, and that argument was applied to eleven value rules and then stopped - while absence and type are more common in real traffic than every value rule combined.",
+      "rules": [
+        {
+          "rule": "field.required",
+          "field": "<the missing or null body key>",
+          "message": "{field} is required."
+        },
+        {
+          "rule": "field.type",
+          "field": "<the ill-typed key>",
+          "message": "{field} must be {expected}, for example {example}."
+        },
+        {
+          "rule": "amount.scale",
+          "field": "amount",
+          "message": "Amount must have at most two decimal places."
+        },
+        {
+          "rule": "amount.grammar",
+          "field": "amount",
+          "message": "Amount must be a decimal string, for example \"1250.00\"."
+        },
+        {
+          "rule": "amount.bounds",
+          "field": "amount",
+          "message": "Amount must be greater than zero and at most 10000000000.00."
+        },
+        {
+          "rule": "spent_on.window",
+          "field": "spent_on",
+          "message": "Date must be within the last 10 years and no more than 1 year ahead."
+        },
+        {
+          "rule": "description.length",
+          "field": "description",
+          "message": "Description must be at most 500 characters."
+        },
+        {
+          "rule": "category.not_owned",
+          "field": "category_id",
+          "message": "That category does not exist."
+        },
+        {
+          "rule": "range.order",
+          "field": "to",
+          "message": "The end date must not be before the start date."
+        },
+        {
+          "rule": "range.span",
+          "field": "to",
+          "message": "A range may span at most 400 days.",
+          "formula": "span = (to - from).days + 1  # the number of by_day rows; 422 when > 400",
+          "note": "Inclusive of both ends (SW-ADR-085), so the span equals the number of `by_day` rows. SW-ADR-118 equating a year with '366 day rows' is the signal. Stated as a formula because P-UND-02 gets one and prose two rules later produced an off-by-one exactly where the only test sits."
+        },
+        {
+          "rule": "range.floor",
+          "field": "from",
+          "message": "The start date must be on or after 2000-01-01."
+        },
+        {
+          "rule": "range.required",
+          "field": "<from or to, whichever is missing; `from` when BOTH are absent>",
+          "message": "Both from and to are required; there is no default range.",
+          "note": "A summary request with NO parameters is the most likely malformed one there is, and both the rule and its scope cell were phrased in the singular - leaving it with no stated expected field, which is the 50/50 failure the precedence block exists to end, reproduced inside it. `from` wins because §6.1's worked request writes `?from=...&to=...` in that order."
+        },
+        {
+          "rule": "filter.exclusive",
+          "field": "uncategorised",
+          "message": "category_id and uncategorised cannot both be given."
+        },
+        {
+          "rule": "offset.bounds",
+          "field": "offset",
+          "message": "offset must be zero or greater.",
+          "note": "NEG-X-12 (SEV-1) requires '422 validation error naming offset', and the closed registry contained no rule capable of producing it - found by slice run 7."
+        }
+      ],
+      "placeholders": {
+        "note": "`{field}`, `{expected}` and `{example}` are substituted at render time. The rendered sentence is what a test asserts on, so the substitutions are part of the contract.",
+        "types": [
+          {
+            "field": "spent_on",
+            "expected": "a date",
+            "example": "\"2026-08-01\""
+          },
+          {
+            "field": "category_id",
+            "expected": "an integer or null",
+            "example": "3"
+          },
+          {
+            "field": "description",
+            "expected": "a string or null",
+            "example": "\"Auto to office\""
+          },
+          {
+            "field": "from",
+            "expected": "a date",
+            "example": "\"2026-08-01\""
+          },
+          {
+            "field": "to",
+            "expected": "a date",
+            "example": "\"2026-08-31\""
+          },
+          {
+            "field": "uncategorised",
+            "expected": "true or false",
+            "example": "true"
+          },
+          {
+            "field": "limit",
+            "expected": "an integer",
+            "example": "50"
+          },
+          {
+            "field": "offset",
+            "expected": "an integer",
+            "example": "0"
+          },
+          {
+            "field": "email",
+            "expected": "an email address",
+            "example": "\"you@example.com\""
+          },
+          {
+            "field": "password",
+            "expected": "a string of 12 to 72 characters",
+            "example": "\"correct-horse-battery-staple\""
+          },
+          {
+            "field": "display_name",
+            "expected": "a name of 1 to 100 characters",
+            "example": "\"Person A\""
+          }
+        ]
+      },
+      "by_code": {
+        "note": "`messages.rules` covers the VALIDATION_ERROR rules only. Every other code still returns a message, and until 2026-08-05 five of them had none - while ACCOUNT_DEACTIVATED's exact sentence was specified (SW-ADR-100) and P-ACC-07's four reset outcomes were specified word for word, which is what makes the omission conspicuous rather than deliberate.",
+        "codes": [
+          {
+            "code": "UNAUTHENTICATED",
+            "message": "Sign in to continue."
+          },
+          {
+            "code": "SESSION_INVALID",
+            "message": "Your session has ended. Please sign in again.",
+            "note": "One sentence for every cause - expiry, revocation, idle timeout, rotated secret, bad signature. Distinguishing them would tell an attacker which one they hit."
+          },
+          {
+            "code": "ACCOUNT_DEACTIVATED",
+            "message": "Your account has been deactivated. Contact your administrator.",
+            "note": "Already specified by SW-ADR-100; restated here so the table is complete."
+          },
+          {
+            "code": "NOT_FOUND",
+            "message": "Not found.",
+            "note": "Deliberately identical for not-yours and not-found (P-PRV-03). Any difference is an enumeration oracle."
+          },
+          {
+            "code": "FORBIDDEN",
+            "message": "You do not have permission to do that."
+          },
+          {
+            "code": "CONFLICT",
+            "message": "That already exists."
+          },
+          {
+            "code": "EMAIL_TAKEN",
+            "message": "That email address cannot be used.",
+            "note": "Wording subject to SW-ADR-102's enumeration posture."
+          },
+          {
+            "code": "RATE_LIMITED",
+            "message": "Too many requests. Try again shortly.",
+            "note": "Carries Retry-After."
+          },
+          {
+            "code": "BAD_REQUEST",
+            "message": "The request body could not be read."
+          },
+          {
+            "code": "INTERNAL",
+            "message": "Something went wrong.",
+            "note": "Generic by rule - it never carries detail, an id, or a stack."
+          }
+        ]
+      }
+    },
+    "precedence": {
+      "source": "SW-ADR-141",
+      "note": "The envelope carries exactly ONE field and ONE message, and every negative case varies exactly one input - so nothing forced this question and nothing answered it. Two engineers would have implemented opposite orders and both passed their own tests, which is the Art IX.3 failure: an acceptance criterion with a 50/50 expected value is not binary.",
+      "rule": "Report the FIRST failure in the order below and stop. Validation short-circuits; it does not collect.",
+      "order": [
+        "field.required",
+        "field.type",
+        "amount.grammar",
+        "amount.scale",
+        "amount.bounds",
+        "spent_on.window",
+        "description.length",
+        "range.required",
+        "range.order",
+        "range.span",
+        "range.floor",
+        "offset.bounds",
+        "filter.exclusive",
+        "category.not_owned"
+      ],
+      "why": "Presence before type before value, then fields in the order the request model declares them (see `tie_break`). `category.not_owned` is last because the database raises it, after every in-process rule has already passed.",
+      "scope": {
+        "field_required": "BODY keys only. A required key that is absent OR sent as explicit `null` is `field.required`, never `field.type` - presence is checked before type, and a null in a required slot is an absence of a value, not a wrong type (G3).",
+        "range_required": "The summary's QUERY pair only. A missing `from` or `to` is `range.required`, with `field` set to the key that is actually missing - not `field.required`, which would otherwise make `range.required` unreachable (G2).",
+        "note": "Both rules were live and `field.required` was first in the order, which read literally made `range.required` dead text. A rule that can never fire is the same defect as a missing one, and CV-07 exists precisely to describe the query-pair case."
+      },
+      "tie_break": "When two keys fail the SAME rule class, report the one that comes first in `request_models.<Model>.fields` - the declaration order, which is what Pydantic reports in. An earlier `why` cell said '§6.1's worked payload order' (amount, category_id, description, spent_on) while ExpenseCreate declares (amount, spent_on, category_id, description), so the natural implementation silently produced the other answer. The model is authoritative because it is the thing the code is built from. Found by the sixth uncoached slice, C5."
+    }
+  },
+  "models": {
+    "Expense": {
+      "source": "P-REC-01 · P-REC-02",
+      "fields": [
+        {
+          "name": "id",
+          "type": "integer",
+          "note": "server-assigned"
+        },
+        {
+          "name": "user_id",
+          "type": "integer",
+          "note": "the VERIFIED identity, never the request body (SW-ADR-130)"
+        },
+        {
+          "name": "category_id",
+          "type": "integer|null"
+        },
+        {
+          "name": "category_name",
+          "type": "string|null",
+          "note": "service-to-service from the categories module (SW-ADR-017). **`null` when `category_id` is null** — the `Uncategorised` label belongs to `CategoryBucket` alone (SW-ADR-131), and putting it on an expense row would make a synthetic display string indistinguishable from a real category name. Day one exercises this: the seed's fourth expense has no category."
+        },
+        {
+          "name": "amount",
+          "type": "string",
+          "note": "display, rupees, always two decimals"
+        },
+        {
+          "name": "amount_paise",
+          "type": "integer",
+          "note": "the stored value; the client never divides by 100"
+        },
+        {
+          "name": "currency",
+          "type": "string",
+          "note": "snapshotted from users.currency at write time (SW-ADR-013)"
+        },
+        {
+          "name": "description",
+          "type": "string|null"
+        },
+        {
+          "name": "spent_on",
+          "type": "date"
+        },
+        {
+          "name": "receipt_key",
+          "type": "string|null"
+        },
+        {
+          "name": "created_at",
+          "type": "timestamptz"
+        },
+        {
+          "name": "updated_at",
+          "type": "timestamptz|null"
+        }
+      ]
+    },
+    "CategoryBucket": {
+      "source": "P-UND-05 · SW-ADR-055 · SW-ADR-131",
+      "fields": [
+        {
+          "name": "category_id",
+          "type": "integer|null"
+        },
+        {
+          "name": "category_name",
+          "type": "string"
+        },
+        {
+          "name": "color",
+          "type": "string",
+          "note": "required by P-UND-05"
+        },
+        {
+          "name": "total_paise",
+          "type": "integer"
+        },
+        {
+          "name": "count",
+          "type": "integer"
+        },
+        {
+          "name": "percent",
+          "type": "integer",
+          "note": "largest remainder over the SUM OF THE BUCKETS, not over the headline `total_paise` (SW-ADR-055, CV-17). Identical under no filter; under a category filter the headline re-scopes and `by_category` does not (CV-03, CV-15), so dividing by the headline would print percentages summing to several hundred. Integer arithmetic only; ties to the earlier position."
+        }
+      ],
+      "ordering": "total_paise DESC, category_name ASC; the synthetic null bucket ALWAYS last regardless of size (SW-ADR-131)"
+    },
+    "DayBucket": {
+      "source": "SRC-001 §7.4 — 'one row per calendar day including days where nothing was spent. Use generate_series for the empty days.'",
+      "note": "The field name `by_day` was unstated until 2026-08-05. Six documents required the series; none named the key, so SIT-E0-S9-05 asserted on a field that did not exist.",
+      "fields": [
+        {
+          "name": "date",
+          "type": "date"
+        },
+        {
+          "name": "total_paise",
+          "type": "integer"
+        },
+        {
+          "name": "count",
+          "type": "integer"
+        }
+      ]
+    },
+    "Summary": {
+      "source": "P-UND-01 … P-UND-06",
+      "fields": [
+        {
+          "name": "from",
+          "type": "date"
+        },
+        {
+          "name": "to",
+          "type": "date"
+        },
+        {
+          "name": "total_paise",
+          "type": "integer"
+        },
+        {
+          "name": "total",
+          "type": "string"
+        },
+        {
+          "name": "count",
+          "type": "integer",
+          "note": "expense ROWS, not days"
+        },
+        {
+          "name": "days_elapsed",
+          "type": "integer",
+          "note": "max(0, min(to, today) - from + 1), evaluated in Asia/Kolkata (SW-ADR-053, SW-ADR-096). This is the DIVISOR."
+        },
+        {
+          "name": "daily_average_paise",
+          "type": "integer|null",
+          "note": "NULL when days_elapsed is 0 - never 0, which would read as 'spent nothing' (SW-ADR-053, SW-ADR-054, P-UND-02, R-UND-04, SIT-E2-S6-03)"
+        },
+        {
+          "name": "daily_average",
+          "type": "string|null"
+        },
+        {
+          "name": "by_category",
+          "type": "CategoryBucket[]"
+        },
+        {
+          "name": "by_day",
+          "type": "DayBucket[]"
+        }
+      ]
+    },
+    "Category": {
+      "source": "P-REC-05",
+      "fields": [
+        {
+          "name": "id",
+          "type": "integer"
+        },
+        {
+          "name": "user_id",
+          "type": "integer"
+        },
+        {
+          "name": "name",
+          "type": "string"
+        },
+        {
+          "name": "color",
+          "type": "string"
+        },
+        {
+          "name": "created_at",
+          "type": "timestamptz"
+        }
+      ]
+    },
+    "ExpensePage": {
+      "source": "P-REC-02",
+      "fields": [
+        {
+          "name": "items",
+          "type": "Expense[]"
+        },
+        {
+          "name": "total",
+          "type": "integer",
+          "note": "the row count, not a money total"
+        },
+        {
+          "name": "limit",
+          "type": "integer",
+          "note": "default 50, maximum 200"
+        },
+        {
+          "name": "offset",
+          "type": "integer"
+        }
+      ],
+      "note": "`total` here is a COUNT. The money total lives on Summary as `total_paise`."
+    },
+    "AdminUser": {
+      "source": "P-ADM-01",
+      "fields": [
+        {
+          "name": "id",
+          "type": "integer"
+        },
+        {
+          "name": "email",
+          "type": "string"
+        },
+        {
+          "name": "display_name",
+          "type": "string"
+        },
+        {
+          "name": "role",
+          "type": "string"
+        },
+        {
+          "name": "is_active",
+          "type": "boolean"
+        },
+        {
+          "name": "created_at",
+          "type": "timestamptz"
+        },
+        {
+          "name": "expense_count",
+          "type": "integer",
+          "note": "from admin_expense_stats() - SW-ADR-129"
+        },
+        {
+          "name": "last_activity",
+          "type": "date|null",
+          "note": "from admin_expense_stats()"
+        }
+      ],
+      "note": "NO field capable of holding an amount or a description. That is the control (P-PRV-02)."
+    },
+    "AdminSession": {
+      "source": "P-ADM-02",
+      "fields": [
+        {
+          "name": "id",
+          "type": "integer"
+        },
+        {
+          "name": "user_id",
+          "type": "integer"
+        },
+        {
+          "name": "issued_at",
+          "type": "timestamptz"
+        },
+        {
+          "name": "last_seen_at",
+          "type": "timestamptz"
+        },
+        {
+          "name": "expires_at",
+          "type": "timestamptz"
+        },
+        {
+          "name": "revoked_at",
+          "type": "timestamptz|null"
+        }
+      ],
+      "note": "NO ip and NO user_agent field (SW-ADR-106, NEG-R-10)."
+    },
+    "ResetToken": {
+      "source": "P-ADM-04",
+      "fields": [
+        {
+          "name": "token",
+          "type": "string",
+          "note": "shown ONCE, never logged, never stored in the clear"
+        },
+        {
+          "name": "expires_at",
+          "type": "timestamptz",
+          "note": "one hour"
+        }
+      ]
+    },
+    "UploadUrl": {
+      "source": "P-RCP-01",
+      "fields": [
+        {
+          "name": "url",
+          "type": "string"
+        },
+        {
+          "name": "fields",
+          "type": "object",
+          "note": "presigned POST fields - E-10"
+        },
+        {
+          "name": "staging_key",
+          "type": "string"
+        },
+        {
+          "name": "expires_at",
+          "type": "timestamptz",
+          "note": "5 minutes"
+        }
+      ]
+    },
+    "SignedUrl": {
+      "source": "P-RCP-02",
+      "fields": [
+        {
+          "name": "url",
+          "type": "string"
+        },
+        {
+          "name": "expires_at",
+          "type": "timestamptz",
+          "note": "5 minutes"
+        }
+      ]
+    },
+    "AuditPage": {
+      "source": "P-ADM-08",
+      "fields": [
+        {
+          "name": "items",
+          "type": "object[]",
+          "note": "the nine action types of SW-ADR-105"
+        },
+        {
+          "name": "total",
+          "type": "integer"
+        },
+        {
+          "name": "limit",
+          "type": "integer"
+        },
+        {
+          "name": "offset",
+          "type": "integer"
+        }
+      ]
+    },
+    "AdminOverview": {
+      "source": "M4 admin console. No P-xxx id - see the route note.",
+      "fields": [
+        {
+          "name": "accounts_total",
+          "type": "integer"
+        },
+        {
+          "name": "accounts_active",
+          "type": "integer"
+        },
+        {
+          "name": "accounts_deactivated",
+          "type": "integer"
+        },
+        {
+          "name": "accounts_deleted",
+          "type": "integer"
+        },
+        {
+          "name": "admins",
+          "type": "integer"
+        },
+        {
+          "name": "sessions_live",
+          "type": "integer"
+        },
+        {
+          "name": "expenses_recorded",
+          "type": "integer"
+        },
+        {
+          "name": "accounts_active_last_7_days",
+          "type": "integer"
+        },
+        {
+          "name": "accounts_dormant_30_days",
+          "type": "integer"
+        },
+        {
+          "name": "accounts_never_used",
+          "type": "integer"
+        },
+        {
+          "name": "signups",
+          "type": "array"
+        },
+        {
+          "name": "audit_last_7_days",
+          "type": "integer"
+        }
+      ]
+    },
+    "AdminUserSpending": {
+      "source": "CR-001 / SW-ADR-151",
+      "fields": [
+        {
+          "name": "user",
+          "type": "AdminUser"
+        },
+        {
+          "name": "from",
+          "type": "date",
+          "note": "serialised from `from_`; `from` is a Python keyword"
+        },
+        {
+          "name": "to",
+          "type": "date"
+        },
+        {
+          "name": "total_paise",
+          "type": "integer"
+        },
+        {
+          "name": "total",
+          "type": "string",
+          "note": "en-IN display string, rendered once at the boundary"
+        },
+        {
+          "name": "count",
+          "type": "integer"
+        },
+        {
+          "name": "days_elapsed",
+          "type": "integer"
+        },
+        {
+          "name": "daily_average_paise",
+          "type": "integer|null"
+        },
+        {
+          "name": "daily_average",
+          "type": "string|null",
+          "note": "null, never 0.00 - SW-ADR-053"
+        },
+        {
+          "name": "by_day",
+          "type": "array",
+          "note": "THREE columns per day and no fourth. No category_id, no description, no expense id: the return type is what enforces CR-001's boundary"
+        }
+      ]
+    }
+  },
+  "conventions": {
+    "source": "SW-ADR-139",
+    "note": "Each row is something a cold reader with only these documents had to GUESS. A guess is a document defect, so each is ruled here rather than left to be re-invented. The 'asked_by' column records which uncoached slice raised it.",
+    "rules": [
+      {
+        "id": "CV-01",
+        "question": "What is the session cookie called?",
+        "ruling": "`sw_session`. httpOnly, SameSite=Lax, Path=/, Secure driven by COOKIE_SECURE.",
+        "why": "SIT-E0-S5-02 asserts on a cookie the test must be able to find by name, and the name was never written down. Every attribute was specified exhaustively; the name was not.",
+        "source": "P-ACC-03 · SW-ADR-014",
+        "asked_by": "slice run 2, guess 3"
+      },
+      {
+        "id": "CV-02",
+        "question": "How is the uncategorised-only filter expressed?",
+        "ruling": "`?uncategorised=true`. It is mutually exclusive with `category_id`; sending both is 422.",
+        "why": "P-UND-05 makes the synthetic bucket clickable, so it needs a query parameter, and `category_id=null` is not expressible in a query string.",
+        "source": "P-UND-05 · SW-ADR-109",
+        "asked_by": "slice run 2, guess 9"
+      },
+      {
+        "id": "CV-03",
+        "question": "Does the day series re-scope under a category filter?",
+        "ruling": "Yes. The filter re-scopes the total, the count, the average, the day series and the entry list. ONLY `by_category` is left un-scoped.",
+        "why": "P-UND-01 says 're-scopes everything except the breakdown itself'; the breakdown is what you would be clicking, so re-scoping it would collapse the control.",
+        "source": "P-UND-01 · SW-ADR-109",
+        "asked_by": "slice run 2, guess 10"
+      },
+      {
+        "id": "CV-04",
+        "question": "Does \"1250.0000\" pass? Written scale, or numeric value?",
+        "ruling": "Rejected, 422. The rule is on the WRITTEN scale: more than two decimal places as typed is refused, even when the extra places are zeros.",
+        "why": "SW-ADR-112 refuses rather than rounds, and stricter wins (Art II.1). A value-based rule would silently accept input the person may have mistyped.",
+        "source": "SW-ADR-112 · NEG-M-04",
+        "asked_by": "slice run 2, guess 11"
+      },
+      {
+        "id": "CV-05",
+        "question": "Where does `currency` come from on insert?",
+        "ruling": "`get_current_user` returns a principal carrying `currency`; the expenses service reads it from the principal, never from the users table.",
+        "why": "SW-ADR-013 snapshots it at write time, and SRC-001 §3.4 forbids the expenses module touching `users`. The principal is the sanctioned carrier.",
+        "source": "SW-ADR-013 · SRC-001 §3.4",
+        "asked_by": "slice run 2, guess 12"
+      },
+      {
+        "id": "CV-06",
+        "question": "How is \"today\" mocked for the gate?",
+        "ruling": "`app/core/clock.py` exposes `today_ist()` behind a FastAPI dependency, overridden in tests. NOT a library that freezes the process clock.",
+        "why": "Freezing the process clock does not freeze `now()` inside Postgres, so session expiry and `spent_on` validation would disagree about what day it is.",
+        "source": "SW-ADR-096 · Bible E0-S9",
+        "asked_by": "slice run 2, guess 14"
+      },
+      {
+        "id": "CV-07",
+        "question": "Are `from` and `to` required on the summary?",
+        "ruling": "Both required. Omitting either is 422; there is no default range.",
+        "why": "P-UND-03: 'the server never guesses this month'. A default would be the server guessing.",
+        "source": "P-UND-03 · SW-ADR-108",
+        "asked_by": "slice run 2, guess 15"
+      },
+      {
+        "id": "CV-08",
+        "question": "Does the create response carry `category_name`?",
+        "ruling": "Yes. The sanctioned service-to-service crossing of SW-ADR-017 covers BOTH the summary and the create/update responses - two paths, not one.",
+        "why": "The client renders the new row immediately; without the name it would need a second request, which is the round trip SRC-001 asked to avoid.",
+        "source": "SW-ADR-017 · P-REC-01",
+        "asked_by": "slice run 2, guess 16"
+      },
+      {
+        "id": "CV-09",
+        "question": "What sets `updated_at`?",
+        "ruling": "The service, on PATCH only. No database trigger. A create leaves it null.",
+        "why": "A trigger would fire on the audit-log-adjacent writes too and make 'never edited' unrepresentable. Null means never edited, and that is a fact worth keeping.",
+        "source": "P-REC-03 · datamodel.json",
+        "asked_by": "slice run 2, guess 18"
+      },
+      {
+        "id": "CV-10",
+        "question": "Does a 201 carry a `Location` header?",
+        "ruling": "No. The created resource is in the body; there is no separate fetch to point at.",
+        "why": "One convention, stated once, rather than a per-endpoint judgement call.",
+        "source": "SW-ADR-051",
+        "asked_by": "slice run 2, guess 19"
+      },
+      {
+        "id": "CV-11",
+        "question": "Route ordering, and what a non-integer id returns",
+        "ruling": "`/api/expenses/summary` MUST be declared before `/api/expenses/{expense_id}`. A path parameter that fails integer coercion returns **404**, not 422.",
+        "why": "Declared the other way, the literal `summary` is eaten by the int path parameter and the endpoint 422s. And a malformed id is a not-found id: 422 would leak that the id space is integers, which P-PRV-03's uniform 404 exists to avoid.",
+        "source": "P-PRV-03 · SW-ADR-050",
+        "asked_by": "slice run 2, guess 20"
+      },
+      {
+        "id": "CV-12",
+        "question": "Who commits the request transaction?",
+        "ruling": "The session dependency commits ONCE, after the handler returns. No service and no repository commits.",
+        "why": "The GUC is transaction-local, and the create response stitches `category_name` from the categories service AFTER the insert. Commit in the service and that read returns zero rows - `category_name` silently becomes null with nothing red.",
+        "source": "SW-ADR-136 D · GOTCHAS",
+        "asked_by": "slice run 3, guess 1"
+      },
+      {
+        "id": "CV-13",
+        "question": "How does an expected constraint violation not abort the request?",
+        "ruling": "The INSERT runs inside a SAVEPOINT. On the composite-FK violation, ROLLBACK TO SAVEPOINT, then return 422 field=category_id.",
+        "why": "One transaction per request plus 'enforced by the database' means the FK violation aborts the REQUEST transaction. Without a savepoint the handler cannot emit its 422 and returns 500 - and the naive fix, a second transaction, is the silent zero-rows failure SW-ADR-136 D forbids.",
+        "source": "SW-ADR-072 · P-REC-01 · NEG-X-11",
+        "asked_by": "slice run 3, guess 10"
+      },
+      {
+        "id": "CV-14",
+        "question": "How is 'today' pinned for the BROWSER-observed gate run?",
+        "ruling": "The clock dependency reads `APP_TODAY_OVERRIDE` when set. Absent in production; set in the gate container. The FastAPI dependency override of CV-06 covers in-process tests only.",
+        "why": "Art IX.4 and E0-S10 require the gate observed through a real browser against a running app, where no in-process override is reachable - so CV-06 alone could not produce the observed 75810.",
+        "source": "SW-ADR-096 · Art IX.4 · CV-06",
+        "asked_by": "slice run 3, guess 4"
+      },
+      {
+        "id": "CV-15",
+        "question": "Does the breakdown-sums-to-total invariant hold under a filter?",
+        "ruling": "It is asserted ONLY when no category filter is applied. With a filter the headline re-scopes and `by_category` does not, so they are not expected to agree.",
+        "why": "P-UND-05 states the invariant unqualified and CV-03 leaves by_category un-scoped. Both are right; the invariant simply has a precondition nobody wrote down, and a literal test walks straight into it.",
+        "source": "P-UND-05 · CV-03 · SW-ADR-109",
+        "asked_by": "slice run 3, contradiction C3"
+      },
+      {
+        "id": "CV-16",
+        "question": "What is the test stack?",
+        "ruling": "pytest + pytest-asyncio + httpx (ASGITransport) for API and unit tests; Playwright for the browser-observed gate. Added to SW-ADR-016's locked stack.",
+        "why": "Art IX.1 mandates failing-test-first and E0-S5 mandates a real browser, while SW-ADR-016 says do not substitute and named no tool for either - so the first engineer had to extend a stack the same document forbids extending.",
+        "source": "SW-ADR-016 · Art IX.1 · E0-S5",
+        "asked_by": "slice run 3, guess 13"
+      },
+      {
+        "id": "CV-17",
+        "question": "How is the percentage tie-break resolved?",
+        "ruling": "Integer arithmetic only. Ties go to the EARLIER position in the already-sorted list (total DESC, name ASC, synthetic last). Never float division.",
+        "why": "Art V.1 says never a float, and the generator that produces the normative payload used float division - so the only statement of the algorithm violated the Constitution, and its tie-break was an accident of Python's sort stability.",
+        "source": "SW-ADR-055 · Art V.1",
+        "asked_by": "slice run 3, contradiction C8"
+      },
+      {
+        "id": "CV-18",
+        "question": "What does a foreign category_id filter return on the summary?",
+        "ruling": "The filter APPLIES and matches nothing: total_paise 0, count 0, by_day all zeros, daily_average_paise computed over the elapsed days (so 0, not null). `by_category` stays un-scoped per CV-03 and is non-empty.",
+        "why": "NEG-X-08 said both 'B's OWN summary' and 'an unknown category_id filters to nothing' in one cell - the first reads as ignore the filter, the second as total 0.",
+        "source": "NEG-X-08 · CV-03 · P-PRV-03",
+        "asked_by": "slice run 3, guess 12"
+      },
+      {
+        "id": "CV-19",
+        "question": "May an optional field be sent as explicit null?",
+        "ruling": "Yes. Explicit `null` and omission are equivalent on input. Unknown keys are discarded, never rejected.",
+        "why": "`extra=\"forbid\"` would 422 the forged `user_id` of NEG-X-10, which must return 201.",
+        "source": "SW-ADR-130 · SW-ADR-141",
+        "asked_by": "slice run 4, guess 6"
+      },
+      {
+        "id": "CV-20",
+        "question": "What format does APP_TODAY_OVERRIDE take?",
+        "ruling": "`APP_TODAY_OVERRIDE=2026-08-05` — a bare ISO date, parsed with `date.fromisoformat`, read as an Asia/Kolkata calendar date. Malformed: refuse to start (P-OPS-01 fails fast).",
+        "why": "CV-14 exists because the in-process override of CV-06 cannot reach a browser-observed run, and it stopped one line short of being executable.",
+        "source": "CV-14 · SW-ADR-096",
+        "asked_by": "slice run 4, guess 8"
+      },
+      {
+        "id": "CV-21",
+        "question": "Which rule owns a non-string `amount` that is not a number either?",
+        "ruling": "`amount.grammar` owns EVERY non-conforming amount - boolean, array, object, number. `amount` is modelled as `Any` and grammar-checked; it never reaches `field.type`.",
+        "why": "One concept, one sentence. The `amount` row of the field.type placeholder table is therefore unreachable and is removed.",
+        "source": "NEG-M-06 · SW-ADR-142",
+        "asked_by": "slice run 5, guess 6"
+      },
+      {
+        "id": "CV-22",
+        "question": "Is `description` trimmed, and is 500 measured before or after?",
+        "ruling": "Whitespace-only becomes `null` FIRST; the length is then measured on the survivor. A non-empty description is stored **verbatim** - never trimmed.",
+        "why": "SW-ADR-115 says normalised to null, not stripped. Trimming would silently alter what the person typed, which SW-ADR-112 refuses to do for amounts.",
+        "source": "SW-ADR-115 · SW-ADR-112",
+        "asked_by": "slice run 5, guess 7"
+      },
+      {
+        "id": "CV-23",
+        "question": "How is `today ± N years` computed at the boundary?",
+        "ruling": "Calendar arithmetic (`relativedelta`), clamping 29 February to 28 February. Never fixed day counts.",
+        "why": "Every other date rule here is calendar-based and Asia/Kolkata-anchored; the two readings differ by up to three days, exactly on the boundary NEG-M-08/09 probe.",
+        "source": "SW-ADR-111 · SW-ADR-096",
+        "asked_by": "slice run 5, guess 8"
+      },
+      {
+        "id": "CV-24",
+        "question": "How is database state reset between test cases?",
+        "ruling": "Function-scoped reset on a **separate `spendwise_owner` connection owned by the test fixture** - not the app, not the seeder:\n\n    TRUNCATE users, sessions, categories, expenses, password_resets,\n             admin_audit_log RESTART IDENTITY CASCADE;\n\nthen reseed through the real endpoints. NOT the outer-transaction-and-rollback pattern.",
+        "why": "That pattern is unavailable here and nothing said so. It contradicts CV-12 (the dependency commits, once, per request) and it breaks `set_config(..., true)`, which is transaction-local - nest the request inside an outer transaction and the GUC's lifetime stops matching the request's. The seed README states isolation 'between runs'; between CASES was never stated, and it bites immediately: a test that creates a fifth expense makes the day-one gate read 379049 + n and fail for a reason that has nothing to do with the code. Two further things were unstated and each breaks immediately. **Role:** `spendwise_app` holds no DELETE on `users` and `verify_invariants.sql` check 11 asserts it cannot - so the runtime role cannot perform the truncate. **RESTART IDENTITY:** plain TRUNCATE does not reset a GENERATED ALWAYS AS IDENTITY sequence, so the second test case's A gets categories 17-24 and every by_category assertion in expected_summary.json fails. That phrase appeared NOWHERE in the document set. The fixture owns the connection so seed/README.md's rule - 'the seeder does not acquire a user-deletion path by the back door' - still holds of the seeder.",
+        "source": "seed/README.md · CV-12 · SW-ADR-136 D",
+        "asked_by": "slice run 6, guess 6"
+      },
+      {
+        "id": "CV-25",
+        "question": "Truncate or round when rendering a timestamp to 3 fractional digits?",
+        "ruling": "**Truncate, never round.**",
+        "why": "`now()` yields microseconds and rounding can carry into the next second, moving a timestamp across a boundary - including a day boundary, which is the one thing the Asia/Kolkata rule exists to get right.",
+        "source": "serialisation.datetime",
+        "asked_by": "slice run 6, guess 7"
+      },
+      {
+        "id": "CV-26",
+        "question": "What caching posture do authenticated JSON responses take?",
+        "ruling": "**`Cache-Control: no-store` on every `/api/*` response.**",
+        "why": "The deployment has no TLS (SW-ADR-014, a recorded weakness), and FastAPI's default is no header at all, which permits heuristic caching of a summary. A money response cached by an intermediary is a cross-person leak achieved without touching the database.",
+        "source": "SW-ADR-014 · P-OPS-05",
+        "asked_by": "slice run 6, guess 8"
+      }
+    ]
+  },
+  "routes": {
+    "source": "SW-ADR-140",
+    "note": "The route inventory lives here, as data. It was a hand-maintained Markdown table in PRD §6, hand-copied into 05_surface_route_map.md and again into CROSS_PERSON_COVERAGE.tsv - the exact failure SW-ADR-138 diagnosed for payloads, and it produced the same result: all three copies omitted GET /api/expenses/{expense_id}, which E0-S7 AC1 and the SEV-1 case NEG-X-01 both require, while the coverage matrix declared 25/25 routes covered.",
+    "routes": [
+      {
+        "method": "POST",
+        "path": "/api/auth/register",
+        "who": "anon",
+        "spec": [
+          "P-ACC-01"
+        ],
+        "request_model": "RegisterRequest",
+        "response_model": "Principal",
+        "error_codes": [
+          "VALIDATION_ERROR",
+          "EMAIL_TAKEN",
+          "RATE_LIMITED",
+          "BAD_REQUEST"
+        ]
+      },
+      {
+        "method": "POST",
+        "path": "/api/auth/login",
+        "who": "anon",
+        "spec": [
+          "P-ACC-03"
+        ],
+        "request_model": "LoginRequest",
+        "response_model": "Principal",
+        "error_codes": [
+          "VALIDATION_ERROR",
+          "SESSION_INVALID",
+          "ACCOUNT_DEACTIVATED",
+          "RATE_LIMITED"
+        ]
+      },
+      {
+        "method": "POST",
+        "path": "/api/auth/logout",
+        "who": "any",
+        "spec": [
+          "P-ACC-05"
+        ],
+        "error_codes": [
+          "UNAUTHENTICATED",
+          "SESSION_INVALID",
+          "ACCOUNT_DEACTIVATED"
+        ]
+      },
+      {
+        "method": "GET",
+        "path": "/api/auth/me",
+        "who": "any",
+        "spec": [
+          "P-ACC-06"
+        ],
+        "response_model": "Principal",
+        "error_codes": [
+          "UNAUTHENTICATED",
+          "SESSION_INVALID",
+          "ACCOUNT_DEACTIVATED"
+        ]
+      },
+      {
+        "method": "POST",
+        "path": "/api/auth/reset/complete",
+        "who": "anon",
+        "spec": [
+          "P-ACC-07"
+        ],
+        "request_model": "ResetCompleteRequest",
+        "error_codes": [
+          "VALIDATION_ERROR",
+          "NOT_FOUND",
+          "RATE_LIMITED"
+        ]
+      },
+      {
+        "method": "GET",
+        "path": "/api/categories",
+        "who": "any",
+        "spec": [
+          "P-REC-05"
+        ],
+        "response_model": "Category[]",
+        "error_codes": [
+          "UNAUTHENTICATED",
+          "SESSION_INVALID",
+          "ACCOUNT_DEACTIVATED"
+        ]
+      },
+      {
+        "method": "POST",
+        "path": "/api/categories",
+        "who": "any",
+        "spec": [
+          "P-REC-05"
+        ],
+        "request_model": "CategoryCreate",
+        "response_model": "Category",
+        "error_codes": [
+          "UNAUTHENTICATED",
+          "SESSION_INVALID",
+          "ACCOUNT_DEACTIVATED",
+          "VALIDATION_ERROR",
+          "CONFLICT"
+        ]
+      },
+      {
+        "method": "PATCH",
+        "path": "/api/categories/{category_id}",
+        "who": "owner",
+        "spec": [
+          "P-REC-05"
+        ],
+        "request_model": "CategoryUpdate",
+        "response_model": "Category",
+        "error_codes": [
+          "UNAUTHENTICATED",
+          "SESSION_INVALID",
+          "ACCOUNT_DEACTIVATED",
+          "VALIDATION_ERROR",
+          "NOT_FOUND",
+          "CONFLICT"
+        ]
+      },
+      {
+        "method": "DELETE",
+        "path": "/api/categories/{category_id}",
+        "who": "owner",
+        "spec": [
+          "P-REC-05"
+        ],
+        "error_codes": [
+          "UNAUTHENTICATED",
+          "SESSION_INVALID",
+          "ACCOUNT_DEACTIVATED",
+          "NOT_FOUND"
+        ]
+      },
+      {
+        "method": "GET",
+        "path": "/api/expenses",
+        "who": "any",
+        "spec": [
+          "P-REC-02"
+        ],
+        "response_model": "ExpensePage",
+        "error_codes": [
+          "UNAUTHENTICATED",
+          "SESSION_INVALID",
+          "ACCOUNT_DEACTIVATED",
+          "VALIDATION_ERROR"
+        ],
+        "request_model": "ExpenseListQuery"
+      },
+      {
+        "method": "POST",
+        "path": "/api/expenses",
+        "who": "any",
+        "spec": [
+          "P-REC-01"
+        ],
+        "request_model": "ExpenseCreate",
+        "response_model": "Expense",
+        "error_codes": [
+          "UNAUTHENTICATED",
+          "SESSION_INVALID",
+          "ACCOUNT_DEACTIVATED",
+          "VALIDATION_ERROR"
+        ],
+        "note": "201. A forged user_id or id in the body is discarded before validation (SW-ADR-130); a category_id that is not the caller's is refused by the composite FK and mapped to 422 field=category_id (NEG-X-11). No Location header (CV-10)."
+      },
+      {
+        "method": "GET",
+        "path": "/api/expenses/summary",
+        "who": "any",
+        "spec": [
+          "P-UND-01",
+          "P-UND-02",
+          "P-UND-03",
+          "P-UND-04",
+          "P-UND-05",
+          "P-UND-06"
+        ],
+        "response_model": "Summary",
+        "error_codes": [
+          "UNAUTHENTICATED",
+          "SESSION_INVALID",
+          "ACCOUNT_DEACTIVATED",
+          "VALIDATION_ERROR"
+        ],
+        "note": "MUST be registered BEFORE /api/expenses/{expense_id} or the literal `summary` is captured by the integer path parameter (CV-11).",
+        "request_model": "SummaryQuery"
+      },
+      {
+        "method": "GET",
+        "path": "/api/expenses/{expense_id}",
+        "who": "owner",
+        "spec": [
+          "P-REC-02",
+          "P-PRV-03"
+        ],
+        "response_model": "Expense",
+        "error_codes": [
+          "UNAUTHENTICATED",
+          "SESSION_INVALID",
+          "ACCOUNT_DEACTIVATED",
+          "NOT_FOUND"
+        ],
+        "note": "ADDED 2026-08-05 by SW-ADR-140. It was required by Bible E0-S7 AC1, SIT-E0-S7-01 and the SEV-1 case NEG-X-01, and appeared in NO contract document - PRD §6, the route map and the coverage matrix all listed only PATCH and DELETE on this path."
+      },
+      {
+        "method": "PATCH",
+        "path": "/api/expenses/{expense_id}",
+        "who": "owner",
+        "spec": [
+          "P-REC-03"
+        ],
+        "request_model": "ExpenseUpdate",
+        "response_model": "Expense",
+        "error_codes": [
+          "UNAUTHENTICATED",
+          "SESSION_INVALID",
+          "ACCOUNT_DEACTIVATED",
+          "VALIDATION_ERROR",
+          "NOT_FOUND"
+        ]
+      },
+      {
+        "method": "DELETE",
+        "path": "/api/expenses/{expense_id}",
+        "who": "owner",
+        "spec": [
+          "P-REC-04"
+        ],
+        "error_codes": [
+          "UNAUTHENTICATED",
+          "SESSION_INVALID",
+          "ACCOUNT_DEACTIVATED",
+          "NOT_FOUND"
+        ]
+      },
+      {
+        "method": "POST",
+        "path": "/api/receipts/upload-url",
+        "who": "any",
+        "spec": [
+          "P-RCP-01"
+        ],
+        "request_model": "UploadUrlRequest",
+        "response_model": "UploadUrl",
+        "error_codes": [
+          "UNAUTHENTICATED",
+          "SESSION_INVALID",
+          "ACCOUNT_DEACTIVATED",
+          "VALIDATION_ERROR"
+        ]
+      },
+      {
+        "method": "POST",
+        "path": "/api/receipts/attach",
+        "who": "owner",
+        "spec": [
+          "P-RCP-01"
+        ],
+        "request_model": "AttachRequest",
+        "response_model": "Expense",
+        "error_codes": [
+          "UNAUTHENTICATED",
+          "SESSION_INVALID",
+          "ACCOUNT_DEACTIVATED",
+          "VALIDATION_ERROR",
+          "NOT_FOUND"
+        ]
+      },
+      {
+        "method": "GET",
+        "path": "/api/receipts/{expense_id}/url",
+        "who": "owner",
+        "spec": [
+          "P-RCP-02"
+        ],
+        "response_model": "SignedUrl",
+        "error_codes": [
+          "UNAUTHENTICATED",
+          "SESSION_INVALID",
+          "ACCOUNT_DEACTIVATED",
+          "NOT_FOUND"
+        ]
+      },
+      {
+        "method": "DELETE",
+        "path": "/api/receipts/{expense_id}",
+        "who": "owner",
+        "spec": [
+          "P-RCP-02"
+        ],
+        "error_codes": [
+          "UNAUTHENTICATED",
+          "SESSION_INVALID",
+          "ACCOUNT_DEACTIVATED",
+          "NOT_FOUND"
+        ]
+      },
+      {
+        "method": "GET",
+        "path": "/api/admin/users",
+        "who": "admin",
+        "spec": [
+          "P-ADM-01"
+        ],
+        "response_model": "AdminUser[]",
+        "error_codes": [
+          "UNAUTHENTICATED",
+          "SESSION_INVALID",
+          "ACCOUNT_DEACTIVATED",
+          "FORBIDDEN"
+        ],
+        "note": "Audited read: writes one admin_audit_log row per request, in the same transaction, response serialised only after COMMIT (SW-ADR-135). Primary-only, never a replica or a cache."
+      },
+      {
+        "method": "GET",
+        "path": "/api/admin/sessions",
+        "who": "admin",
+        "spec": [
+          "P-ADM-02"
+        ],
+        "response_model": "AdminSession[]",
+        "error_codes": [
+          "UNAUTHENTICATED",
+          "SESSION_INVALID",
+          "ACCOUNT_DEACTIVATED",
+          "FORBIDDEN"
+        ],
+        "note": "Audited read (SW-ADR-135). No ip, no user_agent (SW-ADR-106)."
+      },
+      {
+        "method": "POST",
+        "path": "/api/admin/users/{user_id}/revoke-sessions",
+        "who": "admin",
+        "spec": [
+          "P-ADM-03"
+        ],
+        "error_codes": [
+          "UNAUTHENTICATED",
+          "SESSION_INVALID",
+          "ACCOUNT_DEACTIVATED",
+          "FORBIDDEN",
+          "NOT_FOUND"
+        ]
+      },
+      {
+        "method": "POST",
+        "path": "/api/admin/users/{user_id}/reset",
+        "who": "admin",
+        "spec": [
+          "P-ADM-04"
+        ],
+        "response_model": "ResetToken",
+        "error_codes": [
+          "UNAUTHENTICATED",
+          "SESSION_INVALID",
+          "ACCOUNT_DEACTIVATED",
+          "FORBIDDEN",
+          "NOT_FOUND"
+        ]
+      },
+      {
+        "method": "POST",
+        "path": "/api/admin/users/{user_id}/active",
+        "who": "admin",
+        "spec": [
+          "P-ADM-05"
+        ],
+        "request_model": "ActiveRequest",
+        "error_codes": [
+          "UNAUTHENTICATED",
+          "SESSION_INVALID",
+          "ACCOUNT_DEACTIVATED",
+          "FORBIDDEN",
+          "NOT_FOUND",
+          "VALIDATION_ERROR"
+        ]
+      },
+      {
+        "method": "POST",
+        "path": "/api/admin/users/{user_id}/role",
+        "who": "admin",
+        "spec": [
+          "P-ADM-06"
+        ],
+        "request_model": "RoleRequest",
+        "error_codes": [
+          "UNAUTHENTICATED",
+          "SESSION_INVALID",
+          "ACCOUNT_DEACTIVATED",
+          "FORBIDDEN",
+          "NOT_FOUND",
+          "CONFLICT"
+        ]
+      },
+      {
+        "method": "GET",
+        "path": "/api/admin/audit",
+        "who": "admin",
+        "spec": [
+          "P-ADM-08"
+        ],
+        "response_model": "AuditPage",
+        "error_codes": [
+          "UNAUTHENTICATED",
+          "SESSION_INVALID",
+          "ACCOUNT_DEACTIVATED",
+          "FORBIDDEN"
+        ],
+        "note": "Audited read (SW-ADR-135)."
+      },
+      {
+        "method": "GET",
+        "path": "/healthz",
+        "who": "anon",
+        "spec": [
+          "P-OPS-03"
+        ],
+        "error_codes": []
+      },
+      {
+        "method": "GET",
+        "path": "/readyz",
+        "who": "anon",
+        "spec": [
+          "P-OPS-03"
+        ],
+        "error_codes": []
+      },
+      {
+        "method": "PATCH",
+        "path": "/api/auth/me",
+        "who": "any",
+        "spec": [],
+        "request_model": "ProfileUpdate",
+        "response_model": "Principal",
+        "error_codes": [
+          "UNAUTHENTICATED",
+          "SESSION_INVALID",
+          "ACCOUNT_DEACTIVATED",
+          "VALIDATION_ERROR"
+        ],
+        "note": "SW-ADR-148 C: changes the display name and NOTHING else. Email is absent from ProfileUpdate deliberately - it is the identity the unique index is built on and SW-ADR-012 records there is no email in this stack to verify a new address with. no P-xxx id exists for this route. It was approved by ADR after the PRD's spec ids were assigned, and no Bible story cites it either. Recorded as a gap rather than filled with an invented id (CLAUDE.md status law)."
+      },
+      {
+        "method": "POST",
+        "path": "/api/auth/password",
+        "who": "any",
+        "spec": [],
+        "request_model": "PasswordChange",
+        "error_codes": [
+          "UNAUTHENTICATED",
+          "SESSION_INVALID",
+          "ACCOUNT_DEACTIVATED",
+          "VALIDATION_ERROR"
+        ],
+        "note": "SW-ADR-148 D: self-service password change, current password required. Signs out every OTHER session and not this one. Returns an unnamed dict {signed_out_elsewhere: int}, so response_model is omitted the way the 204 routes omit it - there is no convention here for a named-but-anonymous body. no P-xxx id exists for this route. It was approved by ADR after the PRD's spec ids were assigned, and no Bible story cites it either. Recorded as a gap rather than filled with an invented id (CLAUDE.md status law)."
+      },
+      {
+        "method": "POST",
+        "path": "/api/auth/deactivate",
+        "who": "any",
+        "spec": [],
+        "error_codes": [
+          "UNAUTHENTICATED",
+          "SESSION_INVALID",
+          "ACCOUNT_DEACTIVATED",
+          "CONFLICT"
+        ],
+        "note": "SW-ADR-148 A. 204. Reversible - 'pause me', distinct from DELETE /api/auth/me. CONFLICT (field is_active) when the caller is the last active administrator. no P-xxx id exists for this route. It was approved by ADR after the PRD's spec ids were assigned, and no Bible story cites it either. Recorded as a gap rather than filled with an invented id (CLAUDE.md status law)."
+      },
+      {
+        "method": "DELETE",
+        "path": "/api/auth/me",
+        "who": "any",
+        "spec": [],
+        "error_codes": [
+          "UNAUTHENTICATED",
+          "SESSION_INVALID",
+          "ACCOUNT_DEACTIVATED",
+          "CONFLICT"
+        ],
+        "note": "CR-001 / SW-ADR-150. 204. Deletion is SOFT: sets deleted_at and is_active=false and revokes every session in one transaction. Every expense, category, audit row and the person record survive. spendwise_app holds no DELETE grant on users, so hard deletion is impossible for the runtime role rather than merely unimplemented. no P-xxx id exists for this route. It was approved by ADR after the PRD's spec ids were assigned, and no Bible story cites it either. Recorded as a gap rather than filled with an invented id (CLAUDE.md status law)."
+      },
+      {
+        "method": "GET",
+        "path": "/api/auth/export",
+        "who": "any",
+        "spec": [],
+        "error_codes": [
+          "UNAUTHENTICATED",
+          "SESSION_INVALID",
+          "ACCOUNT_DEACTIVATED"
+        ],
+        "note": "SW-ADR-148 B. Returns an unnamed dict of the caller's own rows, so response_model is omitted - see POST /api/auth/password. no P-xxx id exists for this route. It was approved by ADR after the PRD's spec ids were assigned, and no Bible story cites it either. Recorded as a gap rather than filled with an invented id (CLAUDE.md status law)."
+      },
+      {
+        "method": "GET",
+        "path": "/api/admin/overview",
+        "who": "admin",
+        "spec": [],
+        "response_model": "AdminOverview",
+        "error_codes": [
+          "UNAUTHENTICATED",
+          "SESSION_INVALID",
+          "ACCOUNT_DEACTIVATED",
+          "FORBIDDEN"
+        ],
+        "note": "Counts and dates only, never an amount or a description (CONSTITUTION Art VI.1). Audited read: writes one admin_audit_log row per request in the same transaction (SW-ADR-135). NO SINGLE ADR AUTHORISES THIS ROUTE - it arrived with M4 in commit 8e75a4c and no record names it; CR-001_CONTRACT.md 5.2 only amended its deactivated/deleted split. Recorded as not-determinable rather than attributed to a record that does not say it. no P-xxx id exists for this route. It was approved by ADR after the PRD's spec ids were assigned, and no Bible story cites it either. Recorded as a gap rather than filled with an invented id (CLAUDE.md status law)."
+      },
+      {
+        "method": "GET",
+        "path": "/api/admin/users/{user_id}/spending",
+        "who": "admin",
+        "spec": [],
+        "response_model": "AdminUserSpending",
+        "error_codes": [
+          "UNAUTHENTICATED",
+          "SESSION_INVALID",
+          "ACCOUNT_DEACTIVATED",
+          "FORBIDDEN",
+          "NOT_FOUND",
+          "VALIDATION_ERROR"
+        ],
+        "note": "CR-001 / SW-ADR-151. The ONE admin route that carries money. A total and a daily series, and deliberately NO category_id parameter and no by_category in the response - the same sentence that granted this withheld the categories. Same range rules as GET /api/expenses/summary through the same require_range helper. no P-xxx id exists for this route. It was approved by ADR after the PRD's spec ids were assigned, and no Bible story cites it either. Recorded as a gap rather than filled with an invented id (CLAUDE.md status law)."
+      }
+    ],
+    "error_code_scope": "`error_codes` on a route lists its **route-specific** codes. Three are reachable on every route and are not repeated: `BAD_REQUEST` (any body-taking route), `RATE_LIMITED` (PRD §7 makes the global limiter reachable on every authenticated path) and `INTERNAL`. Bible E1-S7 AC1 walks the route table asserting the envelope SHAPE, not the code set - asserting the set would fail on correct behaviour."
+  },
+  "serialisation": {
+    "source": "SW-ADR-140",
+    "datetime": "UTC, RFC 3339 with a `Z` suffix and exactly 3 fractional digits: `2026-08-01T09:14:22.481Z`. Not the framework default - configure the encoder.",
+    "date": "ISO 8601 date only, no time component: `2026-08-01`.",
+    "money": "`amount` and `total` and `daily_average` are decimal STRINGS in rupees with exactly two places. `*_paise` fields are integers. The client never divides by 100.",
+    "nulls": "An absent value is `null`, never omitted, never an empty string.",
+    "amount_grammar": {
+      "pattern": "^-?[0-9]{1,15}(\\.[0-9]+)?$",
+      "note": "Applied BEFORE Decimal(). It checks SHAPE, not scale: decimal places are counted by `amount.scale`, which owns the sentence P-REC-01 quotes. An earlier pattern capped the fraction at two digits AND was ordered before amount.scale, which made amount.scale unreachable dead text - so `12.345` returned 'Amount must be a decimal string' instead of 'Amount must have at most two decimal places.', the sentence P-REC-01 states. Found by the fifth uncoached slice, contradiction C1. Rejects scientific notation, surrounding whitespace, a leading '+', and a bare '.50'.",
+      "rejected_examples": [
+        "1.25e3",
+        " 12.50 ",
+        "+12.50",
+        ".50",
+        "abc",
+        "1,250.00"
+      ],
+      "rejected_by_scale_not_grammar": [
+        "1250.0000",
+        "12.345"
+      ]
+    },
+    "extra_fields": "`extra=\"ignore\"` model-wide. An unknown key is discarded, never 422 - `extra=\"forbid\"` would reject the forged `user_id` of NEG-X-10, which must return 201 (SW-ADR-130).",
+    "example_created_at": "2026-08-01T09:14:22.481Z"
+  },
+  "request_models": {
+    "source": "SW-ADR-141",
+    "note": "`models` held only the RESPONSE shapes. `ExpenseCreate` and `Principal` appeared as bare strings in the route table and were defined nowhere - so the half of the contract every 422 test touches was outside the spec of record that SW-ADR-138 created precisely because hand-written shapes drift.",
+    "null_policy": "An optional field may be sent as explicit `null` or omitted; the two are equivalent. Unknown keys are discarded, never rejected (`extra=\"ignore\"`, CV-19 / SW-ADR-130).",
+    "models": {
+      "ExpenseCreate": {
+        "source": "P-REC-01 · SW-ADR-130",
+        "fields": [
+          {
+            "name": "amount",
+            "type": "string",
+            "required": true,
+            "note": "decimal string in rupees; a JSON number is 422 (amount.grammar)"
+          },
+          {
+            "name": "spent_on",
+            "type": "date",
+            "required": true,
+            "note": "never defaulted server-side (SW-ADR-111)"
+          },
+          {
+            "name": "category_id",
+            "type": "integer|null",
+            "required": false,
+            "default": null,
+            "note": "ownership enforced by the composite FK, not a pre-read (SW-ADR-072)"
+          },
+          {
+            "name": "description",
+            "type": "string|null",
+            "required": false,
+            "default": null,
+            "note": "empty or whitespace-only is normalised to null (SW-ADR-115)"
+          }
+        ],
+        "discarded": [
+          "user_id",
+          "id",
+          "amount_paise",
+          "currency",
+          "created_at",
+          "updated_at",
+          "receipt_key",
+          "category_name"
+        ],
+        "discarded_note": "Discarded BEFORE validation, never 422 (SW-ADR-130). NEG-X-10 requires 201 for a forged user_id, so extra=\"forbid\" is not available."
+      },
+      "ExpenseUpdate": {
+        "source": "P-REC-03",
+        "fields": [
+          {
+            "name": "amount",
+            "type": "string",
+            "required": false
+          },
+          {
+            "name": "spent_on",
+            "type": "date",
+            "required": false
+          },
+          {
+            "name": "category_id",
+            "type": "integer|null",
+            "required": false
+          },
+          {
+            "name": "description",
+            "type": "string|null",
+            "required": false
+          }
+        ],
+        "note": "Every field optional; at least one must be present or 422 field.required with field='body'. The service sets updated_at (CV-09)."
+      },
+      "Principal": {
+        "source": "P-ACC-06",
+        "fields": [
+          {
+            "name": "id",
+            "type": "integer"
+          },
+          {
+            "name": "email",
+            "type": "string"
+          },
+          {
+            "name": "display_name",
+            "type": "string"
+          },
+          {
+            "name": "role",
+            "type": "string",
+            "note": "`user` or `admin`"
+          },
+          {
+            "name": "currency",
+            "type": "string",
+            "note": "the expenses service reads currency from HERE, never from the users table (CV-05, SRC-001 §3.4)"
+          },
+          {
+            "name": "is_active",
+            "type": "boolean"
+          },
+          {
+            "name": "receipts_enabled",
+            "type": "boolean",
+            "note": "Required by P-ACC-06 so the client can hide the receipt control when storage is unconfigured rather than letting it fail. It was MISSING from this model, which SW-ADR-141 added to the spec of record in order to stop drift - and which drifted in the same commit. Bible E1-S8 AC2, SIT-E1-S8-02, SIT-E5-S3-01, P-RCP-03 and 08_failure_modes.md all assert it. Found by the fifth uncoached slice, C3."
+          }
+        ],
+        "note": "A response model, but listed here because the route table names it and `models` did not define it."
+      },
+      "RegisterRequest": {
+        "source": "P-ACC-01",
+        "fields": [
+          {
+            "name": "email",
+            "type": "string",
+            "required": true
+          },
+          {
+            "name": "password",
+            "type": "string",
+            "required": true,
+            "note": "12-72 bytes (SW-ADR-103)"
+          },
+          {
+            "name": "display_name",
+            "type": "string",
+            "required": true
+          }
+        ]
+      },
+      "LoginRequest": {
+        "source": "P-ACC-03",
+        "fields": [
+          {
+            "name": "email",
+            "type": "string",
+            "required": true
+          },
+          {
+            "name": "password",
+            "type": "string",
+            "required": true
+          }
+        ]
+      },
+      "ResetCompleteRequest": {
+        "source": "P-ACC-07",
+        "fields": [
+          {
+            "name": "token",
+            "type": "string",
+            "required": true,
+            "note": "the raw code; the row stores its SHA-256"
+          },
+          {
+            "name": "password",
+            "type": "string",
+            "required": true
+          }
+        ]
+      },
+      "CategoryCreate": {
+        "source": "P-REC-05",
+        "fields": [
+          {
+            "name": "name",
+            "type": "string",
+            "required": true,
+            "note": "1-50 chars, unique per person case-insensitively"
+          },
+          {
+            "name": "color",
+            "type": "string",
+            "required": true,
+            "note": "^#[0-9a-f]{6}$"
+          }
+        ]
+      },
+      "CategoryUpdate": {
+        "source": "SW-ADR-114",
+        "fields": [
+          {
+            "name": "name",
+            "type": "string",
+            "required": false
+          },
+          {
+            "name": "color",
+            "type": "string",
+            "required": false
+          }
+        ],
+        "note": "At least one must be present or 422 field.required with field='body'."
+      },
+      "UploadUrlRequest": {
+        "source": "P-RCP-01",
+        "fields": [
+          {
+            "name": "content_type",
+            "type": "string",
+            "required": true,
+            "note": "allowlist: jpeg, png, webp, pdf"
+          },
+          {
+            "name": "content_length",
+            "type": "integer",
+            "required": true,
+            "note": "<= 10 MB"
+          }
+        ],
+        "note": "The object key is NEVER accepted from the client (P-RCP-02); it is server-derived."
+      },
+      "AttachRequest": {
+        "source": "P-RCP-01",
+        "fields": [
+          {
+            "name": "expense_id",
+            "type": "integer",
+            "required": true
+          },
+          {
+            "name": "staging_key",
+            "type": "string",
+            "required": true,
+            "note": "must be under staging/{caller_id}/"
+          }
+        ]
+      },
+      "ActiveRequest": {
+        "source": "P-ADM-05",
+        "fields": [
+          {
+            "name": "is_active",
+            "type": "boolean",
+            "required": true
+          }
+        ]
+      },
+      "RoleRequest": {
+        "source": "P-ADM-06",
+        "fields": [
+          {
+            "name": "role",
+            "type": "string",
+            "required": true,
+            "note": "`user` or `admin`; last-admin guard is 409"
+          }
+        ]
+      },
+      "SummaryQuery": {
+        "source": "P-UND-01…P-UND-06 · CV-02 · CV-07 · SW-ADR-144",
+        "note": "Five of the thirteen validation rules - range.required, range.order, range.span, range.floor, filter.exclusive - fire ONLY here, and `precedence.tie_break` resolves same-class collisions by 'the order the request model declares them'. There was no such model, so `?from=x&to=y` (both failing field.type) had no stated expected `field`.",
+        "fields": [
+          {
+            "name": "from",
+            "type": "date",
+            "required": true,
+            "note": "no default range; the server never guesses"
+          },
+          {
+            "name": "to",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "category_id",
+            "type": "integer|null",
+            "required": false
+          },
+          {
+            "name": "uncategorised",
+            "type": "boolean",
+            "required": false,
+            "default": false,
+            "note": "strict: only true/false. `false` is treated as absent. Mutually exclusive with category_id (CV-02)"
+          }
+        ]
+      },
+      "ExpenseListQuery": {
+        "source": "P-REC-02 · SW-ADR-038",
+        "fields": [
+          {
+            "name": "from",
+            "type": "date",
+            "required": false
+          },
+          {
+            "name": "to",
+            "type": "date",
+            "required": false
+          },
+          {
+            "name": "category_id",
+            "type": "integer|null",
+            "required": false
+          },
+          {
+            "name": "limit",
+            "type": "integer",
+            "required": false,
+            "default": 50,
+            "note": "maximum 200"
+          },
+          {
+            "name": "offset",
+            "type": "integer",
+            "required": false,
+            "default": 0,
+            "note": "NEG-X-12 requires '422 naming offset' for offset=-1; the rule is `offset.bounds`"
+          }
+        ]
+      },
+      "ProfileUpdate": {
+        "source": "SW-ADR-148 C",
+        "fields": [
+          {
+            "name": "display_name",
+            "type": "string|null",
+            "required": false,
+            "note": "the only field. Email is absent deliberately (SW-ADR-012)"
+          }
+        ]
+      },
+      "PasswordChange": {
+        "source": "SW-ADR-148 D",
+        "fields": [
+          {
+            "name": "current_password",
+            "type": "string",
+            "required": true
+          },
+          {
+            "name": "new_password",
+            "type": "string",
+            "required": true,
+            "note": "12-72 bytes; bcrypt IGNORES bytes past 72 (SW-ADR-103)"
+          }
+        ]
+      }
+    },
+    "parsing": "**Types are strict.** The only coercion is ISO-8601 text to `date`, on `spent_on`, `from` and `to` - JSON has no date type, so that one is unavoidable. `{\"category_id\": \"9\"}` is **422 `field.type`**, not a 201: a quoted integer is a client bug and stricter wins (Art II.1). `amount` is the deliberate exception - modelled `Any` and grammar-checked, so a JSON number returns `amount.grammar` rather than `field.type` (CV-21)."
+  },
+  "transaction": {
+    "source": "SW-ADR-142",
+    "commit": "The session dependency commits ONCE, after the handler returns (CV-12).",
+    "isolation": "**REPEATABLE READ** on any request that reads the summary.",
+    "why": "`SRC-001 §7.4` asked for one round trip and `SW-ADR-017` split it into three queries - headline, breakdown, day series - and nothing then re-established atomicity. Under PostgreSQL's default READ COMMITTED each statement takes a NEW snapshot, so a concurrent insert landing between the headline and the breakdown breaks 'the breakdown sums exactly to the headline total' - an invariant P-UND-05, 06_summary_sequence.md and both SIT-E0-S9-04 and SIT-E2-S5-03 assert unqualified. Invisible in every single-user test; it fails only in production, intermittently, on the one number the product is about.",
+    "alternative": "A single CTE-unified statement would also work and would restore SRC-001 §7.4's one round trip. REPEATABLE READ is chosen because it keeps the three queries readable and the module boundary of SW-ADR-017 intact.",
+    "write_path": "READ COMMITTED is correct for the create path: it takes one snapshot per statement and there is only one statement inside the savepoint.",
+    "how": "The level is selected **on the connection at checkout, before `BEGIN`** — in SQLAlchemy, `engine.connect().execution_options(isolation_level='REPEATABLE READ')` behind a second session dependency (`get_db_rr`) that only the summary route declares.",
+    "why_how": "SW-ADR-136 B makes `set_config` the FIRST STATEMENT of the request transaction, and SW-ADR-142 F requires REPEATABLE READ on the summary. PostgreSQL rejects `SET TRANSACTION ISOLATION LEVEL` after any query in the transaction - SQLSTATE **25001**, 'SET TRANSACTION ISOLATION LEVEL must be called before any query'. Executed literally, the two APPROVED records either 500 on every summary request or silently stay READ COMMITTED, which is the exact intermittent breakage F was written to prevent. `SET SESSION CHARACTERISTICS` does not rescue it: it does not affect a transaction already in progress. Setting the level at checkout is the only reading under which neither record is violated. Found by the sixth uncoached slice, contradiction C4. **Reasoned, not observed.**",
+    "write_inside_the_snapshot": "The summary transaction is REPEATABLE READ and contains a WRITE - the `last_seen_at` heartbeat. Two concurrent requests on one session that both see it stale will both UPDATE the row, and under REPEATABLE READ the loser gets **40001, could not serialize access due to concurrent update**, and the request dies. Under READ COMMITTED it would simply block and succeed. J-U-09 documents the dashboard firing several requests at once, so this is a 500 on the dashboard, intermittently, in production only. **The bump runs inside its own SAVEPOINT; on 40001 the savepoint is rolled back and the request continues** - losing one bump is harmless, because the transaction that won already performed it.",
+    "session_ownership": "**One session factory, one AsyncSession, one transaction — held on `request.state.db`.** `get_db` and `get_db_rr` both delegate to it; a second call asking for a DIFFERENT isolation level raises rather than silently reusing the wrong one.",
+    "why_session_ownership": "SW-ADR-143 A said the level is chosen by 'a second session dependency that only the summary route declares', and stopped there. But `get_current_user` is a ROUTER-level dependency (SRC-001 §4.3: written once, applied to the whole router, never copy-pasted per handler), and FastAPI resolves router-level dependencies BEFORE a path operation's own parameters. So `get_current_user`'s session opens first at READ COMMITTED, `set_config` lands in THAT transaction, and `get_db_rr` then opens a SECOND one. Every summary query in transaction #2 has no `app.user_id`, so RLS returns **zero rows** - the failure GOTCHAS calls the worst shape in this system, produced by faithfully implementing the record that was supposed to prevent it. Found by the seventh uncoached slice, guess 1.",
+    "level_selection": "The level is resolved from a module-level route table, `REPEATABLE_READ_ROUTES = {('GET', '/api/expenses/summary')}`, consulted by the factory — so it cannot depend on dependency-resolution order. `get_db_rr` stays declared on the route as documentation, and a **boot assertion fails closed** if the declared markers and the table disagree."
+  }
+}
