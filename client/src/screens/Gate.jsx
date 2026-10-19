@@ -1,7 +1,9 @@
 import { useEffect, useRef, useState } from 'react'
+import { m } from 'framer-motion'
 import { api } from '../lib/api.js'
 import LiquidBlob from '../components/LiquidBlob.jsx'
 import { BankCard } from '../components/TiltCard.jsx'
+import { staggerParent, staggerChild, springSoft, springSnappy } from '../lib/anim.js'
 
 /**
  * Sign in and sign up. One component, because they are the same form with one
@@ -89,24 +91,28 @@ export default function Gate({ mode, onMode, reason, onSignedIn, autoFocus = fal
   return (
     <div className="gate">
       <div className="gate-layout">
-        <section className="gate-hero sw-enter" aria-labelledby="gate-title">
-          <span className="wordmark gate-brand">SpendWise</span>
-          <div className="sw-stage gate-stage">
+        <m.section className="gate-hero" aria-labelledby="gate-title"
+                   variants={staggerParent} initial="hidden" animate="show">
+          <m.span className="wordmark gate-brand" variants={staggerChild}>SpendWise</m.span>
+          <m.div className="sw-stage gate-stage" variants={staggerChild}>
+            <span className="gate-aura" aria-hidden="true" />
             <LiquidBlob contained x={0.5} y={0.5} size={0.88} />
             <span className="sw-rosette" aria-hidden="true" />
             <BankCard decorative className="gate-bankcard" holder={holder} meta="Since 2026" />
-          </div>
-          <div className="gate-copy">
+          </m.div>
+          <m.div className="gate-copy" variants={staggerChild}>
             <h1 className="gate-title" id="gate-title">Know where every rupee goes.</h1>
             <p className="sw-lede gate-lede">
               Log a spend in seconds and see it by category and by day.
               Your figures are visible to you alone.
             </p>
-          </div>
-        </section>
+          </m.div>
+        </m.section>
 
-        <section className="gate-card sw-enter" style={{ '--sw-delay': '80ms' }}
-                 aria-labelledby="gate-form-title">
+        <m.section className="gate-card" style={{ '--sw-delay': '80ms' }}
+                 aria-labelledby="gate-form-title"
+                 initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }}
+                 transition={{ ...springSoft, delay: 0.18 }}>
           <h2 className="gate-form-title" id="gate-form-title">
             {registering ? 'Create your account' : 'Sign in'}
           </h2>
@@ -180,12 +186,13 @@ export default function Gate({ mode, onMode, reason, onSignedIn, autoFocus = fal
               )}
             </div>
 
-            <button
+            <m.button
               type="submit" className="btn btn-lg btn-block gate-submit"
               data-testid="gate-submit" aria-disabled={busy ? 'true' : undefined}
+              whileHover={{ y: -2 }} whileTap={{ scale: 0.985 }} transition={springSnappy}
             >
               {busy ? 'Just a moment…' : registering ? 'Create account' : 'Sign in'}
-            </button>
+            </m.button>
           </form>
 
           <p className="gate-footer">
@@ -194,7 +201,7 @@ export default function Gate({ mode, onMode, reason, onSignedIn, autoFocus = fal
               {registering ? 'Sign in' : 'Create one'}
             </button>
           </p>
-        </section>
+        </m.section>
       </div>
     </div>
   )
