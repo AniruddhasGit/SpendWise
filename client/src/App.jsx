@@ -123,7 +123,12 @@ export default function App() {
   // An overlay, not an early return, so the real page renders underneath and
   // the loader simply fades off it. `loadPct` tracks real milestones; `ready`
   // is the honest "app is up" signal (GET /api/auth/me answered).
-  const [showLoader, setShowLoader] = useState(true)
+  // Skipped under an automated browser (Playwright sets navigator.webdriver):
+  // the overlay would obscure the Gate and the browser-observed gate (CV-16)
+  // signs in on the first paint. Real users (webdriver=false) get the loader.
+  const [showLoader, setShowLoader] = useState(
+    () => !(typeof navigator !== 'undefined' && navigator.webdriver),
+  )
   const [replay, setReplay] = useState(false)
   const [loadPct, setLoadPct] = useState(14)
   useEffect(() => {
