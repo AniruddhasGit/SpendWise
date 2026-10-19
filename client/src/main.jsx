@@ -1,6 +1,5 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
-import { LazyMotion, domMax, MotionConfig } from 'framer-motion'
 import App from './App.jsx'
 import { boot } from './lib/theme.js'
 
@@ -16,24 +15,14 @@ import './styles/screens/dashboard.css'
 import './styles/screens/charts.css'
 import './styles/screens/expenses.css'
 import './styles/screens/settings-admin.css'
-// Premium polish (SW-ADR-156), after the screen sheets.
-import './styles/premium.css'
 
 // BEFORE the first render. Applying the theme in an effect means the first
 // paint uses the media query and then flips — a white flash on every load for
 // anyone who chose dark while their system is light (`SW-ADR-147 B`).
 boot()
 
-// framer-motion (SW-ADR-156), bundle-lean: LazyMotion loads the DOM feature
-// set once (m.* components stay tiny), `strict` forbids the heavy motion.*
-// import, and MotionConfig makes every animation obey the OS reduce-motion
-// setting — the same signal tokens.css already honours.
 createRoot(document.getElementById('root')).render(
   <StrictMode>
-    <LazyMotion features={domMax} strict>
-      <MotionConfig reducedMotion="user">
-        <App />
-      </MotionConfig>
-    </LazyMotion>
+    <App />
   </StrictMode>,
 )
