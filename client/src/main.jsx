@@ -9,7 +9,6 @@ import './styles/tokens.css'
 // The system: base reset, surfaces and primitives, then motion utilities.
 import './styles/glass.css'
 import './styles/motion.css'
-import './styles/coinfall.css'
 // Screen sheets, LAST. Each is owned by one screen and only refines geometry
 // and screen-specific detail on top of the system.
 import './styles/screens/shell.css'
