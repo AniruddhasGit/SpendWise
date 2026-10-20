@@ -1,10 +1,10 @@
 /* The landing page (SW-ADR-156; the scene is SW-ADR-159).
 
    An overcast dusk, the same in both themes. The money tree stands at the
-   centre on a glass floor seen from a raised camera: on a tree 10cm tall,
-   the camera is about 8cm up and 35cm away, so the floor dips about 13 degrees
-   below the eye and a round floor reads about 4.5 times wider than it is
-   deep (--floor-ratio). Mist lurks on the floor and drifts over everything on
+   centre on a glass floor seen from a raised camera: the owner chose 14cm up
+   on a tree 10cm tall (2026-10-20), so the floor dips about 22 degrees below
+   the eye and a round floor reads about 2.7 times wider than it is deep
+   (--floor-ratio). Mist lurks on the floor and drifts over everything on
    the first screen, words included. Very little text sits beside the tree.
    The details arrive further down, as they are scrolled into view.
 
@@ -13,7 +13,7 @@
 
 .landing {
   --tree: min(68svh, 44vw, 760px);
-  --floor-ratio: 0.22;
+  --floor-ratio: 0.37;
   --mt-dust: var(--sw-dusk-ink);
   --sw-extrude: var(--sw-brand-emerald-deep);
   position: relative;

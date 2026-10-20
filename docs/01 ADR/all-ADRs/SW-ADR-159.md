@@ -38,8 +38,8 @@ The owner rejected the bright poster atmosphere ("that fog and the sun") and ask
    - A frosted glass ellipse whose top edge is where the trunk enters it, so the roots are seen
      blurred through the glass.
    - It has a lit rim, a front lip for thickness, and the trunk mirrored faintly in it.
-   - `--floor-ratio` sets the camera height. 0.22 is about 8cm up and 35cm away from a 10cm tree,
-     looking about 13 degrees down at its base.
+   - `--floor-ratio` sets the camera height. The owner compared samples at 4cm, 8cm and 14cm up on
+     a 10cm tree and chose **14cm** (0.37: the floor dips about 22 degrees below the eye).
    - The tree picture itself stays side-on. Only the floor, reflection and shadow carry the camera
      height.
 4. **Mist.**
