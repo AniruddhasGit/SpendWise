@@ -93,6 +93,14 @@
   margin-inline: -9%;
 }
 
+/* The copy sits above the tree's layer: a bill blown sideways by the breeze
+   passes BEHIND the words, never over them. */
+.landing-title,
+.landing-side {
+  position: relative;
+  z-index: 2;
+}
+
 .landing-side {
   display: flex;
   flex-direction: column;
