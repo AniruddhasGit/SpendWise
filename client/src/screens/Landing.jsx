@@ -90,7 +90,9 @@ export default function Landing({ onSignIn, onRegister }) {
             </button>
           </div>
 
-          <Fog className="landing-fog" floor=".landing-floor" />
+          <Fog className="landing-fog landing-fog-back" layer="back"
+               floor=".landing-floor" stage=".landing-stage" />
+          <Fog className="landing-fog" floor=".landing-floor" stage=".landing-stage" />
           <span className="landing-cue sw-focus" style={at(8)} aria-hidden="true">Scroll</span>
         </section>
 

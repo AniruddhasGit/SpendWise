@@ -47,6 +47,12 @@ The owner rejected the bright poster atmosphere ("that fog and the sun") and ask
    - About 70% of the fog lies on the floor and the rest is thin wisps higher up. It drifts across
      the whole first screen, the words included.
    - One still frame under reduced motion. It pauses off screen.
+   - **Revised by the owner later on 2026-10-20**, from two reference pictures: the fog is
+     *billowed*, clumps heaped like rolling smoke, lit along their tops and dark underneath. It
+     lies only around the trunk and the lowest branches, while the crown and the sky above stay
+     clear. There are two layers. One sits behind the tree, so mist shows between the trunk and the
+     branches. The other sits in front and thins over the trunk, leaving a clearer path down the
+     middle. The high wisps are gone. This replaces the 70/30 split above.
    - The tree's own mist, sun, orbits and spark stars are off here. Its motes are faint ivory dust.
 5. **Below the fold.**
    - Four plain statements about what the product does, plus a closing call to action.

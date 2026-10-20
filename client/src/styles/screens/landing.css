@@ -197,7 +197,8 @@
   mask-image: linear-gradient(to bottom, transparent 36%, rgb(0 0 0) 64%, rgb(0 0 0) 73%, transparent 74%);
 }
 
-/* the mist, over everything in the scene */
+/* the mist: one layer behind the tree, seen between the trunk and the lowest
+   branches, and one in front of everything */
 .landing-fog {
   position: absolute;
   inset: 0;
@@ -206,6 +207,7 @@
   height: 100%;
   pointer-events: none;
 }
+.landing-fog-back { z-index: 1; opacity: 0.85; }
 
 .landing-cue {
   position: absolute;
