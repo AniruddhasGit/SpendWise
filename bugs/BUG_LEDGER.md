@@ -2301,3 +2301,28 @@ examined an empty list.
 
 ---
 
+### A decorative glow widened the phone page by 11px, and no bounding-box check could see it
+
+**Believed.** The overflow audit was complete: a script walked every element at 375px, found nothing whose `getBoundingClientRect().right` passed the window, so nothing could be making the page scroll sideways.
+
+**Actually.** `scrollWidth` was 386 against a 375 window. The culprit was the soft glow behind the money tree, drawn by `.mt-stage::before` with `inset: -4% -8% 18%`. Pseudo-elements are not in `querySelectorAll`, so every element-walking check skipped it, while its box still counted toward the page's scrollable width. On a phone the dashboard's tree sits near the right gutter, and 8% past its side was 11px past the window.
+
+**Caught by.** `test_nothing_overflows_at_375px`, which measures `scrollWidth - clientWidth` rather than walking elements, failing on the branch's first browser run (2026-10-20). Fixed by keeping the glow inside the tree's own width (`inset: -4% 0 18%`).
+
+> **Lesson.** An audit that enumerates elements cannot see pseudo-elements, so it can report "nothing overflows" while the page overflows. Measure the outcome (`scrollWidth` against the viewport), not just the parts you can list, and keep decoration inside its host's width unless something clips it on purpose.
+
+`client/src/styles/screens/money-tree.css (.mt-stage::before) · tests/browser/test_the_website.py`
+
+---
+
+### Eleven browser criteria failed on untouched main, because a fresh Chromium enforces the CSP against the test tool's own predicates
+
+**Believed.** The browser criteria that call `page.wait_for_function("...")` with a string were a stable part of the gate, and a red run on a feature branch meant the feature had broken something.
+
+**Actually.** The app's CSP is `script-src 'self'` with no `'unsafe-eval'`, which is correct. Playwright evaluates a STRING predicate inside the page, and the Chromium build current on 2026-10-20 refuses that under this CSP (`EvalError: Evaluating a string as JavaScript violates ... 'unsafe-eval'`). It fails identically with Playwright 1.64 and with the recorded 1.62.0 (`docs/30 Deployment/RUNTIME_VERSIONS.md`). Running the same criteria against untouched `main` (commit c331e94, built in a separate worktree) reproduced every one of these failures. The feature branch was not the cause.
+
+**Caught by.** Refusing to read the branch's red run as either "my change broke it" or "it's flaky", and building untouched main to get a baseline before trusting either story.
+
+> **Lesson.** Before attributing a red run to your change, run the same tests on the code without your change, in the same environment. An environment that has drifted since the last green (a new browser build here) fails the baseline too. The difference between the two runs is the only signal that belongs to your change. The fix here is not to loosen the CSP or edit the criteria, but to pin the browser build the gate was last green on. Rewriting those predicates as JS function strings (`"() => ..."`) might avoid the in-page `eval`; that is **unverified** and was not tried.
+
+`tests/browser/test_the_shell.py · tests/browser/test_the_website.py · app/core/headers.py:28-39 · session 2026-10-20`
