@@ -112,7 +112,9 @@ async def test_dark_mode_changes_what_is_actually_painted(page, seeded) -> None:
     await _sign_in(page, seeded["A"])
     light = await _body_background(page)
 
-    await page.get_by_test_id("theme-dark").click()
+    # Appearance lives in Settings only (owner, 2026-10-20).
+    await page.get_by_test_id("nav-settings").click()
+    await page.get_by_test_id("settings-theme-dark").click()
     await page.wait_for_function(
         "() => (" f"getComputedStyle(document.body).backgroundColor !== {light!r}" ")", timeout=5000)
 
@@ -135,12 +137,17 @@ async def test_the_choice_survives_a_reload_and_system_is_the_absence_of_it(
     silently mean light."""
     await _sign_in(page, seeded["A"])
 
-    await page.get_by_test_id("theme-dark").click()
+    # Appearance lives in Settings only (owner, 2026-10-20).
+    await page.get_by_test_id("nav-settings").click()
+    await page.get_by_test_id("settings-theme-dark").click()
+    await page.wait_for_function(
+        "() => (" "document.documentElement.dataset.theme === 'dark'" ")", timeout=5000)
     await page.reload()
     await page.wait_for_selector('[data-testid="whoami"]')
     assert await page.evaluate("document.documentElement.dataset.theme") == "dark"
 
-    await page.get_by_test_id("theme-system").click()
+    await page.get_by_test_id("nav-settings").click()
+    await page.get_by_test_id("settings-theme-system").click()
     # A pointer press now floods the new theme in through a view transition
     # (SW-ADR-158), which applies the change on the next frame, not inside the
     # click. Wait for it; the assertion below is unchanged.
@@ -175,7 +182,12 @@ async def test_text_stays_readable_on_the_card_in_both_themes(page, seeded) -> N
     await page.wait_for_selector('[data-testid="headline"]')
 
     for theme in ("light", "dark"):
-        await page.get_by_test_id(f"theme-{theme}").click()
+        # Appearance lives in Settings only (owner, 2026-10-20); the card
+        # measured is still the dashboard's.
+        await page.get_by_test_id("nav-settings").click()
+        await page.get_by_test_id(f"settings-theme-{theme}").click()
+        await page.get_by_test_id("nav-dashboard").click()
+        await page.wait_for_selector('[data-testid="headline"]')
         await page.wait_for_timeout(250)
         measured = await page.evaluate("""
             () => {

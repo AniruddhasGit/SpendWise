@@ -1,5 +1,4 @@
 import { useEffect, useRef, useState } from 'react'
-import { effective, THEMES } from '../lib/theme.js'
 
 const NARROW = '(max-width: 900px)'
 
@@ -17,7 +16,7 @@ function useNarrow() {
 }
 
 /**
- * The left rail. Navigation, appearance, and the way out.
+ * The left rail. Navigation and the way out.
  *
  * A `<nav>` with a list of real `<button>`s, not links: there is no router
  * (`SRC-001 §12.1` scopes v1 to a dashboard and a sign-in), so an `<a href>`
@@ -53,7 +52,7 @@ function Icon({ name }) {
   )
 }
 
-export default function Sidebar({ view, onView, principal, theme, onTheme,
+export default function Sidebar({ view, onView, principal,
                                  open, onClose, onSignOut, signingOut = false }) {
   const items = [
     { id: 'dashboard', label: 'Dashboard' },
@@ -142,33 +141,7 @@ export default function Sidebar({ view, onView, principal, theme, onTheme,
           ))}
         </ul>
 
-        <div className="rail-section sw-focus" style={{ '--sw-i': items.length + 1 }}>
-          <h2 className="rail-heading" id="appearance-label">Appearance</h2>
-          {/* A radiogroup, not three toggles. The three states are mutually
-              exclusive and "System" is the absence of an override rather than
-              a third colour — `aria-pressed` on three buttons would say they
-              can all be off, which they cannot. */}
-          <div className="segmented" role="radiogroup" aria-labelledby="appearance-label">
-            {THEMES.map((t) => (
-              <button
-                key={t}
-                type="button"
-                role="radio"
-                aria-checked={theme === t}
-                className="segment"
-                data-testid={`theme-${t}`}
-                onClick={(e) => onTheme(t, e)}
-              >
-                {t === 'system' ? 'System' : t === 'light' ? 'Light' : 'Dark'}
-              </button>
-            ))}
-          </div>
-          <p className="rail-hint" data-testid="theme-effective">
-            {theme === 'system'
-              ? `Following your device, currently ${effective(theme)}.`
-              : `Always ${theme}.`}
-          </p>
-        </div>
+        {/* Appearance lives in Settings only (owner, 2026-10-20). */}
 
         {/* Sign out lives HERE, beside the account it signs out of. It used to
             sit alone in a page footer, which is the one place a person does not

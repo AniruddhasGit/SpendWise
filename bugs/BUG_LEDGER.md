@@ -2337,3 +2337,17 @@ examined an empty list.
 > changed. The broader lesson stands, with one addition: a security change (a CSP, a header, a
 > permission) is a change to every test that drives the browser, and the browser suite must be re-run
 > as part of it.
+
+---
+
+### The landing page measured 833px too wide at 375px once, in one full browser run, and never again
+
+**Believed.** The gloomy landing (SW-ADR-159) was proven to fit a phone: `.landing` and `.landing-scene` both clip horizontally, and the 375px test had passed on that build.
+
+**Actually.** Unexplained, and recorded as unexplained. In one full run on 2026-10-20 (the Appearance move, a change that does not touch the landing), `test_the_landing_page_does_not_overflow_at_375px` read `scrollWidth - clientWidth = 833`. The same test passed three times in isolation, the next full run was 57/57, and a probe of the live site at 375px with mobile emulation, sampled every 100ms for 1.2s across six loads, never saw any overflow. One unverified guess: under suite load the test measured before the stylesheet applied, when the unclipped tree reflection image lays out at its natural width.
+
+**Caught by.** That test, measuring `scrollWidth` rather than walking elements (the lesson of the entry above).
+
+> **Lesson.** An intermittent red is still a red. If it comes back, capture `getComputedStyle` of `.landing` and the widest box at the moment of failure before re-running anything.
+
+`client/src/styles/screens/landing.css · tests/browser/test_the_website.py`

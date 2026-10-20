@@ -242,7 +242,7 @@ export default function App() {
   return (
     <div className="app">
       <Sidebar view={view} onView={go} principal={principal}
-               theme={theme} onTheme={chooseTheme} onSignOut={() => signOut()}
+               onSignOut={() => signOut()}
                signingOut={signingOut}
                open={railOpen} onClose={() => setRailOpen(false)} />
 
