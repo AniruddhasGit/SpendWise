@@ -158,7 +158,7 @@ function drawSpark(ctx, s, colour) {
 
 export default function MoneyTree({
   bills, variant = 'dashboard', atmosphere = false, orbits = atmosphere, mist = atmosphere,
-  dust = false, ground = true, dropRequest = null, breeze = 0,
+  dust = false, ground = true, dropRequest = null, breeze = 0, alwaysMove = false,
   alt = 'A bonsai tree whose leaves are banknotes', className = '',
 }) {
   const rootRef = useRef(null)
@@ -176,7 +176,9 @@ export default function MoneyTree({
     const ctx = canvas.getContext('2d')
     if (!ctx) return undefined
 
-    let reduced = prefersReducedMotion()
+    // `alwaysMove`: the signed-out scene animates whatever the motion
+    // preference (the owner's ruling, SW-ADR-160)
+    let reduced = alwaysMove ? false : prefersReducedMotion()
     let pal = readPalette(root)
     const sprite = loadSprite()
     const sparks = []
@@ -413,7 +415,7 @@ export default function MoneyTree({
     // Theme and motion preferences can change while the tree is on screen.
     const motionMq = window.matchMedia('(prefers-reduced-motion: reduce)')
     const onMotion = () => {
-      reduced = prefersReducedMotion()
+      reduced = alwaysMove ? false : prefersReducedMotion()
       if (reduced) { stop(); live.length = 0; motes.length = 0; ctx.clearRect(0, 0, W, H) } else start()
     }
     motionMq.addEventListener?.('change', onMotion)
@@ -471,7 +473,7 @@ export default function MoneyTree({
       root.removeEventListener('pointerleave', onLeave)
       api.current = null
     }
-  }, [variant, atmosphere, dust, breeze])
+  }, [variant, atmosphere, dust, breeze, alwaysMove])
 
   // A drop request is played once, even if it arrived before the tree mounted.
   const played = useRef(null)

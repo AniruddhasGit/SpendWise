@@ -1,5 +1,10 @@
 # SW-ADR-159 — The landing scene: a gloomy dusk, a glass floor, ground mist
 
+> **⚠ AMENDED 2026-10-21 by `SW-ADR-160`:** the landing's arrival is now a GSAP timeline after a
+> wake-up countdown, the scene has a light (dawn) mode, and the fog and tree run whatever the motion
+> preference, by the owner's ruling.
+
+
 | Field | Value |
 |---|---|
 | ADR | `SW-ADR-159` |

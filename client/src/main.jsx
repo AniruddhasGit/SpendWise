@@ -5,6 +5,8 @@ import { boot } from './lib/theme.js'
 
 // Tokens FIRST — every stylesheet below reads the custom properties they define.
 import './styles/tokens.css'
+// Lenis's base rules (smooth scroll everywhere, SW-ADR-160)
+import 'lenis/dist/lenis.css'
 // The system: base reset, surfaces and primitives, then motion utilities.
 import './styles/glass.css'
 import './styles/motion.css'

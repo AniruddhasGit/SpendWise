@@ -31,3 +31,45 @@ services:
         value: "true"
       - key: UVICORN_WORKERS         # free tier is small; one worker, one limiter
         value: "1"
+
+  # The always-on front (SW-ADR-160). Render's free static sites never sleep,
+  # so the landing page's tree and fog appear at once while the web service
+  # above wakes up behind a countdown. /api/* and /healthz are rewritten to the
+  # web service, so the browser stays same-origin (no CORS, SW-ADR-020), and
+  # the API's security headers are repeated here for the pages it serves.
+  - type: web
+    runtime: static
+    name: spendwise-front
+    branch: main
+    autoDeploy: false
+    buildCommand: cd client && npm ci && npm run build
+    staticPublishPath: client/dist
+    routes:
+      - type: rewrite
+        source: /api/*
+        destination: https://spendwise-bvp4.onrender.com/api/*
+      - type: rewrite
+        source: /healthz
+        destination: https://spendwise-bvp4.onrender.com/healthz
+      - type: rewrite
+        source: /*
+        destination: /index.html
+    headers:
+      - path: /*
+        name: Content-Security-Policy
+        value: "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self'; connect-src 'self'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; object-src 'none'"
+      - path: /*
+        name: X-Content-Type-Options
+        value: nosniff
+      - path: /*
+        name: Referrer-Policy
+        value: no-referrer
+      - path: /*
+        name: X-Frame-Options
+        value: DENY
+      - path: /*
+        name: Cross-Origin-Opener-Policy
+        value: same-origin
+      - path: /*
+        name: Permissions-Policy
+        value: "camera=(), microphone=(), geolocation=(), payment=(), usb=(), interest-cohort=()"

@@ -195,6 +195,41 @@
   .gate-tree { width: min(70%, 280px); }
 }
 
+/* The sign-in page in the signed-out scene (SW-ADR-160): the landing page's
+   dusk (or dawn) behind it, no guilloche, the tree carried in from the
+   landing page with its fog gathered round the base. */
+.gate.scene {
+  position: relative;
+  overflow-x: clip;
+  color: var(--sw-dusk-ink);
+  background:
+    radial-gradient(ellipse 72% 70% at 40% 46%, transparent 45%, var(--scene-vignette) 100%),
+    linear-gradient(180deg, var(--sw-dusk-sky) 0%, var(--sw-dusk-mid) 46%, var(--sw-dusk-mid) 70%, var(--sw-dusk-sky) 100%);
+}
+.gate.scene::before,
+.gate.scene::after { display: none; }
+.gate.scene .gate-title { color: var(--sw-dusk-ink); }
+.gate.scene .gate-lede { color: var(--sw-dusk-ink-quiet); }
+.gate.scene .gate-brand { color: var(--sw-dusk-ink); }
+.gate-theme { margin-left: auto; }
+/* GSAP owns the scene's entrances (Gate.jsx): the card's CSS rise would race
+   it, and GSAP would read the rise's first frame as the card's resting state */
+.gate.scene .gate-card { animation: none; }
+.gate-tree { position: relative; isolation: isolate; }
+.gate-tree .mt { position: relative; z-index: 1; }
+.gate-tree .mt-stage { view-transition-name: sw-tree; }
+.gate-fog {
+  /* a canvas does not stretch between left and right like a box: size it */
+  position: absolute;
+  left: -55%;
+  top: 25%;
+  width: 210%;
+  height: 115%;
+  pointer-events: none;
+}
+.gate-fog-back { z-index: 0; view-transition-name: sw-fog-in-back; }
+.gate-fog-front { z-index: 2; view-transition-name: sw-fog-in; }
+
 /* ── 3. the app shell ─────────────────────────────────────────────────────── */
 .app-main { min-width: 0; }
 

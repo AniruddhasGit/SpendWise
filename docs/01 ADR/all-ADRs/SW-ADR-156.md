@@ -1,5 +1,9 @@
 # SW-ADR-156 — The Festival Poster: ivory, emerald, vermilion, and the money tree
 
+> **⚠ AMENDED 2026-10-21 by `SW-ADR-160`:** the sign-in page joins the signed-out scene (dusk/dawn,
+> the shared theme switch), and the tree is carried to it from the landing page.
+
+
 > **⚠ AMENDED 2026-10-20 by `SW-ADR-159`.** The landing page is now a gloomy dusk scene: the tree
 > centred on a glass floor, ground mist over everything, details below the fold.
 

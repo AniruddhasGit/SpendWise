@@ -196,6 +196,7 @@ export default function ExpensePanel({ open, editing, categories, draft, onDraft
     <div className="scrim" onMouseDown={(e) => e.target === e.currentTarget && tryClose()}>
       <div
         className="panel"
+        data-lenis-prevent=""
         ref={panel}
         role="dialog"
         aria-modal="true"

@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { api, onSessionEnded, startSession, stopSession } from './lib/api.js'
-import { stored, switchTheme } from './lib/theme.js'
+import { apply, stored, switchTheme } from './lib/theme.js'
+import { carryAcross, paintScene, sceneTheme, scrollToTop, startSmoothScroll, useServerReady } from './lib/scene.js'
 import Sidebar from './components/Sidebar.jsx'
 import Admin from './screens/Admin.jsx'
 import Categories from './screens/Categories.jsx'
@@ -54,6 +55,11 @@ export default function App() {
   const [animateRoute, setAnimateRoute] = useState(false)
   const [railOpen, setRailOpen] = useState(false)
   const [theme, setTheme] = useState(stored)
+  // The signed-out scene's theme: dark unless light was chosen (SW-ADR-160).
+  const [scene, setScene] = useState(sceneTheme)
+  // On the always-on front the server may be asleep: the landing shows its
+  // tree and fog at once and counts down until the server answers.
+  const { ready: serverReady, since } = useServerReady()
   const [signingOut, setSigningOut] = useState(false)
   const [gateFocus, setGateFocus] = useState(false)
   // A sign-out the server never confirmed. The session cookie is httpOnly, so
@@ -105,7 +111,19 @@ export default function App() {
     })
   }, [])
 
+  // Smooth scroll on every page (Lenis on GSAP's ticker).
+  useEffect(() => { startSmoothScroll() }, [])
+
+  // Signed out, the whole document wears the scene's theme, so the sign-in
+  // card and its inputs match the scene around them; signed in, the person's
+  // own choice (System, Light or Dark) comes back.
   useEffect(() => {
+    if (principal) apply(stored())
+    else paintScene(scene)
+  }, [principal, scene])
+
+  useEffect(() => {
+    if (!serverReady) return undefined
     // `GET /api/auth/me` is the only way to know: the session cookie is
     // httpOnly, so script cannot see whether one exists. A 401 here is the
     // NORMAL first-visit answer, not a session ending — `me` is an auth call,
@@ -117,7 +135,7 @@ export default function App() {
       .catch(() => { if (live) setPrincipal(null) })
       .finally(() => { if (live) setChecking(false) })
     return () => { live = false }
-  }, [])
+  }, [serverReady])
 
   useEffect(() => {
     // Escape closes the rail at phone width. It is an overlay there, and an
@@ -139,6 +157,7 @@ export default function App() {
   // A pointer press floods the page with the new theme from where it was
   // pressed (lib/theme.js); a keyboard choice switches at once.
   const chooseTheme = (next, event) => { setTheme(next); switchTheme(next, event) }
+  const chooseScene = (next, event) => { setScene(next); chooseTheme(next, event) }
 
   const signedIn = (p) => {
     startSession()
@@ -211,6 +230,22 @@ export default function App() {
     setView(next)
   }
 
+  // The landing page is shown at once, while the session is still being
+  // checked: its tree and fog need nothing from the server, and the rest of
+  // it waits for `checking` to finish (see Landing).
+  const landing = front === 'landing' && !principal
+  const toGate = (m) => {
+    setMode(m); setReason(null); setGateFocus(true)
+    scrollToTop()
+    carryAcross(() => setFront('gate'))
+  }
+  if (landing) {
+    return (
+      <Landing ready={!checking} since={since} theme={scene} onTheme={chooseScene}
+               onSignIn={() => toGate('login')} onRegister={() => toGate('register')} />
+    )
+  }
+
   if (checking) {
     // NOT the Gate's backdrop: a signed-in person reloading would see the
     // sign-in screen flash before their dashboard. The page ground only, and
@@ -224,14 +259,10 @@ export default function App() {
   }
 
   if (!principal) {
-    if (front === 'landing') {
-      const open = (m) => { setMode(m); setReason(null); setGateFocus(true); setFront('gate') }
-      return <Landing onSignIn={() => open('login')} onRegister={() => open('register')} />
-    }
     return (
       <Gate mode={mode} onMode={(m) => { setMode(m); setReason(null) }} reason={reason}
-            autoFocus={gateFocus} onSignedIn={signedIn}
-            onBack={() => { setReason(null); setFront('landing') }} />
+            autoFocus={gateFocus} onSignedIn={signedIn} theme={scene} onTheme={chooseScene}
+            onBack={() => { setReason(null); scrollToTop(); carryAcross(() => setFront('landing')) }} />
     )
   }
 

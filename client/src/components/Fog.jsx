@@ -1,5 +1,4 @@
 import { useEffect, useRef } from 'react'
-import { prefersReducedMotion } from '../lib/motion.js'
 
 /**
  * Ground fog for the landing scene (SW-ADR-159).
@@ -15,10 +14,10 @@ import { prefersReducedMotion } from '../lib/motion.js'
  * provenance beside it), grey on black. It is tinted once into the dusk fog
  * ink with its brightness as alpha, then tiled across the screen, every other
  * tile mirrored so the joins never show. Two layers drift at different speeds
- * for depth: the band, and a larger, dimmer, faster sea below it. Positions
- * move by sub-pixel amounts on a time base, never stepped, so the drift is
- * smooth. Reduced motion draws one still frame. It pauses off screen and in
- * hidden tabs, and the scene clips it to the first screen.
+ * for depth. Positions move by sub-pixel amounts on a time base, never
+ * stepped, so the drift is smooth. It pauses off screen and in hidden tabs,
+ * and the scene clips it to the first screen. It moves whatever the motion
+ * preference: the owner's ruling for the signed-out scene (SW-ADR-160).
  *
  * `layer`: 'front' (over the tree, thinned over the trunk) or 'back' (behind
  * the tree, so the trunk rises out of the fog). `floor` and `stage` are
@@ -66,7 +65,7 @@ function tint(img, colour) {
 }
 
 export default function Fog({ ground: groundDefault = 0.72, floor = null, stage = null,
-                              layer = 'front', className = '' }) {
+                              layer = 'front', scene = 'dark', pool = false, className = '' }) {
   const ref = useRef(null)
 
   useEffect(() => {
@@ -84,20 +83,27 @@ export default function Fog({ ground: groundDefault = 0.72, floor = null, stage 
     let raf = 0; let last = 0; let t = 0; let running = false; let visible = true
     let pageVisible = !document.hidden
     let fadeIn = 0
-    const reduced = prefersReducedMotion()
 
     const measure = () => {
       const r = canvas.getBoundingClientRect()
       W = Math.max(1, r.width); H = Math.max(1, r.height)
-      const el = floor && canvas.parentElement?.querySelector(floor)
+      // a selector may name the canvas's own parent (the sign-in page's tree box)
+      const find = (sel) => {
+        const p = canvas.parentElement
+        return sel && p ? (p.matches(sel) ? p : p.querySelector(sel)) : null
+      }
+      const el = find(floor)
       if (el) ground = Math.min(0.95, Math.max(0.3, (el.getBoundingClientRect().top - r.top) / H))
       trunkX = W / 2
-      const st = stage && canvas.parentElement?.querySelector(stage)
+      const st = find(stage)
       if (st) {
         const sr = st.getBoundingClientRect()
-        span = Math.max(24, (el ? el.getBoundingClientRect().top - sr.top : sr.height * 0.7) / 6)
+        span = Math.max(16, (el ? el.getBoundingClientRect().top - sr.top : sr.height * 0.715) / 6)
         trunkX = sr.left - r.left + sr.width / 2
         stageW = sr.width
+        // no floor element (the sign-in page): the tree picture's own ground
+        // line, 71.5% down its box (MoneyTree's GROUND)
+        if (!el) ground = Math.min(0.95, Math.max(0.1, (sr.top - r.top + sr.height * 0.715) / H))
       } else {
         span = H * 0.08
       }
@@ -136,6 +142,25 @@ export default function Fog({ ground: groundDefault = 0.72, floor = null, stage 
       ctx.drawImage(c, -(offset % period), dy, c.width / SCALE, dh)
     }
 
+    // `pool`: on the sign-in page the fog gathers round the tree's base only,
+    // an oval that fades out at its edges
+    const poolMask = (gy) => {
+      if (!pool) return
+      const rx = Math.max(60, stageW * 0.72); const ry = Math.max(30, span * 3.4)
+      ctx.save()
+      ctx.globalAlpha = 1
+      ctx.globalCompositeOperation = 'destination-in'
+      ctx.translate(trunkX, gy + span * 0.4)
+      ctx.scale(1, ry / rx)
+      const g = ctx.createRadialGradient(0, 0, 0, 0, 0, rx)
+      g.addColorStop(0, 'rgb(0 0 0 / 1)')
+      g.addColorStop(0.55, 'rgb(0 0 0 / 0.85)')
+      g.addColorStop(1, 'rgb(0 0 0 / 0)')
+      ctx.fillStyle = g
+      ctx.fillRect(-rx, -rx, rx * 2, rx * 2)
+      ctx.restore()
+    }
+
     const draw = () => {
       ctx.clearRect(0, 0, W, H)
       if (!tiles) return
@@ -156,6 +181,7 @@ export default function Fog({ ground: groundDefault = 0.72, floor = null, stage 
       if (layer === 'back') {
         strip(sx, sw, top, hImg, t * speed, 0.8 * k)
         ctx.globalAlpha = 1
+        poolMask(gy)
         return
       }
       // two passes of the same surface for depth: a fainter, larger one that
@@ -172,6 +198,7 @@ export default function Fog({ ground: groundDefault = 0.72, floor = null, stage 
       ctx.fillStyle = g
       ctx.fillRect(trunkX - rx, gy - span * 0.3 - rx, rx * 2, rx * 2)
       ctx.globalCompositeOperation = 'source-over'
+      poolMask(gy)
     }
 
     const frame = (now) => {
@@ -183,7 +210,7 @@ export default function Fog({ ground: groundDefault = 0.72, floor = null, stage 
       raf = requestAnimationFrame(frame)
     }
     const start = () => {
-      if (running || reduced || !visible || !pageVisible || !tiles) return
+      if (running || !visible || !pageVisible || !tiles) return
       running = true
       last = performance.now()
       raf = requestAnimationFrame(frame)
@@ -195,7 +222,6 @@ export default function Fog({ ground: groundDefault = 0.72, floor = null, stage 
     img.decoding = 'async'
     img.onload = () => {
       tiles = tint(img, colour)
-      if (reduced) fadeIn = 1
       draw()
       start()
     }
@@ -213,7 +239,7 @@ export default function Fog({ ground: groundDefault = 0.72, floor = null, stage 
       io.disconnect()
       document.removeEventListener('visibilitychange', onVis)
     }
-  }, [groundDefault, floor, stage, layer])
+  }, [groundDefault, floor, stage, layer, scene, pool])
 
   return <canvas ref={ref} className={`fog ${className}`.trim()} aria-hidden="true" />
 }

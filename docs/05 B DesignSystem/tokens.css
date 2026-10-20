@@ -156,6 +156,14 @@
   --sw-dusk-fog: 220 228 220;     /* the mist, as an rgb triple for alpha */
   --sw-dusk-ink: #f3e6d2;         /* type on the scene: the ivory, a touch dimmer */
   --sw-dusk-ink-quiet: #b9b6a8;
+  /* The same scene at dawn: light mode on the landing and sign-in pages
+     (SW-ADR-160). Deep emerald ink on warm ivory, the fog a soft grey-green so
+     it still reads on a light ground. */
+  --sw-dawn-sky: #e9dcc5;         /* the edges */
+  --sw-dawn-mid: #f6ecdb;         /* the light middle */
+  --sw-dawn-fog: 128 144 134;     /* the mist on ivory, as an rgb triple */
+  --sw-dawn-ink: #10301f;         /* type on the dawn scene */
+  --sw-dawn-ink-quiet: #3c5446;
 
   /* the depth of the poster's extruded letters and numerals */
   --sw-extrude: #0b2a1c;

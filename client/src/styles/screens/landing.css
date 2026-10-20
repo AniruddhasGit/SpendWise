@@ -211,7 +211,7 @@
 .landing-fog-back { z-index: 1; opacity: 0.85; }
 
 .landing-cue {
-  text-shadow: 0 1px 2px rgb(8 12 10 / 0.9), 0 0 14px rgb(8 12 10 / 0.8);
+  text-shadow: 0 1px 2px var(--scene-shade), 0 0 14px var(--scene-shade);
   position: absolute;
   left: 50%;
   bottom: var(--sw-space-6);
@@ -296,17 +296,8 @@
   color: var(--sw-dusk-sky);
 }
 
-/* hidden until scrolled to, then the same blur-in as everything else */
-.landing-reveal { opacity: 0; }
-.landing-reveal.is-in {
-  opacity: 1;
-  animation: sw-rise var(--sw-dur-focus) var(--sw-ease-out) backwards;
-  animation-delay: calc(var(--sw-i, 0) * var(--sw-stagger));
-}
-@media (prefers-reduced-motion: reduce) {
-  .landing-reveal { opacity: 1; }
-  .landing-reveal.is-in { animation: none; }
-}
+/* the details below the fold rise into view as they are scrolled to; GSAP's
+   ScrollTrigger runs it (Landing.jsx, SW-ADR-160) */
 
 /* ── narrower sheets ───────────────────────────────────────────────────── */
 @media (max-width: 860px) {
@@ -330,5 +321,122 @@
   /* on a phone the line and the action sit in the fog sea, so they ride
      above it to stay readable */
   .landing-side { z-index: 5; }
-  .landing-line { color: var(--sw-dusk-ink); text-shadow: 0 1px 2px rgb(8 12 10 / 0.9), 0 0 18px rgb(8 12 10 / 0.85); }
+  .landing-line { color: var(--sw-dusk-ink); text-shadow: 0 1px 2px var(--scene-shade), 0 0 18px var(--scene-shade); }
+}
+
+/* ── the signed-out scene: arrival, countdown, theme, carry-over (SW-ADR-160) ── */
+
+/* Light mode is the same scene at dawn: the dusk tokens are pointed at their
+   dawn counterparts, so every rule above works unchanged in both. */
+.scene[data-scene="light"] {
+  --sw-dusk-sky: var(--sw-dawn-sky);
+  --sw-dusk-mid: var(--sw-dawn-mid);
+  --sw-dusk-fog: var(--sw-dawn-fog);
+  --sw-dusk-ink: var(--sw-dawn-ink);
+  --sw-dusk-ink-quiet: var(--sw-dawn-ink-quiet);
+  --scene-bar: rgb(246 236 219 / 0.55);
+  --scene-bar-edge: rgb(16 48 31 / 0.14);
+  --scene-shade: rgb(246 236 219 / 0.9);
+  --scene-vignette: rgb(120 100 70 / 0.18);
+}
+.scene {
+  --scene-bar: rgb(24 32 28 / 0.42);
+  --scene-bar-edge: rgb(243 230 210 / 0.16);
+  --scene-shade: rgb(8 12 10 / 0.9);
+  --scene-vignette: rgb(8 12 10 / 0.55);
+}
+.landing-bar { background: var(--scene-bar); border-color: var(--scene-bar-edge); }
+.landing-scene::before {
+  background: radial-gradient(ellipse 72% 70% at 50% 46%, transparent 45%, var(--scene-vignette) 100%);
+}
+.landing-bar-actions { display: flex; align-items: center; gap: var(--sw-space-2); }
+
+/* the sun / moon switch */
+.scene-theme {
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: var(--sw-radius-full);
+  color: var(--sw-dusk-ink);
+  background: transparent;
+  border: 1px solid var(--scene-bar-edge);
+  transition: transform var(--sw-dur-small) var(--sw-ease-out), background var(--sw-dur-small);
+}
+.scene-theme:hover { background: var(--scene-bar); transform: rotate(-18deg); }
+.scene-theme svg { width: 1.15rem; height: 1.15rem; }
+
+/* the countdown while the server wakes */
+.scene-countdown {
+  position: absolute;
+  left: 50%;
+  bottom: clamp(4rem, 12vh, 7rem);
+  z-index: 6;
+  transform: translateX(-50%);
+  display: grid;
+  justify-items: center;
+  gap: var(--sw-space-2);
+  color: var(--sw-dusk-ink);
+  text-shadow: 0 1px 2px var(--scene-shade), 0 0 18px var(--scene-shade);
+  pointer-events: none;
+}
+.scene-countdown-label {
+  font-size: var(--sw-text-xs);
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--sw-dusk-ink-quiet);
+}
+.scene-countdown-time {
+  font-family: var(--sw-font-display);
+  font-weight: 900;
+  font-size: clamp(2.5rem, 6vw, 4.5rem);
+  line-height: 1;
+  letter-spacing: 0.04em;
+  font-variant-numeric: tabular-nums;
+}
+.scene-countdown-bar {
+  width: 9rem;
+  height: 2px;
+  overflow: hidden;
+  border-radius: var(--sw-radius-full);
+  background: var(--scene-bar-edge);
+}
+.scene-countdown-bar > span {
+  display: block;
+  height: 100%;
+  background: var(--sw-dusk-ink);
+  transform-origin: left;
+  transform: scaleX(var(--p, 0));
+  transition: transform 250ms linear;
+}
+
+/* the headline's letters rise through 3D; give them room to turn */
+.landing-title { perspective: 600px; }
+
+/* What the browser carries from one page to the other (lib/scene.js): the
+   tree picture, the fog, and the floor, which fades away as the tree leaves
+   it. The rest of the page changes underneath. */
+/* The fog is not morphed (a full-screen snapshot shrinking to a small box
+   shows its hard edges): the old fog sinks and dissolves where it lies while
+   the new fog gathers in round the tree's base. */
+.landing-stage .mt-stage { view-transition-name: sw-tree; }
+.landing-fog-front { view-transition-name: sw-fog-out; }
+.landing-fog-back { view-transition-name: sw-fog-out-back; }
+.landing-floor { view-transition-name: sw-floor; }
+::view-transition-group(sw-tree),
+::view-transition-group(sw-floor) {
+  animation-duration: 950ms;
+  animation-timing-function: cubic-bezier(0.65, 0, 0.35, 1);
+}
+::view-transition-old(sw-fog-out),
+::view-transition-old(sw-fog-out-back) {
+  animation: sw-fog-recede 900ms cubic-bezier(0.65, 0, 0.35, 1) both;
+}
+::view-transition-new(sw-fog-in),
+::view-transition-new(sw-fog-in-back) {
+  animation: sw-fog-gather 950ms cubic-bezier(0.22, 1, 0.36, 1) 250ms both;
+}
+@keyframes sw-fog-recede {
+  to { opacity: 0; transform: translateY(6%); filter: blur(14px); }
+}
+@keyframes sw-fog-gather {
+  from { opacity: 0; transform: scale(1.35); filter: blur(12px); }
 }

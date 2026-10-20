@@ -109,7 +109,7 @@ export default function Sidebar({ view, onView, principal,
           not a div. */}
       {open && <div className="rail-scrim" aria-hidden="true" onClick={onClose} />}
 
-      <nav className={`rail${open ? ' is-open' : ''}`} aria-label="Sections"
+      <nav className={`rail${open ? ' is-open' : ''}`} aria-label="Sections" data-lenis-prevent=""
            data-testid="sidebar" inert={hidden ? '' : undefined}>
         <div className="rail-brand sw-focus">
           <span className="wordmark">SpendWise</span>

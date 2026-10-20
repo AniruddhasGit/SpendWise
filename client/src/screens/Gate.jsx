@@ -1,6 +1,9 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useLayoutEffect, useRef, useState } from 'react'
+import { gsap } from 'gsap'
 import { api } from '../lib/api.js'
+import Fog from '../components/Fog.jsx'
 import MoneyTree from '../components/MoneyTree.jsx'
+import { ThemeSwitch } from '../components/SceneControls.jsx'
 
 /**
  * Sign in and sign up. One component, because they are the same form with one
@@ -14,16 +17,49 @@ import MoneyTree from '../components/MoneyTree.jsx'
  * on the left, a compact sign-in panel on the right. Stacked on a phone, with
  * the tree shrunk above the form. `onBack` returns to the landing page.
  *
+ * It is the second page of the signed-out scene (SW-ADR-160): the same dusk
+ * (or dawn) as the landing page, the same theme switch, and the same tree,
+ * carried here by App with the fog drawn in round its base. The words arrive
+ * one after another once it lands, and leave the same way on the way back.
+ *
  * Session bookkeeping (epochs, arming the guard) is App's job, in
  * `onSignedIn`. This screen only asks the server and reports what it said.
  */
-export default function Gate({ mode, onMode, reason, onSignedIn, onBack, autoFocus = false }) {
+export default function Gate({ mode, onMode, reason, onSignedIn, onBack, autoFocus = false,
+                               theme = 'dark', onTheme }) {
   const [form, setForm] = useState({ email: '', password: '', display_name: '' })
   const [error, setError] = useState(null)
   const [busy, setBusy] = useState(false)
   const [reveal, setReveal] = useState(false)
   const busyRef = useRef(false)
   const emailRef = useRef(null)
+  const rootRef = useRef(null)
+  const leaving = useRef(false)
+
+  // The words arrive one after another while the tree settles.
+  useLayoutEffect(() => {
+    const ctx = gsap.context(() => {
+      gsap.timeline({ defaults: { ease: 'power4.out' } })
+        .from('.gate-brandrow', { y: -40, autoAlpha: 0, duration: 0.8 }, 0.25)
+        .from('.gate-title', { y: 50, autoAlpha: 0, filter: 'blur(8px)', duration: 0.9 }, 0.35)
+        .from('.gate-lede', { y: 24, autoAlpha: 0, duration: 0.7 }, 0.5)
+        .from('.gate-card', { y: 80, autoAlpha: 0, scale: 0.96, duration: 1 }, 0.3)
+        .from('.gate-card > *, .gate-card form > *', {
+          y: 22, autoAlpha: 0, duration: 0.6, stagger: 0.06,
+        }, 0.55)
+    }, rootRef)
+    return () => ctx.revert()
+  }, [])
+
+  /** Back to the landing page: the words leave first, then App carries the tree. */
+  const leave = () => {
+    if (leaving.current || !onBack) return
+    leaving.current = true
+    const q = gsap.utils.selector(rootRef)
+    gsap.timeline({ onComplete: onBack })
+      .to(q('.gate-card'), { y: 90, autoAlpha: 0, duration: 0.5, ease: 'power3.in' }, 0)
+      .to(q('.gate-copy, .gate-brandrow'), { x: -80, autoAlpha: 0, duration: 0.45, ease: 'power3.in' }, 0)
+  }
 
   const registering = mode === 'register'
   const set = (k) => (e) => setForm((f) => ({ ...f, [k]: e.target.value }))
@@ -83,20 +119,23 @@ export default function Gate({ mode, onMode, reason, onSignedIn, onBack, autoFoc
       : null
 
   return (
-    <div className="gate">
+    <div className="gate scene" data-scene={theme} ref={rootRef}>
       <div className="gate-layout">
-        <section className="gate-hero sw-enter" aria-labelledby="gate-title">
+        <section className="gate-hero" aria-labelledby="gate-title">
           <div className="gate-brandrow">
             <span className="wordmark gate-brand">SpendWise</span>
             {onBack && (
               <button type="button" className="btn-link gate-back" data-testid="gate-back"
-                      onClick={onBack}>
+                      onClick={leave}>
                 Back to the home page
               </button>
             )}
+            {onTheme && <ThemeSwitch theme={theme} onTheme={onTheme} className="gate-theme" />}
           </div>
           <div className="gate-stage gate-tree">
-            <MoneyTree variant="gate" alt="" />
+            <Fog className="gate-fog gate-fog-back" layer="back" pool scene={theme} stage=".gate-tree" />
+            <MoneyTree variant="gate" alwaysMove alt="" />
+            <Fog className="gate-fog gate-fog-front" pool scene={theme} stage=".gate-tree" />
           </div>
           <div className="gate-copy">
             <h1 className="gate-title sw-extruded" id="gate-title">Know where every dollar goes.</h1>
@@ -107,8 +146,7 @@ export default function Gate({ mode, onMode, reason, onSignedIn, onBack, autoFoc
           </div>
         </section>
 
-        <section className="gate-card sw-enter" style={{ '--sw-delay': '80ms' }}
-                 aria-labelledby="gate-form-title">
+        <section className="gate-card" aria-labelledby="gate-form-title">
           <h2 className="gate-form-title" id="gate-form-title">
             {registering ? 'Create your account' : 'Sign in'}
           </h2>

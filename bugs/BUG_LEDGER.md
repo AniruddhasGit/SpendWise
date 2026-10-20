@@ -2351,3 +2351,17 @@ examined an empty list.
 > **Lesson.** An intermittent red is still a red. If it comes back, capture `getComputedStyle` of `.landing` and the widest box at the moment of failure before re-running anything.
 
 `client/src/styles/screens/landing.css · tests/browser/test_the_website.py`
+
+---
+
+### The sign-in card stayed invisible: GSAP read a CSS entrance's first frame as the card's resting state
+
+**Believed.** A GSAP `from()` entrance on `.gate-card` would end where the card naturally rests, fully visible and unmoved.
+
+**Actually.** `glass.css` already gave `.gate-card` a CSS `sw-rise` animation that starts at `opacity: 0; translateY(10px)`. Both started on the same frame, so GSAP measured the card's "current" style mid-CSS-animation and recorded opacity 0, y 10px as its end values. The card animated in, then settled at 0% opacity. It was found on 2026-10-21 by a frame-by-frame trace of the card's inline style during the landing-to-sign-in carry (SW-ADR-160).
+
+**Caught by.** Flow screenshots (the card was missing on the finished sign-in page), then a per-frame trace of `.gate-card`'s style. The browser tests passed through it, because Playwright treats an opacity-0 element as visible. Fixed by switching the CSS rise off where GSAP owns the entrance (`.gate.scene .gate-card { animation: none }`).
+
+> **Lesson.** Never let a CSS animation and a GSAP `from()` start on the same element in the same frame. GSAP reads the computed style, which mid-animation is the keyframe, not the resting state. One owner per element's entrance. A visible-in-the-DOM check does not prove a human can see it, so look at the screenshot.
+
+`client/src/screens/Gate.jsx · client/src/styles/glass.css (.gate-card) · client/src/styles/screens/shell.css`
