@@ -4,9 +4,9 @@
 /* The dashboard opens like a poster (SW-ADR-156): the money tree beside the
    total, a statement card of three figures under it, then the charts
    on opaque content cards. Emerald draws the daily series and every primary
-   control; gold marks totals, the projection and each chart's peak; ink is
-   ordinary spending. Coral is never used here (nothing on this screen is an
-   overspend or destructive).
+   control; vermilion (the --sw-gold names, and --sw-danger for the poster's
+   statement line, SW-ADR-156) marks money leaving: totals, the projection,
+   each chart's peak and the total's label; ink is ordinary spending.
 
    Layout answers to the PANE's width, not the window's: the rail takes a
    different amount of room at each breakpoint, so a viewport media query

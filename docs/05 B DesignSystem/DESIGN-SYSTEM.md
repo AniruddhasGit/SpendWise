@@ -306,7 +306,7 @@ Their files remain in `public/fonts/` until the legacy CSS is cleaned up, and no
 | 2xl | `--sw-text-2xl` | 2.25rem | 1.1 | -0.035em | 600 | page titles |
 | 3xl | `--sw-text-3xl` | clamp(2.75rem, 6vw, 4.5rem) | 1.0 | -0.035em | 600 | the hero total |
 
-Nothing is set below 12px. Nothing is uppercased. There is no `// ` prefix, and no mono "terminal"
+Nothing is set below 12px. Nothing is uppercased except the poster lines in Big Shoulders Display (headlines, the total's label, the landing statement; `SW-ADR-156`). There is no `// ` prefix, and no mono "terminal"
 label anywhere. Titles use `text-wrap: balance`. **Every number is tabular**: `.sw-num`, and every
 numeric class in glass.css, sets `font-variant-numeric: tabular-nums`. `--sw-font-mono` keeps its
 name for `.sw-num` and resolves to Geist.
