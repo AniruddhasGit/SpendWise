@@ -23,7 +23,7 @@
   z-index: 4;
   pointer-events: none;
   background-image: var(--sw-grain);
-  opacity: calc(var(--sw-grain-opacity) * 1.6);
+  opacity: calc(var(--sw-grain-opacity) * 2.6);
   mix-blend-mode: multiply;
 }
 :root[data-theme="dark"] .landing::after { mix-blend-mode: overlay; }
@@ -127,9 +127,10 @@
   .landing-hero {
     grid-template-columns: minmax(0, 1fr);
     grid-template-areas: "title" "tree" "side";
-    gap: var(--sw-space-5);
-    padding-top: var(--sw-space-8);
+    gap: var(--sw-space-3);
+    padding: var(--sw-space-8) var(--sw-space-4) var(--sw-space-10);
   }
+  .landing-tree { margin-bottom: calc(-1 * var(--sw-space-8)); }
   .landing-title { font-size: clamp(2.5rem, 13vw, 3.4rem); }
   .landing-statement { font-size: 1.5rem; }
   .landing-start { width: 100%; }

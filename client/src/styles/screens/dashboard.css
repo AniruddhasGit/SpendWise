@@ -33,19 +33,76 @@
    poster's extruded numerals set on the page (real money is never printed on
    translucent glass), then the statement card. */
 .dash-hero {
+  position: relative;
   display: grid;
   grid-template-columns: minmax(0, 1fr);
   gap: var(--sw-space-5);
   align-items: center;
 }
 
+/* The tree stands in a frosted ivory pane: CHROME tier glass (SW-ADR-154),
+   carrying the risograph grain the poster is printed with. Never a .card. */
 .dash-tree {
+  position: relative;
+  z-index: 1;
   width: min(100%, 560px);
   justify-self: center;
+  padding: var(--sw-space-4) var(--sw-space-4) var(--sw-space-2);
+  border-radius: var(--sw-radius-xl);
+  background: var(--sw-glass);
+  border: 1px solid var(--sw-glass-border);
+  box-shadow: var(--sw-highlight), var(--sw-shadow-md);
+  -webkit-backdrop-filter: blur(var(--sw-blur-md)) saturate(var(--sw-glass-saturate));
+  backdrop-filter: blur(var(--sw-blur-md)) saturate(var(--sw-glass-saturate));
+  overflow: hidden;
   animation: sw-rise var(--sw-dur-hero) var(--sw-ease-out) backwards;
+}
+.dash-tree::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 4;
+  pointer-events: none;
+  background-image: var(--sw-grain);
+  opacity: calc(var(--sw-grain-opacity) * 2.4);
+  mix-blend-mode: multiply;
+}
+
+/* The poster's orbit, from the canopy across to the total, and two sparks
+   beside the figure. Wide panes only (section 9 hides them on narrower ones). */
+.dash-orbit {
+  position: absolute;
+  inset: 2% 0 4%;
+  width: 100%;
+  height: 94%;
+  z-index: 0;
+  pointer-events: none;
+  overflow: visible;
+}
+.dash-orbit ellipse {
+  fill: none;
+  stroke: var(--sw-brand-vermilion);
+  stroke-width: 1.4;
+  stroke-dasharray: 2 9;
+  vector-effect: non-scaling-stroke;
+  opacity: 0.7;
+  transform: rotate(-5deg);
+  transform-origin: 52% 48%;
+  transform-box: view-box;
+}
+.dash-sparks {
+  position: absolute;
+  top: 0;
+  right: 1%;
+  width: 7.5rem;
+  z-index: 0;
+  pointer-events: none;
+  fill: var(--sw-brand-vermilion);
 }
 
 .dash-poster {
+  position: relative;
+  z-index: 1;
   display: flex;
   flex-direction: column;
   gap: var(--sw-space-5);
@@ -66,15 +123,21 @@
 .dash-total {
   margin: 0;
   font-family: var(--sw-font-display);
-  font-size: clamp(3rem, 9cqi, 5.5rem);
+  font-size: clamp(3rem, 8cqi, 5.5rem);
   font-weight: 900;
   line-height: 0.95;
   color: var(--sw-pine);
   font-variant-numeric: tabular-nums lining-nums;
   overflow-wrap: anywhere;
 }
+/* the money spans default to the body face; here they take the poster's.
+   The poster face has no ₹, so the sign comes from Geist: heavy, to sit with
+   the 900-weight digits rather than look spindly beside them. */
+.dash-total .sw-money { font-family: inherit; }
+.dash-total .sw-money-cur { font-weight: 800; }
+
 .dash-total-label {
-  margin: 0;
+  margin: 0 0 var(--sw-space-1);
   font-family: var(--sw-font-display);
   font-size: var(--sw-text-xl);
   font-weight: 800;
@@ -98,6 +161,19 @@
   color: var(--sw-ink);
 }
 .dash-delta.is-down { color: var(--sw-positive); }
+.dash-delta-icon { width: 1em; height: 1em; align-self: center; }
+.dash-delta-first { font-weight: var(--sw-weight-regular); color: var(--sw-ink-muted); }
+.dash-add { align-self: flex-start; margin-top: var(--sw-space-3); }
+
+/* The page title stays in the outline and for screen readers, set quietly:
+   the poster, not a heading, opens the screen. */
+.dash-head .dash-page-title {
+  font-family: var(--sw-font-body);
+  font-size: var(--sw-text-md);
+  font-weight: var(--sw-weight-semibold);
+  letter-spacing: 0;
+  color: var(--sw-ink-muted);
+}
 .dash-delta-words {
   font-weight: var(--sw-weight-regular);
   color: var(--sw-ink-muted);
@@ -130,7 +206,7 @@
 .dash-figure dd { margin: 0; min-width: 0; }
 .dash-figure .card-label { margin-bottom: 0; }
 .dash-figure .card-value {
-  font-family: var(--sw-font-display);
+  font-family: var(--sw-font-body);
   font-size: var(--sw-text-2xl);
   font-weight: var(--sw-weight-semibold);
   line-height: 1.1;
@@ -144,6 +220,9 @@
 .dash-figure .dash-projection { color: var(--sw-gold); }
 
 /* Wide pane: card and statement side by side, the card given more room. */
+@container dash (max-width: 879.98px) {
+  .dash-orbit, .dash-sparks { display: none; }
+}
 @container dash (min-width: 880px) {
   .dash-hero { grid-template-columns: minmax(0, 1.2fr) minmax(19rem, 1fr); }
   .dash-figures { padding-block: var(--sw-space-3); }
@@ -399,7 +478,13 @@
 @container dash (max-width: 559.98px) {
   /* Every box stays inside the window: the 375px test counts any box past
      the right edge (test_the_shell.py:450), clipped or not. */
-  .dash-tree { width: min(100%, 380px); }
+  .dash-tree { width: min(78%, 300px); padding: var(--sw-space-2); }
+  .dash-pane > .periods {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    width: 100%;
+  }
+  .dash-pane > .periods > .chip { justify-content: center; padding-inline: var(--sw-space-1); }
   .dash-total { font-size: clamp(2.5rem, 14cqi, 3.5rem); }
   .dash-figures { padding: var(--sw-space-1) var(--sw-space-4); }
   .dash-figure { padding: var(--sw-space-3) 0; }

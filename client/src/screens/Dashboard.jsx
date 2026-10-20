@@ -202,6 +202,8 @@ export default function Dashboard({ principal, draft, onDraft }) {
   // ── derived ──────────────────────────────────────────────────────────────
   const periodLabel = labelFor(range)
   const accountIsNew = everAny === false
+  // The full view, whose poster carries the Add expense action.
+  const heroShown = !error && Boolean(whole) && !accountIsNew
 
   // What the tree's bills say by default: this person's own recent spends.
   const treeBills = useMemo(
@@ -266,16 +268,20 @@ export default function Dashboard({ principal, draft, onDraft }) {
             announced. */}
         <p className="visually-hidden" role="status" aria-live="polite"
            data-testid="dash-announce">{announcement}</p>
-        <header className="page-head">
+        {/* The poster opens the screen (SW-ADR-156), not a page title: the
+            heading stays for screen readers and the outline, set quietly. */}
+        <header className="page-head dash-head">
           <div>
-            <h1 className="page-title">Your spending</h1>
+            <h1 className="page-title dash-page-title">Your spending</h1>
             <p className="entry-meta" data-testid="period-label">
               {periodLabel} · {range.from} to {range.to}
             </p>
           </div>
-          <button type="button" className="btn" onClick={openAdd} data-testid="add-expense">
-            Add expense
-          </button>
+          {!heroShown && (
+            <button type="button" className="btn" onClick={openAdd} data-testid="add-expense">
+              Add expense
+            </button>
+          )}
         </header>
 
         <PeriodPicker range={range} onChange={changeRange} disabled={loading} />
@@ -295,29 +301,49 @@ export default function Dashboard({ principal, draft, onDraft }) {
                 is what the browser tests and a screen reader read; the tree's
                 bills are canvas pixels and never part of any figure. */}
             <section className="dash-hero" aria-label="Total">
+              {/* The poster's orbit: one line from the canopy across to the
+                  total, and two sparks beside it. Decoration, wide panes only. */}
+              <svg className="dash-orbit" viewBox="0 0 1000 400" preserveAspectRatio="none"
+                   aria-hidden="true" focusable="false">
+                <ellipse cx="520" cy="190" rx="470" ry="120" />
+              </svg>
+              <svg className="dash-sparks" viewBox="0 0 100 60" aria-hidden="true" focusable="false">
+                <path d="M14 4L16 14L26 16L16 18L14 28L12 18L2 16L12 14Z" />
+                <path d="M84 34L85.2 40L91 41.2L85.2 42.4L84 48L82.8 42.4L77 41.2L82.8 40Z" />
+              </svg>
               <div className="dash-tree">
                 <MoneyTree variant="dashboard" bills={treeBills} dropRequest={dropRequest} alt="" />
               </div>
 
               <div className="dash-poster">
                 <div className="dash-headline" data-testid="headline">
-                  <p className="dash-total sw-extruded">
-                    <CountUp value={scoped.total_paise} data-testid="total"
-                             from={entered ? scoped.total_paise : 0} />
-                  </p>
                   <p className="dash-total-label">
                     {category !== null ? 'Filtered total' : 'Total spent'}, {periodLabel.toLowerCase()}
                   </p>
-                  {delta && (
+                  <p className="dash-total sw-extruded sw-money-lg">
+                    <CountUp value={scoped.total_paise} data-testid="total"
+                             from={entered ? scoped.total_paise : 0} />
+                  </p>
+                  {delta ? (
                     <p className={`delta dash-delta${delta.up ? ' is-up' : ' is-down sw-pos'}`}
                        data-testid="delta">
-                      <span aria-hidden="true">{delta.up ? '▲' : '▼'}</span>{' '}
+                      <svg className="dash-delta-icon" viewBox="0 0 24 24" fill="none"
+                           stroke="currentColor" strokeWidth="1.75" strokeLinecap="round"
+                           strokeLinejoin="round" aria-hidden="true">
+                        <path d={delta.up ? 'M12 19V5M5 12l7-7 7 7' : 'M12 5v14M5 12l7 7 7-7'} />
+                      </svg>
                       {delta.pct}%{' '}
                       <span className="dash-delta-words">
                         {delta.up ? 'more' : 'less'} than last month
                       </span>
                     </p>
-                  )}
+                  ) : previous && previous.total_paise === 0 && range.from.endsWith('-01') ? (
+                    <p className="dash-delta dash-delta-first">Nothing logged last month to compare with.</p>
+                  ) : null}
+                  <button type="button" className="btn btn-lg dash-add" onClick={openAdd}
+                          data-testid="add-expense">
+                    Add expense
+                  </button>
                 </div>
 
                 {/* The statement: three figures read like the lines of a bank

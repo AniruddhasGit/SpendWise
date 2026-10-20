@@ -44,3 +44,4 @@ passwords.txt
 # impeccable decision-page runtime files
 .impeccable/questions/
 .impeccable/decision-direction.json
+.impeccable/review/

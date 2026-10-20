@@ -69,87 +69,91 @@ function readPalette(el) {
   const v = (name, fallback) => cs.getPropertyValue(name).trim() || fallback
   // The fallbacks only cover a stylesheet that has not loaded yet.
   return {
-    paper: v('--sw-brand-ivory', 'rgb(249 235 215)'),
-    green: v('--sw-brand-emerald', 'rgb(4 106 56)'),
-    greenDeep: v('--sw-brand-emerald-deep', 'rgb(3 82 43)'),
     ink: v('--sw-brand-vermilion', 'rgb(227 66 34)'),
     inkDeep: v('--sw-brand-vermilion-deep', 'rgb(179 48 26)'),
     shadow: v('--mt-bill-shadow', 'rgb(11 42 28 / 0.18)'),
   }
 }
 
-function roundRect(ctx, x, y, w, h, r) {
-  ctx.beginPath()
-  ctx.moveTo(x + r, y)
-  ctx.arcTo(x + w, y, x + w, y + h, r)
-  ctx.arcTo(x + w, y + h, x, y + h, r)
-  ctx.arcTo(x, y + h, x, y, r)
-  ctx.arcTo(x, y, x + w, y, r)
-  ctx.closePath()
+// The bill itself is PRINTED, not drawn: two sprites rendered in the tree's
+// risograph language (grain, guilloche, a halftone oval, the vermilion
+// misregistration edge). Provenance beside each file. Canvas only writes the
+// category and the amount on the front's clear band.
+const SPRITES = { front: '/assets/tree/bill-front.webp', back: '/assets/tree/bill-back.webp' }
+const BILL_W = 62
+const BILL_H = 32
+
+function loadSprites() {
+  const out = {}
+  for (const [k, src] of Object.entries(SPRITES)) {
+    const im = new Image()
+    im.decoding = 'async'
+    im.src = src
+    out[k] = im
+  }
+  return out
 }
 
-function drawBill(ctx, b, pal) {
-  const w = 62 * b.size
-  const h = 32 * b.size
+function drawBill(ctx, b, pal, sprites) {
+  const w = BILL_W * b.size
+  const h = BILL_H * b.size
   ctx.save()
   ctx.globalAlpha = b.alpha
   ctx.translate(b.x, b.y)
   ctx.rotate(b.rot)
   // The paper tumbling: a cosine on one axis reads as a sheet turning over.
+  // Never thinner than a third, so an edge-on bill never becomes a sliver.
   const flip = Math.cos(b.phase)
-  ctx.scale(1, Math.max(0.12, Math.abs(flip)) * Math.sign(flip || 1))
+  ctx.scale(1, Math.max(0.35, Math.abs(flip)) * Math.sign(flip || 1))
   const front = flip >= 0
+  const sprite = front ? sprites.front : sprites.back
 
   ctx.shadowColor = pal.shadow
-  ctx.shadowBlur = 6 * b.size
-  ctx.shadowOffsetY = 2 * b.size
-  roundRect(ctx, -w / 2, -h / 2, w, h, 3 * b.size)
-  ctx.fillStyle = front ? pal.paper : pal.green
-  ctx.fill()
+  ctx.shadowBlur = 7 * b.size
+  ctx.shadowOffsetY = 2.5 * b.size
+  if (sprite.complete && sprite.naturalWidth) ctx.drawImage(sprite, -w / 2, -h / 2, w, h)
   ctx.shadowColor = 'transparent'
 
-  ctx.lineWidth = 1.4 * b.size
-  ctx.strokeStyle = front ? pal.green : pal.greenDeep
-  ctx.stroke()
-
   if (front) {
-    // inner frame and the watermark oval, like the leaves in the artwork
-    ctx.globalAlpha = b.alpha * 0.5
-    ctx.lineWidth = 0.7 * b.size
-    roundRect(ctx, -w / 2 + 3 * b.size, -h / 2 + 3 * b.size, w - 6 * b.size, h - 6 * b.size, 2 * b.size)
-    ctx.stroke()
-    ctx.beginPath()
-    ctx.ellipse(-w / 2 + 12 * b.size, 0, 6 * b.size, 8 * b.size, 0, 0, Math.PI * 2)
-    ctx.stroke()
-    ctx.globalAlpha = b.alpha
-
-    // the writing: what was spent, and how much, in vermilion
-    const pad = 22 * b.size
+    // the writing, in the clear band right of the oval: what, and how much
+    const left = -w / 2 + w * 0.47
+    const room = w * 0.47
     ctx.textBaseline = 'alphabetic'
+    ctx.textAlign = 'left'
     ctx.fillStyle = pal.inkDeep
-    ctx.font = `600 ${8.5 * b.size}px Geist, system-ui, sans-serif`
-    ctx.fillText(b.label, -w / 2 + pad, -h / 2 + 12 * b.size, w - pad - 4 * b.size)
+    ctx.font = `700 ${Math.max(8, 7.5 * b.size)}px Geist, system-ui, sans-serif`
+    ctx.fillText(b.label, left, -h / 2 + h * 0.4, room)
     ctx.fillStyle = pal.ink
-    ctx.font = `800 ${15 * b.size}px "Big Shoulders Display", Geist, system-ui, sans-serif`
-    ctx.textAlign = 'right'
-    ctx.fillText(b.amount, w / 2 - 5 * b.size, h / 2 - 5 * b.size, w - pad)
-  } else {
-    // the back: plain emerald with two engraved lines
-    ctx.globalAlpha = b.alpha * 0.35
-    ctx.strokeStyle = pal.paper
-    ctx.lineWidth = 0.8 * b.size
-    ctx.beginPath()
-    ctx.moveTo(-w / 2 + 6 * b.size, -3 * b.size)
-    ctx.lineTo(w / 2 - 6 * b.size, -3 * b.size)
-    ctx.moveTo(-w / 2 + 6 * b.size, 3 * b.size)
-    ctx.lineTo(w / 2 - 6 * b.size, 3 * b.size)
-    ctx.stroke()
+    ctx.font = `900 ${Math.max(13, 14 * b.size)}px "Big Shoulders Display", Geist, system-ui, sans-serif`
+    ctx.fillText(b.amount, left, h / 2 - h * 0.2, room)
   }
   ctx.restore()
 }
 
+/** The poster's four-point spark, for the burst where a new bill lands. */
+function drawSpark(ctx, s, colour) {
+  const r = s.r
+  ctx.save()
+  ctx.globalAlpha = s.alpha
+  ctx.translate(s.x, s.y)
+  ctx.rotate(s.rot)
+  ctx.fillStyle = colour
+  ctx.beginPath()
+  ctx.moveTo(0, -r)
+  ctx.lineTo(r * 0.18, -r * 0.18)
+  ctx.lineTo(r, 0)
+  ctx.lineTo(r * 0.18, r * 0.18)
+  ctx.lineTo(0, r)
+  ctx.lineTo(-r * 0.18, r * 0.18)
+  ctx.lineTo(-r, 0)
+  ctx.lineTo(-r * 0.18, -r * 0.18)
+  ctx.closePath()
+  ctx.fill()
+  ctx.restore()
+}
+
 export default function MoneyTree({
-  bills, variant = 'dashboard', atmosphere = false, dropRequest = null,
+  bills, variant = 'dashboard', atmosphere = false, orbits = atmosphere, dropRequest = null,
   alt = 'A bonsai tree whose leaves are banknotes', className = '',
 }) {
   const rootRef = useRef(null)
@@ -169,6 +173,8 @@ export default function MoneyTree({
 
     let reduced = prefersReducedMotion()
     let pal = readPalette(root)
+    const sprites = loadSprites()
+    const sparks = []
     let W = 0; let H = 0; let box = { x: 0, y: 0, w: 1, h: 1 }
     let raf = 0; let last = 0; let running = false; let visible = true
     let pageVisible = !document.hidden
@@ -198,7 +204,7 @@ export default function MoneyTree({
 
     const spawn = ({ x, y, item, featured = false, push = 0 }) => {
       if (live.length >= MAX && !featured) return
-      const size = sizeFor(item.paise) * (featured ? 1.18 : 1)
+      const size = featured ? 2.2 : sizeFor(item.paise)
       live.push({
         x, y, size, featured,
         label: String(item.label || 'Uncategorised').slice(0, 18),
@@ -258,13 +264,24 @@ export default function MoneyTree({
         spawn({ ...leafPoint(), item: nextItem() })
       }
 
+      for (let i = sparks.length - 1; i >= 0; i -= 1) {
+        const p = sparks[i]
+        p.t += dt
+        p.x += p.vx * dt
+        p.y += p.vy * dt
+        p.vy += 60 * dt
+        p.rot += dt * 2
+        p.alpha = Math.max(0, 1 - p.t / 0.9)
+        if (p.alpha <= 0) sparks.splice(i, 1)
+      }
+
       const floor = groundY()
       for (let i = live.length - 1; i >= 0; i -= 1) {
         const b = live[i]
         b.t += dt
         if (b.settled) {
           b.settled += dt
-          b.alpha = Math.max(0, 1 - (b.settled - (b.featured ? 2.2 : 0.4)) / 0.9)
+          b.alpha = Math.max(0, Math.min(1, 1 - (b.settled - (b.featured ? 2.2 : 0.4)) / 0.9))
           if (b.alpha <= 0) live.splice(i, 1)
           continue
         }
@@ -280,6 +297,15 @@ export default function MoneyTree({
           b.settled = 0.0001
           b.phase = 0
           b.rot *= 0.4
+          if (b.featured) {
+            // the landing of a just-logged expense: a burst of poster sparks
+            for (let k = 0; k < 7; k += 1) {
+              const a = (k / 7) * Math.PI * 2 + Math.random() * 0.4
+              sparks.push({ x: b.x, y: b.y, vx: Math.cos(a) * (60 + Math.random() * 60),
+                            vy: Math.sin(a) * (40 + Math.random() * 40) - 30,
+                            r: 5 + Math.random() * 6, rot: Math.random(), t: 0, alpha: 1 })
+            }
+          }
         }
         if (b.x < -80 || b.x > W + 80) live.splice(i, 1)
       }
@@ -287,7 +313,8 @@ export default function MoneyTree({
 
     const draw = () => {
       ctx.clearRect(0, 0, W, H)
-      for (const b of live) drawBill(ctx, b, pal)
+      for (const b of live) drawBill(ctx, b, pal, sprites)
+      for (const p of sparks) drawSpark(ctx, p, pal.ink)
     }
 
     const frame = (now) => {
@@ -397,8 +424,8 @@ export default function MoneyTree({
   }, [dropRequest])
 
   return (
-    <div ref={rootRef} className={`mt mt-${variant}${atmosphere ? ' mt-atmos' : ''} ${className}`}>
-      {atmosphere && (
+    <div ref={rootRef} className={`mt mt-${variant}${atmosphere ? ' mt-atmos' : ''} ${className}`.trim()}>
+      {orbits && (
         <svg className="mt-orbits" viewBox="0 0 1000 1000" aria-hidden="true" focusable="false">
           <g className="mt-orbit mt-orbit-a">
             <ellipse cx="500" cy="380" rx="470" ry="150" />

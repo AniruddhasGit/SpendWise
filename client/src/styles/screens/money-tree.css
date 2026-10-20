@@ -44,7 +44,9 @@
 .mt-stage::before {
   content: "";
   position: absolute;
-  inset: -4% -8% 18%;
+  /* never wider than the tree: a pseudo-element past the window's edge widens
+     the page on a phone, and no bounding-box check would see it */
+  inset: -4% 0 18%;
   z-index: -1;
   background: radial-gradient(ellipse 50% 46% at 50% 44%, var(--mt-glow), transparent 72%);
   pointer-events: none;
