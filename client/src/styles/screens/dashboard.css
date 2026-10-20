@@ -118,8 +118,7 @@
   flex-direction: column;
   gap: var(--sw-space-2);
   min-width: 0;
-  animation: sw-rise var(--sw-dur-enter) var(--sw-ease-out) backwards;
-  animation-delay: var(--sw-stagger);
+  /* no entrance of its own: each line blurs in (.sw-focus, SW-ADR-158) */
 }
 /* The total: extruded emerald block numerals, the same lettering as the
    landing page. The extrusion is offset copies in the deep green, so the
@@ -135,8 +134,8 @@
   overflow-wrap: anywhere;
 }
 /* the money spans default to the body face; here they take the poster's.
-   The poster face has no ₹, so the sign comes from Geist: heavy, to sit with
-   the 900-weight digits rather than look spindly beside them. */
+   The poster face has a $ of its own; it is set heavy, to sit with the
+   900-weight digits rather than look spindly beside them. */
 .dash-total .sw-money { font-family: inherit; }
 .dash-total .sw-money-cur { font-weight: 800; }
 
@@ -191,8 +190,7 @@
   flex-direction: column;
   justify-content: center;
   padding: var(--sw-space-2) var(--sw-space-5);
-  animation: sw-rise var(--sw-dur-enter) var(--sw-ease-out) backwards;
-  animation-delay: calc(2 * var(--sw-stagger));
+  /* its entrance is .sw-focus in the markup (SW-ADR-158) */
 }
 .dash-figure-list {
   display: grid;
@@ -337,7 +335,7 @@
   font-family: var(--sw-font-display);
   /* Fitted to the hole. The ring's hole is ~110px at 11rem; Donut.jsx passes
      the label's character count, and a tabular figure is ~0.58em wide, so
-     the label stays inside ~92px whether it reads ₹962.25 or ₹1,23,45,678.90.
+     the label stays inside ~92px whether it reads $962.25 or $12,345,678.90.
      Never larger than the token, never below 11px. */
   font-size: clamp(11px, calc(5.75rem / (var(--donut-chars, 10) * 0.58)), var(--sw-text-md));
   font-weight: var(--sw-weight-semibold);
@@ -514,7 +512,7 @@
 /* ── 11. the entrance plays once ─────────────────────────────────────────── */
 /* Dashboard.jsx sets data-entered on a return visit by the same person. The
    pane then simply appears: no rise, no stagger, no plot wipe, no bar growth,
-   and the total starts at its value instead of counting up from ₹0. */
+   and the total starts at its value instead of counting up from $0. */
 .dash-pane[data-entered] :is(
   .dash-tree, .dash-headline, .dash-figures, .plot-draw, .plot-peak, .donut-svg, .bar-fill,
   .sw-enter, .sw-stagger > *

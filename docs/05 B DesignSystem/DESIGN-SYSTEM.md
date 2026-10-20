@@ -4,7 +4,7 @@
 |---|---|
 | Version | v0.1-draft · **binding UX standard** |
 | Decision status | NOT_DECIDED (fail-closed) |
-| Sources | `SRC-001 §9.2`, `§9.4` · `SW-ADR-092` (categories) · `SW-ADR-117` (accessibility) · `SW-ADR-109` (ribbon) · `SW-ADR-056` (money format) |
+| Sources | `SRC-001 §9.2`, `§9.4` · `SW-ADR-092` (categories) · `SW-ADR-117` (accessibility) · `SW-ADR-109` (ribbon) · `SW-ADR-157` (money format) |
 | Conformance target | **WCAG 2.1 AA** (`SW-ADR-117`) |
 
 > **This binds front-end engineering only. It is NOT a schema source.**
@@ -283,8 +283,7 @@ danger-soft 5.23 / 6.95. The coin rim (`--sw-border-strong`) on `--sw-paper-sunk
 **Display face since 2026-10-20 (`SW-ADR-156`): Big Shoulders Display**, variable wght 100–900,
 Fontsource 5.2.5, SIL OFL 1.1, self-hosted as `client/public/fonts/BigShouldersDisplay-latin(-ext).woff2`
 with `OFL-bigshouldersdisplay.txt` beside them. It is the poster's condensed block face: headlines,
-the dashboard total, the landing statement. It has **no ₹**, so the rupee sign falls through to Geist
-on purpose. Body text stays Geist, below.
+the dashboard total, the landing statement. It has its own `$` (the money sign since `SW-ADR-157`) and no `₹`. Body text stays Geist, below.
 
 Liquid-glass revision: **one family**, Geist. It is variable (wght 100–900), from the official
 release `vercel/geist-font` v1.8.1, licensed under the SIL OFL 1.1. It is self-hosted as
@@ -311,7 +310,7 @@ label anywhere. Titles use `text-wrap: balance`. **Every number is tabular**: `.
 numeric class in glass.css, sets `font-variant-numeric: tabular-nums`. `--sw-font-mono` keeps its
 name for `.sw-num` and resolves to Geist.
 
-Money is formatted `en-IN`, as ₹12,34,567.89 (`SW-ADR-056`), by `lib/money.js` and nothing else.
+Money is formatted in US dollars, `en-US`, as $1,234,567.89 (`SW-ADR-157`), by `dollars()` in `lib/money.js` and nothing else.
 
 ---
 
@@ -393,7 +392,7 @@ rather than a picture:
 - **Each band is a native `<button>`.**
 - **One Tab stop for the whole ribbon** (roving tabindex). `←`/`→` move between bands,
   `Home`/`End` jump to first/last, `Enter`/`Space` toggles the filter, `Escape` clears it.
-- Accessible name per band: `"{Category}: ₹{amount}, {pct}% of total"`.
+- Accessible name per band: `"{Category}: ${amount}, {pct}% of total"`.
 - `aria-pressed` reflects selection.
 - **Selection is never colour-only** — the active band gains an outline marker *and* the others
   dim. Two cues, so it survives colour blindness and a monochrome screen.
@@ -585,10 +584,10 @@ It has ISO 7810 proportions, `max-width: 440px`, and is a size container. Set it
 sheet; never its padding.
 
 **Money**
-- `.sw-money` (tabular lining figures, nowrap). The parts are `.sw-money-cur` (₹) and
+- `.sw-money` (tabular lining figures, nowrap). The parts are `.sw-money-cur` ($) and
   `.sw-money-frac` (paise), produced by `<Money>`, `<CountUp>` and `<Odometer>`.
 - **Display sizes only**: inside `.sw-total`, `.sw-bankcard-value`, `.card-hero-value` or
-  `.sw-money-lg`, the ₹ is set lighter and raised and the paise become a superscript. At body size
+  `.sw-money-lg`, the $ is set lighter and raised and the paise become a superscript. At body size
   both stay plain (the 12px floor).
 - `.sw-total` is THE big number, one per screen (`--sw-text-hero`). `.sw-total-gold` makes it gold.
 - `.sw-pos` (emerald), `.sw-neg` (ink), `.sw-over` (coral), `.sw-gold`. On a bank card `.sw-pos` and
@@ -674,17 +673,17 @@ keyboard-initiated action.
 - `staggerStyle(i, max = 8)` returns `{ '--sw-delay': … }` for `.sw-enter`/`.sw-pop` items that are
   not direct children.
 - `tokenMs('--sw-dur-count', 900)` reads a duration token in ms.
-- `splitMoney("₹7,581.00")` returns `{ sign, cur, int, frac }`, or `null` for non-money strings.
-- `<Money paise={758100} />` renders a styled figure. Alternatives: `text="₹…"` for an
+- `splitMoney("$7,581.00")` returns `{ sign, cur, int, frac }`, or `null` for non-money strings.
+- `<Money paise={758100} />` renders a styled figure. Alternatives: `text="$…"` for an
   already-formatted string, or `sign` to prefix "+" on a positive amount (income). Extra props go on
   the root.
 - `<CountUp value={paise} className="sw-total" data-testid="total" />`
-  - `format` defaults to `rupees`. Pass `split={false}` for a non-money figure, with its own
+  - `format` defaults to `dollars`. Pass `split={false}` for a non-money figure, with its own
     `format`.
   - It counts from the on-screen value to the new one: expo ease-out, 900ms, resumable.
   - It does not count under reduced motion or in a hidden tab.
-  - `innerText` is always the final string (observed in the specimen: the ticker showed ₹7,533.99
-    while `innerText` read ₹7,581.00).
+  - `innerText` is always the final string (observed in the specimen: the ticker showed $7,533.99
+    while `innerText` read $7,581.00).
 - `<Odometer value={paise} className="card-value" />` rolls each digit reel to its new value when
   `value` changes, right to left, 18ms apart, 520ms. Nothing rolls on first render. The real string
   is a visually hidden text node, which is the `innerText` and the accessible name; the reels are

@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { api } from '../lib/api.js'
-import { days, rupees } from '../lib/money.js'
+import { days, dollars } from '../lib/money.js'
 import {
   foreignEntry, labelFor, monthOf, previousMonthOf, readCategory, readRange, today, writeState,
 } from '../lib/period.js'
@@ -17,7 +17,7 @@ import { CountUp, Odometer } from '../lib/motion.js'
 
 const UNCATEGORISED_COLOR = 'var(--sw-cat-uncat)'
 
-// The dashboard's entrance (the card rising, the total counting up from ₹0,
+// The dashboard's entrance (the card rising, the total counting up from $0,
 // the plots drawing, the bars growing) plays ONCE per person per page load.
 // The shell remounts this screen on every return from another pane, and
 // replaying the whole choreography there is noise; later visits just appear.
@@ -134,7 +134,7 @@ export default function Dashboard({ principal, draft, onDraft }) {
       if (announceNext.current !== null) {
         const n = s.count
         setAnnouncement(`${announceNext.current}${labelFor(range)}${category !== null ? ', filtered' : ''}: `
-          + `${rupees(s.total_paise)} across ${n} ${n === 1 ? 'entry' : 'entries'}.`)
+          + `${dollars(s.total_paise)} across ${n} ${n === 1 ? 'entry' : 'entries'}.`)
         announceNext.current = null
       }
     } catch (err) {
@@ -183,7 +183,7 @@ export default function Dashboard({ principal, draft, onDraft }) {
   }
 
   const remove = async (expense) => {
-    if (!window.confirm(`Delete ${rupees(expense.amount_paise)}? This cannot be undone.`)) return
+    if (!window.confirm(`Delete ${dollars(expense.amount_paise)}? This cannot be undone.`)) return
     setBusyId(expense.id)
     try {
       await api.deleteExpense(expense.id)
@@ -270,7 +270,7 @@ export default function Dashboard({ principal, draft, onDraft }) {
            data-testid="dash-announce">{announcement}</p>
         {/* The poster opens the screen (SW-ADR-156), not a page title: the
             heading stays for screen readers and the outline, set quietly. */}
-        <header className="page-head dash-head">
+        <header className="page-head dash-head sw-focus">
           <div>
             <h1 className="page-title dash-page-title">Your spending</h1>
             <p className="entry-meta" data-testid="period-label">
@@ -303,29 +303,30 @@ export default function Dashboard({ principal, draft, onDraft }) {
             <section className="dash-hero" aria-label="Total">
               {/* The poster's orbit: one line from the canopy across to the
                   total, and two sparks beside it. Decoration, wide panes only. */}
-              <svg className="dash-orbit" viewBox="0 0 1000 300" preserveAspectRatio="none"
+              <svg className="dash-orbit sw-focus" style={{ '--sw-i': 4 }} viewBox="0 0 1000 300" preserveAspectRatio="none"
                    aria-hidden="true" focusable="false">
                 <path d="M120 250 C 260 40, 560 -10, 760 70 S 900 150, 905 175" />
               </svg>
-              <svg className="dash-sparks" viewBox="0 0 100 60" aria-hidden="true" focusable="false">
+              <svg className="dash-sparks sw-focus" style={{ '--sw-i': 5 }} viewBox="0 0 100 60" aria-hidden="true" focusable="false">
                 <path d="M14 4L16 14L26 16L16 18L14 28L12 18L2 16L12 14Z" />
                 <path d="M84 34L85.2 40L91 41.2L85.2 42.4L84 48L82.8 42.4L77 41.2L82.8 40Z" />
               </svg>
-              <div className="dash-tree">
+              <div className="dash-tree sw-focus" style={{ '--sw-i': 1 }}>
                 <MoneyTree variant="dashboard" bills={treeBills} dropRequest={dropRequest} alt="" />
               </div>
 
               <div className="dash-poster">
                 <div className="dash-headline" data-testid="headline">
-                  <p className="dash-total-label">
+                  <p className="dash-total-label sw-focus" style={{ '--sw-i': 1 }}>
                     {category !== null ? 'Filtered total' : 'Total spent'}, {periodLabel.toLowerCase()}
                   </p>
-                  <p className="dash-total sw-extruded sw-money-lg">
+                  <p className="dash-total sw-extruded sw-money-lg sw-focus" style={{ '--sw-i': 2 }}>
                     <CountUp value={scoped.total_paise} data-testid="total"
                              from={entered ? scoped.total_paise : 0} />
                   </p>
                   {delta ? (
-                    <p className={`delta dash-delta${delta.up ? ' is-up' : ' is-down sw-pos'}`}
+                    <p className={`delta dash-delta sw-focus${delta.up ? ' is-up' : ' is-down sw-pos'}`}
+                       style={{ '--sw-i': 3 }}
                        data-testid="delta">
                       <svg className="dash-delta-icon" viewBox="0 0 24 24" fill="none"
                            stroke="currentColor" strokeWidth="1.75" strokeLinecap="round"
@@ -338,9 +339,10 @@ export default function Dashboard({ principal, draft, onDraft }) {
                       </span>
                     </p>
                   ) : previous && previous.total_paise === 0 && range.from.endsWith('-01') ? (
-                    <p className="dash-delta dash-delta-first">Nothing logged last month to compare with.</p>
+                    <p className="dash-delta dash-delta-first sw-focus" style={{ '--sw-i': 3 }}>Nothing logged last month to compare with.</p>
                   ) : null}
-                  <button type="button" className="btn btn-lg dash-add" onClick={openAdd}
+                  <button type="button" className="btn btn-lg dash-add sw-focus" style={{ '--sw-i': 4 }}
+                          onClick={openAdd}
                           data-testid="add-expense">
                     Add expense
                   </button>
@@ -350,7 +352,7 @@ export default function Dashboard({ principal, draft, onDraft }) {
                     statement, in one opaque card, rather than three equal tiles.
                     `<Odometer>` rolls each digit when the period or filter
                     changes; its innerText is always the real value. */}
-                <div className="card card-statement dash-figures">
+                <div className="card card-statement dash-figures sw-focus" style={{ '--sw-i': 5 }}>
                   <dl className="dash-figure-list">
                     <div className="dash-figure">
                       <dt className="card-label">Entries</dt>
@@ -360,7 +362,7 @@ export default function Dashboard({ principal, draft, onDraft }) {
                       </dd>
                       {biggest && (
                         <dd className="entry-meta" data-testid="biggest">
-                          Largest {rupees(biggest.amount_paise)}
+                          Largest {dollars(biggest.amount_paise)}
                         </dd>
                       )}
                     </div>

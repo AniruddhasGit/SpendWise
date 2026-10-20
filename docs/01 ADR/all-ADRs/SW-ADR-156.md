@@ -1,5 +1,9 @@
 # SW-ADR-156 — The Festival Poster: ivory, emerald, vermilion, and the money tree
 
+> **⚠ AMENDED 2026-10-20 by `SW-ADR-158`.** The canopy is fuller (137 leaves), falling bills are
+> one colour and leaf-sized, the landing atmosphere is stronger, and every entrance is the owner's
+> reel's staggered blur-in.
+
 | Field | Value |
 |---|---|
 | ADR | `SW-ADR-156` |

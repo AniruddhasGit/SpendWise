@@ -8,7 +8,8 @@
 
 .mt {
   --mt-glow: rgb(255 250 240 / 0.75);
-  --mt-mist: rgb(255 255 255 / 0.60);
+  --mt-mist: rgb(255 255 255 / 0.85);
+  --mt-sun: rgb(227 66 34 / 0.13);
   --mt-ground-shadow: rgb(11 42 28 / 0.22);
   --mt-bill-shadow: rgb(11 42 28 / 0.20);
   position: relative;
@@ -20,14 +21,16 @@
 }
 :root[data-theme="dark"] .mt {
   --mt-glow: rgb(249 235 215 / 0.16);
-  --mt-mist: rgb(205 232 214 / 0.10);
+  --mt-mist: rgb(205 232 214 / 0.16);
+  --mt-sun: rgb(227 66 34 / 0.16);
   --mt-ground-shadow: rgb(0 0 0 / 0.55);
   --mt-bill-shadow: rgb(0 0 0 / 0.45);
 }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) .mt {
     --mt-glow: rgb(249 235 215 / 0.16);
-    --mt-mist: rgb(205 232 214 / 0.10);
+    --mt-mist: rgb(205 232 214 / 0.16);
+   --mt-sun: rgb(227 66 34 / 0.16);
     --mt-ground-shadow: rgb(0 0 0 / 0.55);
     --mt-bill-shadow: rgb(0 0 0 / 0.45);
   }
@@ -131,6 +134,29 @@
 .mt-mist-b { left: 30%; top: 44%; width: 62%; animation: mt-drift 34s ease-in-out -9s infinite alternate-reverse; }
 .mt-mist-c { left: 6%; top: 58%; width: 84%; animation: mt-drift 41s ease-in-out -17s infinite alternate; }
 
+/* The poster's sun: a big vermilion disc printed in halftone behind the
+   canopy, breathing very slowly. Kept inside the stage (no overflow). */
+.mt-sun {
+  position: absolute;
+  left: 14%;
+  right: 14%;
+  top: 2%;
+  aspect-ratio: 1 / 1;
+  z-index: -1;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 50% 50%, var(--mt-sun) 0 58%, transparent 71%),
+    radial-gradient(circle, var(--mt-sun) 1.2px, transparent 1.6px) 0 0 / 7px 7px;
+  -webkit-mask-image: radial-gradient(circle, rgb(0 0 0) 55%, transparent 71%);
+  mask-image: radial-gradient(circle, rgb(0 0 0) 55%, transparent 71%);
+  animation: mt-breathe 9s ease-in-out infinite alternate;
+  pointer-events: none;
+}
+@keyframes mt-breathe {
+  from { transform: scale(0.94); opacity: 0.8; }
+  to   { transform: scale(1); opacity: 1; }
+}
+
 /* small enough that no layer ever crosses the window edge (the 375px rule
    counts every box, clipped or not) */
 @keyframes mt-drift {
@@ -153,9 +179,9 @@
 .mt-orbit ellipse {
   fill: none;
   stroke: var(--sw-brand-vermilion);
-  stroke-width: 1.4;
+  stroke-width: 1.6;
   vector-effect: non-scaling-stroke;
-  opacity: 0.6;
+  opacity: 0.8;
 }
 .mt-orbit {
   transform-box: view-box;
@@ -163,6 +189,8 @@
 }
 .mt-orbit-a { transform: rotate(-11deg); animation: mt-orbit-a 46s ease-in-out infinite alternate; }
 .mt-orbit-b { transform: rotate(14deg); animation: mt-orbit-b 58s ease-in-out infinite alternate; }
+.mt-orbit-c { transform: rotate(-3deg); animation: mt-orbit-c 39s ease-in-out infinite alternate; }
+@keyframes mt-orbit-c { to { transform: rotate(-16deg); } }
 @keyframes mt-orbit-a { to { transform: rotate(-4deg); } }
 @keyframes mt-orbit-b { to { transform: rotate(22deg); } }
 
@@ -175,6 +203,8 @@
 .mt-spark-1 { animation-delay: -1.4s; }
 .mt-spark-2 { animation-delay: -2.9s; }
 .mt-spark-3 { animation-delay: -4.1s; }
+.mt-spark-4 { animation-delay: -0.7s; }
+.mt-spark-5 { animation-delay: -3.5s; }
 @keyframes mt-twinkle {
   0%, 100% { transform: scale(0.55); opacity: 0.55; }
   50%      { transform: scale(1); opacity: 1; }
@@ -183,4 +213,5 @@
 /* reduced motion is instant: the scene holds still at its resting state */
 @media (prefers-reduced-motion: reduce) {
   .mt-tree { transform: none; }
+  .mt-sun, .mt-mist span, .mt-orbit, .mt-spark { animation: none; }
 }

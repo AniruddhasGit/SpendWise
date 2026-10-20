@@ -1,6 +1,6 @@
 ---
 name: SpendWise
-description: A personal rupee expense tracker set as a festival poster for your month; ivory paper, emerald ink, vermilion for money leaving.
+description: A personal dollar expense tracker set as a festival poster for your month; ivory paper, emerald ink, vermilion for money leaving.
 colors:
   paper: "#fbf0e0"
   paper-dark: "#0a1c13"
@@ -266,7 +266,7 @@ A three-ink poster: ivory paper, emerald ink, vermilion accent, with deep emeral
 **Body Font:** Geist (variable 100 to 900, self-hosted, full file including ₹ and `tnum`), falling back to system sans
 **Numeric Font:** `--sw-font-mono` keeps its name for `.sw-num` but resolves to Geist with tabular figures
 
-**Character:** A condensed poster block face for the few lines that shout, over a neutral, precise grotesque for everything that informs. Big Shoulders has no rupee sign, so `₹` falls through to Geist on purpose; on the dashboard total it is set at weight 800 so it sits with the 900-weight digits.
+**Character:** A condensed poster block face for the few lines that shout, over a neutral, precise grotesque for everything that informs. Big Shoulders carries its own `$` (amounts are US dollars, `SW-ADR-157`); on the dashboard total it is set at weight 800 so it sits with the 900-weight digits.
 
 ### Hierarchy
 - **Display** (Big Shoulders 900, clamp(3rem, 8cqi, 5.5rem), 0.95): the dashboard total only, extruded, emerald, tabular lining figures. At phone width clamp(2.5rem, 14cqi, 3.5rem).
@@ -281,7 +281,7 @@ The full step scale is `--sw-text-xs` 0.75rem, `-sm` 0.8125rem, `-base` 1rem, `-
 ### Named Rules
 **The Poster Voice Rule.** Big Shoulders and uppercase belong to poster lines only: the headline, the statement, the total and its label. Buttons, chips, entry metadata and every body line stay Geist in sentence case, never text-transformed.
 
-**The Tabular Money Rule.** Every number uses tabular figures (`.sw-num`, and every numeric class). Money is formatted en-IN (₹12,34,567.89) by `lib/money.js` and nothing else.
+**The Tabular Money Rule.** Every number uses tabular figures (`.sw-num`, and every numeric class). Money is formatted in US dollars, en-US ($1,234,567.89), by `lib/money.js` and nothing else (`SW-ADR-157`).
 
 ## Layout
 
@@ -354,7 +354,7 @@ The poster's block-letter depth: five stacked `text-shadow` copies in `--sw-extr
 
 ### The Money Tree (`MoneyTree.jsx`, signature)
 A risograph-print bonsai whose leaves are banknotes: one still image (`/assets/tree/money-tree.webp`, 1200px, provenance in its `.json` sidecar), standing on a frosted glass ground disc where its roots fade out (a mask from 76% to 96% of the height), with a soft glow pooled behind the canopy.
-- **Bills are printed, not drawn.** Two pre-rendered sprites (`bill-front.webp`, `bill-back.webp`, 256 by 132, generated locally with provenance beside each) carry the paper, guilloche, halftone oval and vermilion misregistration. Canvas only writes the label (Geist 700, brand vermilion deep) and the amount (Big Shoulders 900, brand vermilion) in the front's clear band. Base size 62 by 32px, scaled on a four-step ramp by amount (0.86 under ₹200, 1 to ₹1,000, 1.15 to ₹5,000, 1.3 above). A bill tumbles by a cosine flip never thinner than a third, sways, and settles on the ground line, then fades.
+- **Bills are printed, not drawn.** One pre-rendered sprite (`bill-front.webp`, 256 by 132, generated locally with provenance beside it) carries the paper, guilloche, halftone oval and vermilion misregistration. Canvas only writes the label (Geist 700, brand vermilion deep) and the amount (Big Shoulders 900, brand vermilion) in its clear band. Every bill is 62 by 32px and the same ivory paper whatever it says, including the bill a new expense drops (the owner, 2026-10-20: no colour change while falling, no bigger bills). A bill flutters by a cosine tilt never thinner than 60%, never turning over, sways, and settles on the ground line, then fades.
 - **What bills say.** On the dashboard, the person's own recent entries (category, or description, and amount); with nothing logged, and always on the landing page, labelled illustrative spends. Never anyone else's money.
 - **Featured drop.** After the server confirms a new expense the dashboard sends one `dropRequest`; a bill at 2.2 times size leaves the top of the canopy carrying exactly that label and amount, falls slower, lingers on the ground about 2.2s, and lands with a burst of seven vermilion spark stars.
 - **Rhythm.** A bill every 3.4s (dashboard, at most 18 live) or 1.9s (landing, at most 30). Brushing the pointer across the canopy shakes bills loose from the nearest leaves. The landing variant adds atmosphere: a breeze every 7 to 13s that sways the tree about its root and carries bills sideways, three drifting mist bands (28s, 34s, 41s), two slowly turning orbit ellipses (46s, 58s) and four twinkling sparks (5.5s).
@@ -370,7 +370,7 @@ The tree (left, on a feathered glass pool carrying the grain, never boxed as a c
 - **Do** take every colour from a `--sw-*` token, and change values only in `docs/05 B DesignSystem/tokens.css`, then regenerate the client copy and re-run `tools/contrast.py`.
 - **Do** keep emerald for action and positive money, and vermilion (`--sw-gold*`, `--sw-plot-gold`) for money leaving: totals, projections, peaks, falling bills.
 - **Do** put real figures on opaque paper (`--sw-paper-raised`) or directly on the page; keep glass for chrome.
-- **Do** set the total and poster headlines in Big Shoulders Display with `.sw-extruded`, and let `₹` fall through to Geist.
+- **Do** set the total and poster headlines in Big Shoulders Display with `.sw-extruded`, the `$` included.
 - **Do** use tabular lining figures for every number and format money only through `lib/money.js`.
 - **Do** carry the poster motif with the orbit line and the four-point spark in `--sw-brand-vermilion`, as decoration that is `aria-hidden` and hidden on narrow panes.
 - **Do** make reduced motion instant: durations collapse, entrance animations are removed, and the money tree draws nothing.

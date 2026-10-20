@@ -99,7 +99,7 @@ export default function Gate({ mode, onMode, reason, onSignedIn, onBack, autoFoc
             <MoneyTree variant="gate" alt="" />
           </div>
           <div className="gate-copy">
-            <h1 className="gate-title sw-extruded" id="gate-title">Know where every rupee goes.</h1>
+            <h1 className="gate-title sw-extruded" id="gate-title">Know where every dollar goes.</h1>
             <p className="sw-lede gate-lede">
               Log a spend in seconds and see it by category and by day.
               Your figures are visible to you alone.

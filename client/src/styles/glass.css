@@ -196,7 +196,7 @@ table { border-collapse: collapse; width: 100%; }
 
 .card-hero-value {
   /* The number is mono and tabular, so it cannot reflow. A full-width row is
-     what keeps a crore-sized figure inside its card at every width; this is
+     what keeps a billion-sized figure inside its card at every width; this is
      the belt to that pair of braces. */
   overflow-wrap: anywhere;
 }
@@ -933,8 +933,8 @@ body {
 
 /* ── 0. the face, and the generated guilloché ─────────────────────────────── */
 /* Geist, variable wght 100–900, the FULL file from the official release
-   (vercel/geist-font v1.8.1). One file, no unicode-range split: ₹ (U+20B9)
-   is in it, and a latin-only subset would draw every rupee sign from a
+   (vercel/geist-font v1.8.1). One file, no unicode-range split: $ (U+20B9)
+   is in it, and a latin-only subset would draw every dollar sign from a
    fallback font beside Geist digits. Licence: public/fonts/OFL-geist.txt. */
 @font-face {
   font-family: "Geist";
@@ -947,7 +947,7 @@ body {
 
 /* Big Shoulders Display, variable wght 100–900 (Fontsource 5.2.5), the
    condensed poster face for headlines and the big total (SW-ADR-156). It has
-   no ₹, so the rupee sign falls through to Geist on purpose. Licence:
+   no $, so the dollar sign falls through to Geist on purpose. Licence:
    public/fonts/OFL-bigshouldersdisplay.txt. */
 @font-face {
   font-family: "Big Shoulders Display";
@@ -1239,13 +1239,13 @@ body::after {
 }
 
 /* <Money> / splitMoney() (lib/motion.js) wrap the three parts of a figure:
-     <span class="sw-money"><span class="sw-money-cur">₹</span>7,581<span class="sw-money-frac">.00</span></span>
+     <span class="sw-money"><span class="sw-money-cur">$</span>7,581<span class="sw-money-frac">.00</span></span>
    The parts are inline with no whitespace between them, so innerText is the
-   exact formatter output ("₹7,581.00") — tests read it verbatim.
-   See the display-size rule below for the raised rupee and superscript paise. */
+   exact formatter output ("$7,581.00") — tests read it verbatim.
+   See the display-size rule below for the raised dollar and superscript paise. */
 .sw-money { white-space: nowrap; }
 .sw-money-frac { font-weight: var(--sw-weight-regular); }
-/* DISPLAY sizes only (>= ~28px): the ₹ set lighter and raised, the paise as a
+/* DISPLAY sizes only (>= ~28px): the $ set lighter and raised, the paise as a
    superscript. At body size both would fall under the 12px floor, so ledger
    rows and table cells keep the plain figure. Add `.sw-money-lg` to any other
    display-size figure. */

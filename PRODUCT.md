@@ -8,7 +8,7 @@ web
 
 ## Users
 
-An individual in India logging their own day-to-day spending in rupees, on their own, in private. They
+An individual logging their own day-to-day spending in US dollars, on their own, in private. They
 open SpendWise right after spending (a coffee, groceries, rent) to log it, and again when they want to
 know where the month's money went. Confirmed by the owner on 2026-10-20.
 
@@ -57,8 +57,9 @@ The owner pinned these on 2026-10-20 and they are binding:
 - Glassmorphism as the interface language.
 - A money tree on the dashboard: a painted tree whose leaves are banknotes. Bills fall from it on their
   own, more fall when the pointer brushes the canopy, and adding an expense drops a bill reading its
-  category and amount (for example "Pizza ₹10"), written in vermilion.
-- Amounts are shown in rupees (₹), formatted only by the app's single money formatter.
+  category and amount (for example "Pizza $10"), written in vermilion.
+- Amounts are shown in US dollars ($), formatted only by the app's single money formatter
+  (`SW-ADR-157`, the owner, 2026-10-20; it replaced rupees).
 
 ## Evidence on Hand
 

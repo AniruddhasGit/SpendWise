@@ -112,7 +112,7 @@ export default function Sidebar({ view, onView, principal, theme, onTheme,
 
       <nav className={`rail${open ? ' is-open' : ''}`} aria-label="Sections"
            data-testid="sidebar" inert={hidden ? '' : undefined}>
-        <div className="rail-brand">
+        <div className="rail-brand sw-focus">
           <span className="wordmark">SpendWise</span>
           <button type="button" className="icon-btn rail-close" onClick={onClose} ref={closeRef}
                   aria-label="Close menu" data-testid="rail-close">
@@ -124,8 +124,8 @@ export default function Sidebar({ view, onView, principal, theme, onTheme,
         </div>
 
         <ul className="rail-nav">
-          {items.map((it) => (
-            <li key={it.id}>
+          {items.map((it, i) => (
+            <li key={it.id} className="sw-focus" style={{ '--sw-i': i + 1 }}>
               <button
                 type="button"
                 className="rail-item"
@@ -142,7 +142,7 @@ export default function Sidebar({ view, onView, principal, theme, onTheme,
           ))}
         </ul>
 
-        <div className="rail-section">
+        <div className="rail-section sw-focus" style={{ '--sw-i': items.length + 1 }}>
           <h2 className="rail-heading" id="appearance-label">Appearance</h2>
           {/* A radiogroup, not three toggles. The three states are mutually
               exclusive and "System" is the absence of an override rather than
@@ -157,7 +157,7 @@ export default function Sidebar({ view, onView, principal, theme, onTheme,
                 aria-checked={theme === t}
                 className="segment"
                 data-testid={`theme-${t}`}
-                onClick={() => onTheme(t)}
+                onClick={(e) => onTheme(t, e)}
               >
                 {t === 'system' ? 'System' : t === 'light' ? 'Light' : 'Dark'}
               </button>

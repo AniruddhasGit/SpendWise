@@ -141,6 +141,11 @@ async def test_the_choice_survives_a_reload_and_system_is_the_absence_of_it(
     assert await page.evaluate("document.documentElement.dataset.theme") == "dark"
 
     await page.get_by_test_id("theme-system").click()
+    # A pointer press now floods the new theme in through a view transition
+    # (SW-ADR-158), which applies the change on the next frame, not inside the
+    # click. Wait for it; the assertion below is unchanged.
+    await page.wait_for_function(
+        "() => (" "!document.documentElement.hasAttribute('data-theme')" ")", timeout=5000)
     assert await page.evaluate(
         "document.documentElement.hasAttribute('data-theme')") is False
 
@@ -375,7 +380,7 @@ async def test_the_account_table_shows_counts_not_sums(page, seeded,
     b_row = await page.get_by_test_id(f"admin-user-{seeded['B']['id']}").inner_text()
     assert "4" in a_row and seeded["A"]["email"] in a_row
     assert "2" in b_row and seeded["B"]["email"] in b_row
-    assert "₹" not in a_row and "₹" not in b_row
+    assert "$" not in a_row and "$" not in b_row
 
 
 async def test_an_admin_can_sign_someone_out_and_it_actually_happens(
@@ -487,7 +492,7 @@ async def test_the_admin_charts_never_render_a_currency_symbol(page, seeded,
                                                                test_urls) -> None:
     """The signups plot reuses the dashboard's `LinePlot`, whose caption was
     hard-wired to the money formatter — so two new accounts rendered as
-    **"₹0.02"**. A currency symbol on a count, on the one screen in the product
+    **"$0.02"**. A currency symbol on a count, on the one screen in the product
     that must never show money.
 
     The component now takes the formatter from its caller, and this asserts the
@@ -498,7 +503,7 @@ async def test_the_admin_charts_never_render_a_currency_symbol(page, seeded,
     await page.wait_for_selector('[data-testid="admin-overview"]', timeout=20000)
 
     text = await page.inner_text("main")
-    assert "₹" not in text, f"a currency symbol reached the admin console: {text[:400]!r}"
+    assert "$" not in text, f"a currency symbol reached the admin console: {text[:400]!r}"
     assert "signups" in text
 
 
@@ -598,13 +603,13 @@ async def test_an_admin_opens_a_person_and_sees_their_spending_over_time(
     """**The grant, on screen.** `CR-001 §3`: a View action, a detail pane, a
     line plot, a total, a count and a daily average.
 
-    The two amounts are person A's day-one figures rendered `en-IN` by the one
-    shared formatter — ₹3,790.49 and ₹758.10. 758.10 is the gate number, so a
+    The two amounts are person A's day-one figures rendered `en-US` by the one
+    shared formatter — $3,790.49 and $758.10. 758.10 is the gate number, so a
     pane that computed its own average, or divided by the row count, fails here
     on a value `CONSTITUTION` Art IX.4 makes never-waivable.
 
     Asserted as **text on the screen**, not as a prop: the signups plot in this
-    same console once rendered two new accounts as "₹0.02" because a caption was
+    same console once rendered two new accounts as "$0.02" because a caption was
     hard-wired to the money formatter, and every test of that bug that read the
     props had passed.
     """
@@ -614,8 +619,8 @@ async def test_an_admin_opens_a_person_and_sees_their_spending_over_time(
     assert seeded["A"]["email"] in text, "the pane does not say whose figures these are"
     assert await pane.locator('[data-testid="line-plot"]').count() == 1, (
         "no line plot — the client asked for the line plot by name")
-    assert "₹3,790.49" in text, f"the total is not on the pane: {text[:400]!r}"
-    assert "₹758.10" in text, f"the daily average is not on the pane: {text[:400]!r}"
+    assert "$3,790.49" in text, f"the total is not on the pane: {text[:400]!r}"
+    assert "$758.10" in text, f"the daily average is not on the pane: {text[:400]!r}"
 
 
 async def test_the_detail_pane_shows_no_categories_at_any_granularity(
@@ -638,7 +643,7 @@ async def test_the_detail_pane_shows_no_categories_at_any_granularity(
 
     assert await pane.locator('[data-testid="donut"]').count() == 0, "a donut"
     assert await pane.locator('[data-testid="ribbon"]').count() == 0, "a ribbon"
-    # A legend row carries a category name AND its ₹ amount — the exact leak.
+    # A legend row carries a category name AND its $ amount — the exact leak.
     assert await pane.locator(".legend-amount").count() == 0
     assert "Spending by category" not in text
 
@@ -669,12 +674,12 @@ async def test_the_time_filter_changes_the_total_on_the_detail_pane(
     pane = await _open_the_detail_pane(page, seeded, test_urls)
     total = pane.get_by_test_id("admin-user-total")
     before = (await total.inner_text()).strip()
-    assert before == "₹3,790.49", before
+    assert before == "$3,790.49", before
 
     await pane.get_by_test_id("admin-period-last-month").click()
     # Waits for the total to SETTLE, not merely to change. The element is
     # replaced by "Loading…" while the new range is in flight, so a wait for
-    # "the text no longer says ₹3,790.49" is satisfied by the loading state and
+    # "the text no longer says $3,790.49" is satisfied by the loading state and
     # the assertion below then races it — which is how a correct filter fails a
     # test intermittently and gets "fixed" by loosening the assertion.
     await page.wait_for_function(
@@ -685,9 +690,9 @@ async def test_the_time_filter_changes_the_total_on_the_detail_pane(
 
     after = (await total.inner_text()).strip()
     assert after != before
-    assert after == "₹0.00", (
+    assert after == "$0.00", (
         f"July holds none of person A's expenses, so the total should read "
-        f"₹0.00, not {after!r}")
+        f"$0.00, not {after!r}")
 
 
 async def test_a_closed_account_shows_as_closed_and_can_be_restored(

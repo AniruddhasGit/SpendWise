@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { api, onSessionEnded, startSession, stopSession } from './lib/api.js'
-import { apply, stored } from './lib/theme.js'
+import { stored, switchTheme } from './lib/theme.js'
 import Sidebar from './components/Sidebar.jsx'
 import Admin from './screens/Admin.jsx'
 import Categories from './screens/Categories.jsx'
@@ -136,7 +136,9 @@ export default function App() {
     }
   }, [principal?.id])
 
-  const chooseTheme = (next) => { setTheme(next); apply(next) }
+  // A pointer press floods the page with the new theme from where it was
+  // pressed (lib/theme.js); a keyboard choice switches at once.
+  const chooseTheme = (next, event) => { setTheme(next); switchTheme(next, event) }
 
   const signedIn = (p) => {
     startSession()

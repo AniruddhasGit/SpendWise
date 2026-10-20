@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react'
-import { longDate, rupees, shortDate } from '../lib/money.js'
+import { longDate, dollars, shortDate } from '../lib/money.js'
 import { Money, staggerStyle } from '../lib/motion.js'
 
 /**
@@ -15,7 +15,7 @@ import { Money, staggerStyle } from '../lib/motion.js'
  * with the date, a dotted leader and the day's subtotal; each row is a coin,
  * the note and category, then the amount on one shared right-hand edge.
  * Every figure renders through <Money>, whose innerText is exactly what
- * rupees() returns, so nothing a test or a screen reader reads has changed.
+ * dollars() returns, so nothing a test or a screen reader reads has changed.
  *
  * `freshId` is the expense just added (SW-ADR-156): its row carries a "New"
  * tag until it has been on screen for a moment, then `onSeen` clears it.
@@ -86,7 +86,7 @@ export default function EntryList({ items, colorFor, onEdit, onDelete, busyId, f
                       className="icon-btn"
                       data-testid={`edit-${e.id}`}
                       onClick={() => onEdit(e)}
-                      aria-label={`Edit ${rupees(e.amount_paise)} on ${longDate(e.spent_on)}`}
+                      aria-label={`Edit ${dollars(e.amount_paise)} on ${longDate(e.spent_on)}`}
                     >
                       <PencilIcon />
                     </button>
@@ -96,7 +96,7 @@ export default function EntryList({ items, colorFor, onEdit, onDelete, busyId, f
                       data-testid={`delete-${e.id}`}
                       aria-disabled={busyId === e.id ? 'true' : undefined}
                       onClick={() => onDelete(e)}
-                      aria-label={`Delete ${rupees(e.amount_paise)} on ${longDate(e.spent_on)}`}
+                      aria-label={`Delete ${dollars(e.amount_paise)} on ${longDate(e.spent_on)}`}
                     >
                       <TrashIcon />
                     </button>

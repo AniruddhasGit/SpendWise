@@ -211,14 +211,16 @@
   --sw-dur-press: 120ms;
   --sw-dur-hover: 180ms;
   --sw-dur-small: 240ms;
-  --sw-dur-enter: 320ms;
+  --sw-dur-enter: 320ms;           /* drawers, sheets, the rail sliding: movement, not reveal */
+  --sw-dur-reveal: 620ms;          /* the blur-in of anything arriving (owner's reel, SW-ADR-158) */
+  --sw-dur-focus: 760ms;           /* the blur-in of a hero piece */
   --sw-dur-route: 400ms;
   --sw-dur-hero: 450ms;
   --sw-dur-spring: 650ms;
   --sw-dur-count: 900ms;
   --sw-dur-roll: 520ms;
   --sw-dur-drift: 90s;            /* the guilloché's slow drift, one loop */
-  --sw-stagger: 40ms;
+  --sw-stagger: 70ms;
   /* legacy names, kept so app.css keeps resolving */
   --sw-motion-fast: 120ms; --sw-motion-base: 240ms;
   --sw-motion-ease: cubic-bezier(0.23, 1, 0.32, 1);

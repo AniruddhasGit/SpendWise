@@ -214,10 +214,10 @@ export default function ExpensePanel({ open, editing, categories, draft, onDraft
         <form onSubmit={submit} noValidate>
           <div className="field field-amount">
             <label htmlFor={`${id}-amount`}>Amount</label>
-            {/* The rupee sign is drawn beside the figure, not typed into it:
+            {/* The dollar sign is drawn beside the figure, not typed into it:
                 the field's value stays the plain decimal the server parses. */}
             <div className="amount-wrap">
-              <span className="amount-cur" aria-hidden="true">₹</span>
+              <span className="amount-cur" aria-hidden="true">$</span>
               <input
                 id={`${id}-amount`}
                 name="amount"

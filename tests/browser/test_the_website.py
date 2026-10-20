@@ -32,7 +32,7 @@ PASSWORD = "correct-horse-battery-staple"
 # that is false on the first check fails with an EvalError instead of waiting. A
 # function string is polled without `eval` (verified 2026-10-20). The expression inside
 # the wrapper is unchanged; do not "simplify" the wrapper away.
-A_TOTAL = "₹3,790.49"
+A_TOTAL = "$3,790.49"
 
 
 async def _open_gate(page, *, register=False):
@@ -179,7 +179,7 @@ async def test_an_expense_added_through_the_form_appears_without_a_reload(
     await page.get_by_test_id("panel-submit").click()
 
     await page.wait_for_selector('[data-testid="entries"]', timeout=20000)
-    assert await page.get_by_test_id("total").inner_text() == "₹1,250.00"
+    assert await page.get_by_test_id("total").inner_text() == "$1,250.00"
     assert await page.get_by_test_id("count").inner_text() == "1"
     listed = await page.get_by_test_id("entries").inner_text()
     assert "Weekly shop" in listed
@@ -258,7 +258,7 @@ async def test_the_day_one_gate_is_visible_in_the_browser(page, seeded) -> None:
     """**Art IX.4, in a real browser.**
 
     Person A, seeded through the real endpoints, on 2026-08-05. The daily
-    average is 379049 / 5 = 75810 paise, and the screen must say ₹758.10.
+    average is 379049 / 5 = 75810 paise, and the screen must say $758.10.
 
     Not 758.09 (truncated instead of rounding half-up) and not 947.62 (divided
     by the row count rather than days elapsed). Both are asserted, because both
@@ -270,9 +270,9 @@ async def test_the_day_one_gate_is_visible_in_the_browser(page, seeded) -> None:
     await average.wait_for()
     text = await average.inner_text()
 
-    assert text == "₹758.10", f"the screen says {text!r}"
-    assert text != "₹758.09", "truncated instead of rounding half-up"
-    assert text != "₹947.62", "divided by the row count, not days elapsed"
+    assert text == "$758.10", f"the screen says {text!r}"
+    assert text != "$758.09", "truncated instead of rounding half-up"
+    assert text != "$947.62", "divided by the row count, not days elapsed"
 
     assert await page.get_by_test_id("total").inner_text() == A_TOTAL
     assert await page.get_by_test_id("count").inner_text() == "4"
@@ -285,10 +285,10 @@ async def test_the_day_one_gate_is_visible_in_the_browser(page, seeded) -> None:
     assert "758.10" in await page.content()
 
 
-async def test_the_money_is_formatted_en_in(page, seeded) -> None:
-    """`SW-ADR-056`: ₹12,34,567.89, not ₹1,234,567.89. The seeded total is
-    below a lakh, so this asserts the symbol and the thousands separator; the
-    lakh/crore grouping is proved arithmetically in the pure tests."""
+async def test_the_money_is_formatted_en_us(page, seeded) -> None:
+    """`SW-ADR-157` (which replaced `SW-ADR-056`'s rupees): US dollars,
+    grouped by thousands, $1,234,567.89. The seeded total is below a million,
+    so this asserts the symbol and the thousands separator."""
     await _sign_in(page, seeded["A"]["email"], seeded["A"]["password"])
     total = page.get_by_test_id("total")
     await total.wait_for()
@@ -303,7 +303,7 @@ async def test_person_b_sees_their_own_much_smaller_number(page, seeded) -> None
 
     total = page.get_by_test_id("total")
     await total.wait_for()
-    assert await total.inner_text() == "₹1,250.00"
+    assert await total.inner_text() == "$1,250.00"
     assert await page.get_by_test_id("count").inner_text() == "2"
 
     body = await page.content()
@@ -392,7 +392,7 @@ async def test_each_band_announces_its_category_amount_and_percentage(page,
         "[...document.querySelectorAll('.band')].map(b => b.getAttribute('aria-label'))")
     assert names
     for name in names:
-        assert re.fullmatch(r".+: ₹[\d,]+\.\d{2}, \d+% of total", name), name
+        assert re.fullmatch(r".+: \$[\d,]+\.\d{2}, \d+% of total", name), name
 
 
 async def test_selection_is_never_signalled_by_colour_alone(page, seeded) -> None:
@@ -549,7 +549,7 @@ async def test_a_failed_summary_shows_an_error_and_never_renders_zero(page,
 
     body = await page.content()
     assert "0.00" not in body, "a zero total was rendered over a failed request"
-    assert "₹0" not in body
+    assert "$0" not in body
     assert await page.locator('[data-testid="total"]').count() == 0
 
     # Retry, with the route restored, comes back to the SAME period.
@@ -642,7 +642,7 @@ async def test_a_filter_matching_nothing_is_a_different_state_from_a_new_account
     assert await page.get_by_test_id("state-no-matches").is_visible()
     # The headline still shows — a filtered zero is a real, correct zero, and
     # the state that must never show 0.00 is the FAILED one, not this.
-    assert await page.get_by_test_id("total").inner_text() == "₹0.00"
+    assert await page.get_by_test_id("total").inner_text() == "$0.00"
 
 
 # ── editing and deleting, through the screen ───────────────────────────────
@@ -657,7 +657,7 @@ async def test_an_expense_can_be_edited_and_the_total_follows(page, seeded) -> N
     await page.get_by_test_id("panel-submit").click()
 
     expected = 379049 - first["amount_paise"] + 100
-    want = f"₹{expected // 100:,}.{expected % 100:02d}"
+    want = f"${expected // 100:,}.{expected % 100:02d}"
     await page.wait_for_function(
         "() => (" f"document.querySelector('[data-testid=total]').innerText === {want!r}" ")",
         timeout=20000)
@@ -681,7 +681,7 @@ async def test_deleting_asks_first_and_names_the_amount(page, seeded) -> None:
     await page.wait_for_timeout(1000)
 
     assert messages, "no confirmation was shown before a delete"
-    assert "₹" in messages[0], "the confirm did not name the amount"
+    assert "$" in messages[0], "the confirm did not name the amount"
     assert await page.get_by_test_id("total").inner_text() == A_TOTAL, "dismiss deleted it"
 
     async def accept(d):
