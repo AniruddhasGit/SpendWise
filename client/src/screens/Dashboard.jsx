@@ -12,8 +12,7 @@ import ExpensePanel from '../components/ExpensePanel.jsx'
 import PeriodPicker from '../components/PeriodPicker.jsx'
 import Ribbon from '../components/Ribbon.jsx'
 import { FirstRun, Loading, LoadFailed, NoMatches } from '../components/States.jsx'
-import LiquidBlob from '../components/LiquidBlob.jsx'
-import { BankCard } from '../components/TiltCard.jsx'
+import MoneyTree from '../components/MoneyTree.jsx'
 import { CountUp, Odometer } from '../lib/motion.js'
 
 const UNCATEGORISED_COLOR = 'var(--sw-cat-uncat)'
@@ -66,6 +65,11 @@ export default function Dashboard({ principal, draft, onDraft }) {
   const [panelOpen, setPanelOpen] = useState(false)
   const [editing, setEditing] = useState(null)
   const [busyId, setBusyId] = useState(null)
+  // The money tree (SW-ADR-156): an added expense drops a bill carrying its
+  // category and amount, and its row stays marked until the person has seen it.
+  const [dropRequest, setDropRequest] = useState(null)
+  const [freshId, setFreshId] = useState(null)
+  const clearFresh = useCallback(() => setFreshId(null), [])
 
   const answered = useRef(false)
   const loadSeq = useRef(0)
@@ -161,11 +165,20 @@ export default function Dashboard({ principal, draft, onDraft }) {
   }
 
   const submit = async (body) => {
+    let created = null
     if (editing) await api.updateExpense(editing.id, body)
-    else await api.createExpense(body)
+    else created = await api.createExpense(body)
     // Reload AFTER the server confirms. The list never shows a row the server
-    // has not accepted (E3-S5 AC5).
+    // has not accepted (E3-S5 AC5), and the tree never drops a bill for one.
     announceNext.current = editing ? 'Expense saved. ' : 'Expense added. '
+    if (created) {
+      setDropRequest({
+        id: created.id,
+        label: created.category_name || created.description || 'Uncategorised',
+        paise: created.amount_paise,
+      })
+      setFreshId(created.id)
+    }
     await load()
   }
 
@@ -188,10 +201,15 @@ export default function Dashboard({ principal, draft, onDraft }) {
 
   // ── derived ──────────────────────────────────────────────────────────────
   const periodLabel = labelFor(range)
-  // The name embossed on the card. Display name first; an account that never
-  // set one shows the part of its email before the @, never the whole address.
-  const holderName = principal?.display_name || principal?.email?.split('@')[0] || null
   const accountIsNew = everAny === false
+
+  // What the tree's bills say by default: this person's own recent spends.
+  const treeBills = useMemo(
+    () => (entries?.items ?? []).slice(0, 40).map((e) => ({
+      label: e.category_name || e.description || 'Uncategorised',
+      paise: e.amount_paise,
+    })),
+    [entries])
 
   const delta = useMemo(() => {
     if (!scoped || !previous || previous.total_paise === 0) return null
@@ -270,29 +288,26 @@ export default function Dashboard({ principal, draft, onDraft }) {
           <FirstRun onAdd={openAdd} />
         ) : (
           <>
-            {/* The hero is its OWN full-width row, never a span inside a stat
-                grid: spanning clipped `₹3,790.49` at four columns, and a lakh
-                figure is four characters longer.
-
-                The total sits on the SOLID bank card (an opaque face; real
-                money is never printed on translucent glass), over the one
-                LiquidBlob this screen is allowed. `<CountUp>` keeps the
-                element's innerText the final figure on every frame, which is
-                what the browser tests and a screen reader read. */}
+            {/* The hero is a poster (SW-ADR-156): the money tree on the left,
+                the total as the headline on the right, set in extruded
+                numerals on the page itself, never on glass. `<CountUp>` keeps
+                the element's innerText the final figure on every frame, which
+                is what the browser tests and a screen reader read; the tree's
+                bills are canvas pixels and never part of any figure. */}
             <section className="dash-hero" aria-label="Total">
-              <div className="sw-stage dash-stage">
-                <LiquidBlob contained x={0.5} y={0.5} size={0.88} />
-                <span className="sw-rosette" aria-hidden="true" />
-                <BankCard
-                  variant="solid"
-                  className="dash-bankcard"
-                  data-testid="headline"
-                  label={category !== null ? 'Filtered total' : 'Total spent'}
-                  value={<CountUp value={scoped.total_paise} data-testid="total"
-                                  from={entered ? scoped.total_paise : 0} />}
-                  holder={holderName}
-                  meta={periodLabel}
-                >
+              <div className="dash-tree">
+                <MoneyTree variant="dashboard" bills={treeBills} dropRequest={dropRequest} alt="" />
+              </div>
+
+              <div className="dash-poster">
+                <div className="dash-headline" data-testid="headline">
+                  <p className="dash-total sw-extruded">
+                    <CountUp value={scoped.total_paise} data-testid="total"
+                             from={entered ? scoped.total_paise : 0} />
+                  </p>
+                  <p className="dash-total-label">
+                    {category !== null ? 'Filtered total' : 'Total spent'}, {periodLabel.toLowerCase()}
+                  </p>
                   {delta && (
                     <p className={`delta dash-delta${delta.up ? ' is-up' : ' is-down sw-pos'}`}
                        data-testid="delta">
@@ -303,59 +318,59 @@ export default function Dashboard({ principal, draft, onDraft }) {
                       </span>
                     </p>
                   )}
-                </BankCard>
-              </div>
+                </div>
 
-              {/* The statement: three figures read like the lines of a bank
-                  statement, in one opaque card, rather than three equal tiles.
-                  `<Odometer>` rolls each digit when the period or filter
-                  changes; its innerText is always the real value. */}
-              <div className="card card-statement dash-figures">
-                <dl className="dash-figure-list">
-                  <div className="dash-figure">
-                    <dt className="card-label">Entries</dt>
-                    <dd className="card-value">
-                      <Odometer value={scoped.count} format={String} split={false}
-                                data-testid="count" />
-                    </dd>
-                    {biggest && (
-                      <dd className="entry-meta" data-testid="biggest">
-                        Largest {rupees(biggest.amount_paise)}
+                {/* The statement: three figures read like the lines of a bank
+                    statement, in one opaque card, rather than three equal tiles.
+                    `<Odometer>` rolls each digit when the period or filter
+                    changes; its innerText is always the real value. */}
+                <div className="card card-statement dash-figures">
+                  <dl className="dash-figure-list">
+                    <div className="dash-figure">
+                      <dt className="card-label">Entries</dt>
+                      <dd className="card-value">
+                        <Odometer value={scoped.count} format={String} split={false}
+                                  data-testid="count" />
                       </dd>
-                    )}
-                  </div>
+                      {biggest && (
+                        <dd className="entry-meta" data-testid="biggest">
+                          Largest {rupees(biggest.amount_paise)}
+                        </dd>
+                      )}
+                    </div>
 
-                  <div className="dash-figure">
-                    <dt className="card-label">Daily average</dt>
-                    {/* `null`, never 0.00, when no day has elapsed. A wholly
-                        future range has no average, and 0.00 reads as "spent
-                        nothing" on the first screen a new account sees
-                        (`SW-ADR-053`). */}
-                    <dd className="card-value">
-                      {scoped.daily_average_paise === null
-                        ? <span data-testid="daily-average">Not yet</span>
-                        : <Odometer value={scoped.daily_average_paise}
-                                    data-testid="daily-average" />}
-                    </dd>
-                    <dd className="entry-meta" data-testid="days-elapsed">
-                      over {days(scoped.days_elapsed)}
-                    </dd>
-                  </div>
+                    <div className="dash-figure">
+                      <dt className="card-label">Daily average</dt>
+                      {/* `null`, never 0.00, when no day has elapsed. A wholly
+                          future range has no average, and 0.00 reads as "spent
+                          nothing" on the first screen a new account sees
+                          (`SW-ADR-053`). */}
+                      <dd className="card-value">
+                        {scoped.daily_average_paise === null
+                          ? <span data-testid="daily-average">Not yet</span>
+                          : <Odometer value={scoped.daily_average_paise}
+                                      data-testid="daily-average" />}
+                      </dd>
+                      <dd className="entry-meta" data-testid="days-elapsed">
+                        over {days(scoped.days_elapsed)}
+                      </dd>
+                    </div>
 
-                  <div className="dash-figure">
-                    <dt className="card-label">On track for</dt>
-                    <dd className="card-value dash-projection">
-                      {projection === null
-                        ? <span data-testid="projection">—</span>
-                        : <Odometer value={projection} data-testid="projection" />}
-                    </dd>
-                    <dd className="entry-meta">
-                      {projection === null
-                        ? 'this period has finished'
-                        : 'estimate, if the rest matches so far'}
-                    </dd>
-                  </div>
-                </dl>
+                    <div className="dash-figure">
+                      <dt className="card-label">On track for</dt>
+                      <dd className="card-value dash-projection">
+                        {projection === null
+                          ? <span data-testid="projection">—</span>
+                          : <Odometer value={projection} data-testid="projection" />}
+                      </dd>
+                      <dd className="entry-meta">
+                        {projection === null
+                          ? 'this period has finished'
+                          : 'estimate, if the rest matches so far'}
+                      </dd>
+                    </div>
+                  </dl>
+                </div>
               </div>
             </section>
 
@@ -417,7 +432,8 @@ export default function Dashboard({ principal, draft, onDraft }) {
               />
             ) : entries ? (
               <EntryList items={entries.items} colorFor={colorFor}
-                         onEdit={openEdit} onDelete={remove} busyId={busyId} />
+                         onEdit={openEdit} onDelete={remove} busyId={busyId}
+                         freshId={freshId} onSeen={clearFresh} />
             ) : null}
           </>
         )}

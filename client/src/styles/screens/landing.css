@@ -1,0 +1,136 @@
+/* The landing page (SW-ADR-156), composed like the owner's festival poster.
+   Desktop: headline | tree | vermilion statement. Phone: one column, the
+   tree between the headline and the statement. */
+
+.landing {
+  position: relative;
+  isolation: isolate;
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  overflow-x: clip;
+  background:
+    radial-gradient(70% 55% at 18% 8%, var(--sw-wash-1), transparent 70%),
+    radial-gradient(60% 50% at 88% 20%, var(--sw-wash-2), transparent 70%),
+    linear-gradient(180deg, var(--sw-bg-1), var(--sw-bg-2) 70%, var(--sw-bg-3));
+  color: var(--sw-ink);
+}
+/* risograph grain over the whole sheet: fixed, never repainted on scroll */
+.landing::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 4;
+  pointer-events: none;
+  background-image: var(--sw-grain);
+  opacity: calc(var(--sw-grain-opacity) * 1.6);
+  mix-blend-mode: multiply;
+}
+:root[data-theme="dark"] .landing::after { mix-blend-mode: overlay; }
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .landing::after { mix-blend-mode: overlay; }
+}
+
+/* ── the bar: a glass strip, wordmark left, Sign in top right ──────────── */
+.landing-bar {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sw-space-4);
+  margin: var(--sw-space-4) clamp(var(--sw-space-4), 3vw, var(--sw-space-10)) 0;
+  padding: var(--sw-space-2) var(--sw-space-2) var(--sw-space-2) var(--sw-space-5);
+  border-radius: var(--sw-radius-full);
+  background: var(--sw-glass);
+  border: 1px solid var(--sw-glass-border);
+  box-shadow: var(--sw-highlight), var(--sw-shadow-sm);
+  -webkit-backdrop-filter: blur(var(--sw-blur-md)) saturate(var(--sw-glass-saturate));
+  backdrop-filter: blur(var(--sw-blur-md)) saturate(var(--sw-glass-saturate));
+}
+.landing-brand {
+  font-family: var(--sw-font-display);
+  font-weight: 800;
+  font-size: 1.5rem;
+  letter-spacing: 0.01em;
+  color: var(--sw-pine);
+}
+.landing-signin { border-radius: var(--sw-radius-full); padding-inline: var(--sw-space-5); }
+
+/* ── the sheet ─────────────────────────────────────────────────────────── */
+.landing-hero {
+  flex: 1;
+  display: grid;
+  grid-template-columns: minmax(0, 1.05fr) minmax(0, 1.7fr) minmax(0, 0.8fr);
+  align-items: center;
+  gap: clamp(var(--sw-space-4), 2.5vw, var(--sw-space-10));
+  width: 100%;
+  max-width: 1440px;
+  margin: 0 auto;
+  padding: clamp(var(--sw-space-4), 3vw, var(--sw-space-10));
+}
+
+/* the headline: extruded block letters, like the poster's lettering. The
+   extrusion is a stack of offset copies in the deep green, so the letters
+   stay real text (selectable, readable, scalable). */
+.landing-title {
+  margin: 0;
+  font-family: var(--sw-font-display);
+  font-weight: 900;
+  text-transform: uppercase;
+  font-size: clamp(2.5rem, 4.4vw, 5rem);
+  line-height: 0.96;
+  color: var(--sw-pine);
+}
+.landing-title span { display: block; }
+
+/* the tree is the hero: it may grow past its column a little, the way the
+   poster's art spills into the type around it */
+.landing-tree {
+  justify-self: center;
+  width: min(118%, 860px);
+  margin-inline: -9%;
+}
+
+.landing-side {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--sw-space-8);
+}
+.landing-statement {
+  margin: 0;
+  font-family: var(--sw-font-display);
+  font-weight: 800;
+  text-transform: uppercase;
+  font-size: clamp(1.6rem, 2.3vw, 2.25rem);
+  line-height: 1.02;
+  letter-spacing: 0.01em;
+  color: var(--sw-danger);
+}
+.landing-statement span { display: block; }
+.landing-start { white-space: nowrap; }
+
+/* ── narrower sheets ───────────────────────────────────────────────────── */
+@media (max-width: 1100px) {
+  .landing-hero {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    grid-template-areas: "title side" "tree tree";
+  }
+  .landing-title { grid-area: title; }
+  .landing-side { grid-area: side; }
+  .landing-tree { grid-area: tree; width: min(100%, 640px); margin-inline: 0; }
+}
+@media (max-width: 640px) {
+  .landing-bar { margin-inline: var(--sw-space-3); padding-left: var(--sw-space-4); }
+  .landing-hero {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas: "title" "tree" "side";
+    gap: var(--sw-space-5);
+    padding-top: var(--sw-space-8);
+  }
+  .landing-title { font-size: clamp(2.5rem, 13vw, 3.4rem); }
+  .landing-statement { font-size: 1.5rem; }
+  .landing-start { width: 100%; }
+}

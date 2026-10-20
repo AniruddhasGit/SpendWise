@@ -966,6 +966,18 @@ body {
   unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
 }
 
+/* The poster's extruded block lettering (SW-ADR-156): offset copies in
+   --sw-extrude, sized in em so the depth scales with the type and the letters
+   never smear into each other. The glyphs stay real text. */
+.sw-extruded {
+  letter-spacing: 0.015em;
+  text-shadow:
+    0.01em 0.01em 0 var(--sw-extrude), 0.02em 0.02em 0 var(--sw-extrude),
+    0.03em 0.03em 0 var(--sw-extrude), 0.04em 0.04em 0 var(--sw-extrude),
+    0.05em 0.05em 0 var(--sw-extrude),
+    0.08em 0.12em 0.22em rgb(11 42 28 / 0.18);
+}
+
 /* ── 1. the page ─────────────────────────────────────────────────────────── */
 :root {
 

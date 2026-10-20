@@ -96,39 +96,39 @@
   gap: var(--sw-space-6);
   min-width: 0;
 }
-.gate-brand { align-self: flex-start; }
-
-.gate-stage {
-  min-height: clamp(340px, 52vh, 520px);
-  padding: var(--sw-space-8) 0;
-  /* The orb: wider than the card and centred below-right of it, so molten
-     metal shows past the card's right, top and bottom edges. It spills at
-     most a few dozen px below the stage, into the gap and the title (ink on
-     the orb: 5.65:1 worst case, dark gold).
-     It must never reach the lede: MUTED ink on the orb is only 3.12:1. */
-  --orb-r: 215px;
-  --orb-dx: 30px;
-  --orb-dy: 40px;
-  --orb-bleed: 112px;
+.gate-brandrow {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: var(--sw-space-3) var(--sw-space-6);
 }
-.gate-stage > .sw-rosette { width: min(120%, 600px); }
-.gate-bankcard { width: min(100%, 400px); }
+.gate-brand { align-self: flex-start; }
+.gate-back { font-size: var(--sw-text-sm); }
+
+/* The money tree stands where the bank card used to (SW-ADR-156). */
+.gate-tree {
+  width: min(100%, 470px);
+  align-self: center;
+}
 
 .gate-copy {
   display: flex;
   flex-direction: column;
   gap: var(--sw-space-3);
 }
-/* Five words, two lines at most: big and tight, set in ink. */
+/* Five words, two lines at most: the poster's extruded block lettering,
+   the same voice as the landing page's headline. */
 .gate-title,
 .page-title.gate-title {
   margin: 0;
-  max-width: 13ch;
+  max-width: 14ch;
+  font-family: var(--sw-font-display);
+  letter-spacing: 0.015em;
   font-size: clamp(2.5rem, 4.4vw, 3.75rem);
-  font-weight: var(--sw-weight-semibold);
-  line-height: 1.02;
-  letter-spacing: var(--sw-track-display);
-  color: var(--sw-ink);
+  font-weight: 900;
+  text-transform: uppercase;
+  line-height: 0.95;
+  color: var(--sw-pine);
 }
 .gate-lede { margin: 0; }
 
@@ -183,20 +183,7 @@
     padding: var(--sw-space-5) var(--sw-space-4) var(--sw-space-10);
   }
   .gate-hero { gap: var(--sw-space-4); }
-  .gate-stage {
-    min-height: 0;
-    padding: var(--sw-space-8) 0;
-    /* The card nearly fills the width here, so the orb peeks out BELOW it
-       (the radius is capped to the stage width in LiquidBlob.jsx). It spills
-       ~35-45px under the stage, into the gap and the title, and never reaches
-       the lede (shown from 601px). */
-    --orb-r: 150px;
-    --orb-dx: 0px;
-    --orb-dy: 24px;
-    --orb-bleed: 100px;
-  }
-  .gate-stage > .sw-rosette { width: min(110%, 420px); }
-  .gate-bankcard { width: min(82%, 320px); }
+  .gate-tree { width: min(78%, 360px); }
   .gate-title,
   .page-title.gate-title { font-size: clamp(1.875rem, 7.4vw, 2.5rem); }
   .gate-card {
@@ -207,7 +194,7 @@
 /* A phone: keep the form near the fold. The lede is the first thing to go. */
 @media (max-width: 600px) {
   .gate-lede { display: none; }
-  .gate-bankcard { width: min(76%, 280px); }
+  .gate-tree { width: min(70%, 280px); }
 }
 
 /* ── 3. the app shell ─────────────────────────────────────────────────────── */

@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { api } from '../lib/api.js'
-import LiquidBlob from '../components/LiquidBlob.jsx'
-import { BankCard } from '../components/TiltCard.jsx'
+import MoneyTree from '../components/MoneyTree.jsx'
 
 /**
  * Sign in and sign up. One component, because they are the same form with one
@@ -11,16 +10,14 @@ import { BankCard } from '../components/TiltCard.jsx'
  * saying so, rather than dumping the person at a bare sign-in form that looks
  * like they were never signed in.
  *
- * Layout: the hero (a glass card floating over the liquid orb, on banknote
- * guilloché) on the left, a compact sign-in panel on the right. Stacked on a
- * phone, with the card shrunk above the form. The card is decorative and
- * aria-hidden; it repeats nothing a reader needs, except that it shows the
- * name being typed into "Your name", which is only ever a flourish.
+ * Layout: the hero (the money tree, quietly dropping its bills, SW-ADR-156)
+ * on the left, a compact sign-in panel on the right. Stacked on a phone, with
+ * the tree shrunk above the form. `onBack` returns to the landing page.
  *
  * Session bookkeeping (epochs, arming the guard) is App's job, in
  * `onSignedIn`. This screen only asks the server and reports what it said.
  */
-export default function Gate({ mode, onMode, reason, onSignedIn, autoFocus = false }) {
+export default function Gate({ mode, onMode, reason, onSignedIn, onBack, autoFocus = false }) {
   const [form, setForm] = useState({ email: '', password: '', display_name: '' })
   const [error, setError] = useState(null)
   const [busy, setBusy] = useState(false)
@@ -68,7 +65,6 @@ export default function Gate({ mode, onMode, reason, onSignedIn, autoFocus = fal
   }
 
   const errorOn = (field) => (error && error.field === field ? error.message : null)
-  const holder = (registering && form.display_name.trim()) || 'Your name'
 
   // A wrong email or password comes back as the SAME generic 401 the server
   // sends for an expired session ("Your session has ended. Please sign in
@@ -90,14 +86,20 @@ export default function Gate({ mode, onMode, reason, onSignedIn, autoFocus = fal
     <div className="gate">
       <div className="gate-layout">
         <section className="gate-hero sw-enter" aria-labelledby="gate-title">
-          <span className="wordmark gate-brand">SpendWise</span>
-          <div className="sw-stage gate-stage">
-            <LiquidBlob contained x={0.5} y={0.5} size={0.88} />
-            <span className="sw-rosette" aria-hidden="true" />
-            <BankCard decorative className="gate-bankcard" holder={holder} meta="Since 2026" />
+          <div className="gate-brandrow">
+            <span className="wordmark gate-brand">SpendWise</span>
+            {onBack && (
+              <button type="button" className="btn-link gate-back" data-testid="gate-back"
+                      onClick={onBack}>
+                Back to the home page
+              </button>
+            )}
+          </div>
+          <div className="gate-stage gate-tree">
+            <MoneyTree variant="gate" alt="" />
           </div>
           <div className="gate-copy">
-            <h1 className="gate-title" id="gate-title">Know where every rupee goes.</h1>
+            <h1 className="gate-title sw-extruded" id="gate-title">Know where every rupee goes.</h1>
             <p className="sw-lede gate-lede">
               Log a spend in seconds and see it by category and by day.
               Your figures are visible to you alone.

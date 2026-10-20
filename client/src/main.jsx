@@ -15,6 +15,8 @@ import './styles/screens/dashboard.css'
 import './styles/screens/charts.css'
 import './styles/screens/expenses.css'
 import './styles/screens/settings-admin.css'
+import './styles/screens/money-tree.css'
+import './styles/screens/landing.css'
 
 // BEFORE the first render. Applying the theme in an effect means the first
 // paint uses the media query and then flips — a white flash on every load for

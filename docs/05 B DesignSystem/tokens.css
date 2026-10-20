@@ -138,6 +138,18 @@
 
   --sw-on-pine: #ffffff;
 
+  /* the owner's brand inks, CONSTANT across themes (SW-ADR-156). For printed
+     objects only (the money tree's bills): paper is paper in either theme.
+     Never page text; the themed tokens above carry the contrast guarantees. */
+  --sw-brand-ivory: #f9ebd7;
+  --sw-brand-emerald: #046a38;
+  --sw-brand-emerald-deep: #03522b;
+  --sw-brand-vermilion: #e34222;
+  --sw-brand-vermilion-deep: #b3301a;
+
+  /* the depth of the poster's extruded letters and numerals */
+  --sw-extrude: #0b2a1c;
+
   /* type — ONE family. Geist, variable 100–900, self-hosted (SW-ADR-020) */
   --sw-font-display: "Big Shoulders Display", "Geist", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
   --sw-font-body:    "Geist", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
@@ -244,6 +256,7 @@
     --sw-danger: #ff8466;
     --sw-danger-soft: #3b1a12;
     --sw-on-pine: #06140d;
+    --sw-extrude: #046a38;
 
     --sw-gold: #ff8f73;
     --sw-gold-fill: #e34222;
@@ -330,6 +343,7 @@
   --sw-danger: #ff8466;
   --sw-danger-soft: #3b1a12;
   --sw-on-pine: #06140d;
+  --sw-extrude: #046a38;
 
   --sw-gold: #ff8f73;
   --sw-gold-fill: #e34222;

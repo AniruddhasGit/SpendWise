@@ -6,6 +6,7 @@ import Admin from './screens/Admin.jsx'
 import Categories from './screens/Categories.jsx'
 import Dashboard from './screens/Dashboard.jsx'
 import Gate from './screens/Gate.jsx'
+import Landing from './screens/Landing.jsx'
 import Settings from './screens/Settings.jsx'
 
 /**
@@ -31,6 +32,11 @@ export default function App() {
   const [principal, setPrincipal] = useState(null)
   const [checking, setChecking] = useState(true)
   const [mode, setMode] = useState('login')
+  // What a signed-out visitor sees: the landing page on a first visit
+  // (SW-ADR-156), the sign-in form once they ask for it. Anyone leaving the app
+  // (a sign-out, an ended session) goes straight to the form, where the reason
+  // banner and the focused email field are.
+  const [front, setFront] = useState('landing')
   const [reason, setReason] = useState(null)
   const [view, setView] = useState('dashboard')
   const [animateRoute, setAnimateRoute] = useState(false)
@@ -67,6 +73,7 @@ export default function App() {
   const resetShell = (nextReason) => {
     setPrincipal(null)
     setMode('login')
+    setFront('gate')
     setView('dashboard')
     setAnimateRoute(false)
     setRailOpen(false)
@@ -202,9 +209,14 @@ export default function App() {
   }
 
   if (!principal) {
+    if (front === 'landing') {
+      const open = (m) => { setMode(m); setReason(null); setGateFocus(true); setFront('gate') }
+      return <Landing onSignIn={() => open('login')} onRegister={() => open('register')} />
+    }
     return (
       <Gate mode={mode} onMode={(m) => { setMode(m); setReason(null) }} reason={reason}
-            autoFocus={gateFocus} onSignedIn={signedIn} />
+            autoFocus={gateFocus} onSignedIn={signedIn}
+            onBack={() => { setReason(null); setFront('landing') }} />
     )
   }
 
