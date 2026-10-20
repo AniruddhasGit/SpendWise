@@ -146,24 +146,30 @@
   --sw-brand-emerald-deep: #03522b;
   --sw-brand-vermilion: #e34222;
   --sw-brand-vermilion-deep: #b3301a;
-  /* The landing scene (SW-ADR-159): an overcast dusk the tree stands in, the
-     same in both themes, like the brand inks. Ivory type on the dark edges is
-     well past 7:1; the pale centre is the fog lit from behind the tree. */
-  --sw-dusk-sky: #18201c;         /* the darkest edge */
-  --sw-dusk-mid: #2c3a33;         /* overcast */
-  --sw-dusk-haze: #6f7d74;        /* fog lit from behind */
-  --sw-dusk-glow: #a7b2a7;        /* the brightest fog, right behind the canopy */
-  --sw-dusk-fog: 220 228 220;     /* the mist, as an rgb triple for alpha */
-  --sw-dusk-ink: #f3e6d2;         /* type on the scene: the ivory, a touch dimmer */
-  --sw-dusk-ink-quiet: #b9b6a8;
+  /* The signed-out scene (SW-ADR-159, warmed by SW-ADR-160 at the owner's
+     request: "more of that ivory and reddish, way too much olive"). An ember
+     dusk, warm near-black and umber, the fog and type in the brand ivory, the
+     actions in vermilion; the tree is the one green. Ivory on the darkest
+     edge is past 15:1, the quiet ink past 7:1 on the umber. */
+  --sw-dusk-sky: #1a1411;         /* the darkest edge, a warm near-black */
+  --sw-dusk-mid: #2d221c;         /* umber */
+  --sw-dusk-haze: #7a6a5e;        /* fog lit from behind */
+  --sw-dusk-glow: #bfae9c;        /* the brightest fog */
+  --sw-dusk-fog: 240 228 210;     /* the mist: warm ivory, as an rgb triple for alpha */
+  --sw-dusk-ink: #f9ebd7;         /* type on the scene: the brand ivory */
+  --sw-dusk-ink-quiet: #c7b7a2;
   /* The same scene at dawn: light mode on the landing and sign-in pages
-     (SW-ADR-160). Deep emerald ink on warm ivory, the fog a soft grey-green so
+     (SW-ADR-160). Warm brown ink on the brand ivory, the fog a soft taupe so
      it still reads on a light ground. */
-  --sw-dawn-sky: #e9dcc5;         /* the edges */
-  --sw-dawn-mid: #f6ecdb;         /* the light middle */
-  --sw-dawn-fog: 128 144 134;     /* the mist on ivory, as an rgb triple */
-  --sw-dawn-ink: #10301f;         /* type on the dawn scene */
-  --sw-dawn-ink-quiet: #3c5446;
+  --sw-dawn-sky: #efdfc6;         /* the edges */
+  --sw-dawn-mid: #f9ebd7;         /* the brand ivory */
+  --sw-dawn-fog: 150 124 106;     /* the mist on ivory: warm taupe, as an rgb triple */
+  --sw-dawn-ink: #2e1810;         /* type on the dawn scene */
+  --sw-dawn-ink-quiet: #6b4a3a;
+  /* the scene's actions: vermilion deep enough for ivory type (5.33:1, measured) */
+  --sw-ember: #b3301a;
+  --sw-ember-press: #8f2514;
+  --sw-ember-glow: #e34222;
 
   /* the depth of the poster's extruded letters and numerals */
   --sw-extrude: #0b2a1c;

@@ -94,6 +94,24 @@ reduced motion thing".
      captures it invisible, mid-entrance. It stays off for that screen (`.sw-carried`), because
      lifting the override would replay the entrance.
 
+10. **The dashboard's fog, and the scene's colours** (owner, later on 2026-10-21).
+    - The dashboard's tree, and the tree on a new account's first screen, stand in the same fog
+      pool as on the sign-in page, and the sign-in fog glides into it as you land. The fog
+      follows the app's theme: the dawn ink on a light page.
+    - On a phone the pool stays within the tree's width, because nothing may reach past a 375px
+      screen.
+    - "More ivory and reddish, way too much olive": the scene is now an ember dusk. The dusk
+      tokens are warm near-black and umber, the fog and type are the brand ivory, and the
+      actions are vermilion. The headline's 3D shadow is vermilion too, and links stay ivory with
+      a vermilion underline.
+    - Light mode is warm brown ink on the brand ivory, with a taupe fog.
+    - The sign-in card and inputs use the scene's warm inks. The tree stays the one green.
+    - Measured contrast:
+      - ivory on the vermilion button 5.33:1;
+      - quiet ink on umber 7.90:1;
+      - dawn quiet ink on ivory 6.71:1;
+      - every other pair above 13:1.
+
 ## Consequences
 
 - The front lives at a new `*.onrender.com` address. The old address keeps working, but a visit

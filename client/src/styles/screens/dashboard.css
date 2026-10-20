@@ -549,3 +549,19 @@
   width: min(78%, 380px);
   margin: 0 auto var(--sw-space-4);
 }
+
+/* The dashboard's tree stands in the same pool of fog as on the sign-in page
+   (SW-ADR-160), and the sign-in fog glides into it (`sw-fog-in`, shell.css).
+   The fog follows the app's theme: the dawn ink on a light page. */
+.dash-tree .mt { position: relative; z-index: 1; }
+/* the pool is wider than the tree: keep it from widening the page sideways */
+.dash-hero, .state-first-run { overflow-x: clip; }
+/* narrower than the sign-in page's pool: the side menu is close on the left */
+.dash-tree .gate-fog { left: -35%; width: 170%; }
+@media (max-width: 640px) {
+  .dash-tree .gate-fog { left: 0; width: 100%; }   /* within a 375px screen */
+}
+:root[data-theme="light"] .dash-tree { --sw-dusk-fog: var(--sw-dawn-fog); }
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme]) .dash-tree { --sw-dusk-fog: var(--sw-dawn-fog); }
+}

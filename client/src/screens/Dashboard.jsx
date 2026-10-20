@@ -13,6 +13,7 @@ import PeriodPicker from '../components/PeriodPicker.jsx'
 import Ribbon from '../components/Ribbon.jsx'
 import { FirstRun, Loading, LoadFailed, NoMatches } from '../components/States.jsx'
 import MoneyTree from '../components/MoneyTree.jsx'
+import Fog from '../components/Fog.jsx'
 import { CountUp, Odometer } from '../lib/motion.js'
 
 const UNCATEGORISED_COLOR = 'var(--sw-cat-uncat)'
@@ -312,7 +313,9 @@ export default function Dashboard({ principal, draft, onDraft }) {
                 <path d="M84 34L85.2 40L91 41.2L85.2 42.4L84 48L82.8 42.4L77 41.2L82.8 40Z" />
               </svg>
               <div className="dash-tree sw-focus" style={{ '--sw-i': 1 }}>
+                <Fog className="gate-fog gate-fog-back" layer="back" pool stage=".dash-tree" />
                 <MoneyTree variant="dashboard" bills={treeBills} dropRequest={dropRequest} alt="" />
+                <Fog className="gate-fog gate-fog-front" pool stage=".dash-tree" />
               </div>
 
               <div className="dash-poster">

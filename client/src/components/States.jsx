@@ -10,6 +10,7 @@
  */
 
 import MoneyTree from './MoneyTree.jsx'
+import Fog from './Fog.jsx'
 
 function Mark({ tone = 'gold', d }) {
   return (
@@ -35,7 +36,9 @@ export function FirstRun({ onAdd }) {
       {/* the tree carried in from the sign-in page (SW-ADR-160), bare of
           falling bills: nothing has been spent yet */}
       <div className="dash-tree first-run-tree">
+        <Fog className="gate-fog gate-fog-back" layer="back" pool stage=".dash-tree" />
         <MoneyTree variant="dashboard" drops={false} alt="" />
+        <Fog className="gate-fog gate-fog-front" pool stage=".dash-tree" />
       </div>
       <h2 className="state-title">Your ledger is empty</h2>
       <p className="state-body">

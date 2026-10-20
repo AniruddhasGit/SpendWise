@@ -73,7 +73,7 @@ export default function Fog({ ground: groundDefault = 0.72, floor = null, stage 
     if (!canvas) return undefined
     const ctx = canvas.getContext('2d')
     if (!ctx) return undefined
-    const colour = getComputedStyle(canvas).getPropertyValue('--sw-dusk-fog').trim() || '220 228 220'
+    let colour = getComputedStyle(canvas).getPropertyValue('--sw-dusk-fog').trim() || '220 228 220'
     const SCALE = 0.6
     let W = 1; let H = 1
     let ground = groundDefault
@@ -146,7 +146,9 @@ export default function Fog({ ground: groundDefault = 0.72, floor = null, stage 
     // an oval that fades out at its edges
     const poolMask = (gy) => {
       if (!pool) return
-      const rx = Math.max(60, stageW * 0.72); const ry = Math.max(30, span * 3.4)
+      // the oval always fits inside the canvas, so its edge never shows as a cut
+      const room = Math.max(40, Math.min(trunkX, W - trunkX) * 0.98)
+      const rx = Math.min(Math.max(60, stageW * 0.72), room); const ry = Math.max(30, span * 3.4)
       ctx.save()
       ctx.globalAlpha = 1
       ctx.globalCompositeOperation = 'destination-in'
@@ -226,6 +228,16 @@ export default function Fog({ ground: groundDefault = 0.72, floor = null, stage 
       start()
     }
     img.src = SRC
+    // the app's theme can change under the dashboard's fog: re-tint it
+    const themeMo = new MutationObserver(() => {
+      const next = getComputedStyle(canvas).getPropertyValue('--sw-dusk-fog').trim() || '220 228 220'
+      if (next === colour || !img.complete) return
+      colour = next
+      tiles = tint(img, colour)
+      strips.clear()
+      draw()
+    })
+    themeMo.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] })
     const ro = new ResizeObserver(() => { measure(); draw() })
     ro.observe(canvas)
     const io = new IntersectionObserver(([e]) => { visible = e.isIntersecting; if (visible) start(); else stop() })
@@ -235,6 +247,7 @@ export default function Fog({ ground: groundDefault = 0.72, floor = null, stage 
     return () => {
       stop()
       img.onload = null
+      themeMo.disconnect()
       ro.disconnect()
       io.disconnect()
       document.removeEventListener('visibilitychange', onVis)

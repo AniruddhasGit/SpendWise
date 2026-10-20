@@ -208,7 +208,28 @@
 }
 .gate.scene::before,
 .gate.scene::after { display: none; }
+.gate.scene { --sw-extrude: var(--sw-ember); }
 .gate.scene .gate-title { color: var(--sw-dusk-ink); }
+/* the card in the scene's own warm inks, not the app's green-dark paper */
+.gate.scene .gate-card {
+  background: color-mix(in srgb, var(--sw-dusk-mid) 86%, transparent);
+  border-color: var(--scene-bar-edge);
+  color: var(--sw-dusk-ink);
+}
+.gate.scene .gate-form-title { color: var(--sw-dusk-ink); }
+.gate.scene .gate-sub,
+.gate.scene .gate-footer,
+.gate.scene .gate-hint,
+.gate.scene .gate-card label { color: var(--sw-dusk-ink-quiet); }
+.gate.scene .gate-footer { border-top-color: var(--scene-bar-edge); }
+.gate.scene .gate-card input {
+  background: color-mix(in srgb, var(--sw-dusk-sky) 70%, transparent);
+  border-color: var(--scene-bar-edge);
+  color: var(--sw-dusk-ink);
+}
+.gate.scene[data-scene="light"] .gate-card input {
+  background: color-mix(in srgb, var(--sw-brand-ivory) 80%, white);
+}
 .gate.scene .gate-lede { color: var(--sw-dusk-ink-quiet); }
 .gate.scene .gate-brand { color: var(--sw-dusk-ink); }
 .gate-theme { margin-left: auto; }
@@ -226,6 +247,12 @@
   width: 210%;
   height: 115%;
   pointer-events: none;
+}
+/* on a phone the pool stays within the tree's own width: nothing may reach
+   past a 375px screen (E3-S8) */
+@media (max-width: 640px) {
+  .gate-fog,
+  .dash-tree .gate-fog { left: 0; width: 100%; }
 }
 .gate-fog-back { z-index: 0; view-transition-name: sw-fog-in-back; }
 .gate-fog-front { z-index: 2; view-transition-name: sw-fog-in; }
