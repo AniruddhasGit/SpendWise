@@ -24,8 +24,11 @@
  * that rule does not touch, so nothing waits invisibly in a stagger.
  */
 
+/* Translation only, never a scale: a control measured mid-entrance must
+   already be its real size (44px targets, SW-ADR-117). A 0.985 scale here
+   made 44px buttons measure 43 for the first frames of the dashboard. */
 @keyframes sw-rise {
-  from { opacity: 0; transform: translateY(10px) scale(0.985); }
+  from { opacity: 0; transform: translateY(10px); }
   to   { opacity: 1; transform: none; }
 }
 /* Transform ONLY: transform does not create a Backdrop Root, so glass inside
