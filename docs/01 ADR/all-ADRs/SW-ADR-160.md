@@ -82,6 +82,18 @@ reduced motion thing".
    so it is **unverified until the owner signs in there**. It does not auto-deploy: deploy it
    alongside the web service.
 
+9. **Into the dashboard and back** (owner, later on 2026-10-21).
+   - A successful sign-in or new account lifts the sign-in words away. The same tree then glides
+     from the sign-in page to its place on the dashboard, and the sign-in fog dissolves.
+   - The morph waits, frozen on the old page, until the dashboard has drawn its tree, at most
+     2.5s. After that the tree fades across instead.
+   - A new account's first screen now shows the tree, with no falling bills (`drops={false}`).
+     Example spends on an empty personal ledger could be mistaken for real ones.
+   - Signing out carries the tree back to the sign-in page.
+   - While a tree is being carried, its page's own CSS entrance is off. Otherwise the browser
+     captures it invisible, mid-entrance. It stays off for that screen (`.sw-carried`), because
+     lifting the override would replay the entrance.
+
 ## Consequences
 
 - The front lives at a new `*.onrender.com` address. The old address keeps working, but a visit

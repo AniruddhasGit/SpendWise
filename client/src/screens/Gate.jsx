@@ -85,6 +85,13 @@ export default function Gate({ mode, onMode, reason, onSignedIn, onBack, autoFoc
       const principal = registering
         ? await api.register(form)
         : await api.login({ email: form.email, password: form.password })
+      // the words leave first, then App carries the tree to the dashboard
+      await new Promise((done) => {
+        const q = gsap.utils.selector(rootRef)
+        gsap.timeline({ onComplete: done })
+          .to(q('.gate-card'), { y: -60, autoAlpha: 0, scale: 0.97, duration: 0.45, ease: 'power3.in' }, 0)
+          .to(q('.gate-copy, .gate-brandrow'), { x: -80, autoAlpha: 0, duration: 0.4, ease: 'power3.in' }, 0)
+      })
       onSignedIn(principal)
     } catch (err) {
       busyRef.current = false

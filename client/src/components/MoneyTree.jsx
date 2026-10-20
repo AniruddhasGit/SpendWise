@@ -158,7 +158,7 @@ function drawSpark(ctx, s, colour) {
 
 export default function MoneyTree({
   bills, variant = 'dashboard', atmosphere = false, orbits = atmosphere, mist = atmosphere,
-  dust = false, ground = true, dropRequest = null, breeze = 0, alwaysMove = false,
+  dust = false, ground = true, dropRequest = null, breeze = 0, alwaysMove = false, drops = true,
   alt = 'A bonsai tree whose leaves are banknotes', className = '',
 }) {
   const rootRef = useRef(null)
@@ -295,8 +295,10 @@ export default function MoneyTree({
         }
       }
 
+      // `drops={false}`: no bills fall on their own (a new account's empty
+      // ledger: example spends there could be mistaken for real ones)
       spawnClock += dt
-      if (spawnClock >= every) {
+      if (drops && spawnClock >= every) {
         spawnClock = 0
         spawn({ ...leafPoint(), item: nextItem() })
       }
@@ -473,7 +475,7 @@ export default function MoneyTree({
       root.removeEventListener('pointerleave', onLeave)
       api.current = null
     }
-  }, [variant, atmosphere, dust, breeze, alwaysMove])
+  }, [variant, atmosphere, dust, breeze, alwaysMove, drops])
 
   // A drop request is played once, even if it arrived before the tree mounted.
   const played = useRef(null)

@@ -175,9 +175,13 @@ export default function App() {
     }
     setDraft((d) => (d && d.ownerId === p.id ? d : null))
     focusMain.current = true
-    setGateFocus(false)
-    setReason(null)
-    setPrincipal(p)
+    // The tree is carried from the sign-in page to its place on the
+    // dashboard (SW-ADR-160): the morph waits for the dashboard to draw it.
+    carryAcross(() => {
+      setGateFocus(false)
+      setReason(null)
+      setPrincipal(p)
+    }, { arrive: '.dash-tree .mt-stage' })
   }
 
   /**
@@ -214,7 +218,9 @@ export default function App() {
     clearQuery()
     resume.current = null
     setDraft(null)
-    resetShell(null)
+    // and back: the dashboard's tree is carried to the sign-in page
+    scrollToTop()
+    carryAcross(() => resetShell(null), { arrive: '.gate-tree .mt-stage' })
     signingOutRef.current = false
     setSigningOut(false)
   }

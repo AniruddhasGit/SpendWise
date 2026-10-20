@@ -73,10 +73,44 @@ export function useServerReady() {
 // (`sw-tree`, `sw-fog`), so the browser morphs them from where they stood on
 // the old page to where they stand on the new one. Everything else is handled
 // by the pages' own exit and entrance animations.
-export function carryAcross(update) {
+//
+// `arrive` names an element the new page must show before the morph starts
+// (the dashboard draws its tree only once its data is in). The old page stays
+// frozen on screen until it appears, at most `ARRIVE_MAX_MS`; past that the
+// tree simply fades across instead of gliding.
+const ARRIVE_MAX_MS = 2500
+// elements whose own CSS entrance is suppressed while they are carried in
+const CARRIED = '.dash-tree, .state-first-run'
+
+function appeared(selector) {
+  return new Promise((resolve) => {
+    const t0 = performance.now()
+    const look = () => {
+      if (document.querySelector(selector) || performance.now() - t0 > ARRIVE_MAX_MS) resolve()
+      // a timer, not requestAnimationFrame: rendering is paused while a view
+      // transition waits on its update, and frame callbacks may not run
+      else setTimeout(look, 30)
+    }
+    look()
+  })
+}
+
+export function carryAcross(update, { arrive = null } = {}) {
   if (!document.startViewTransition) { update(); return Promise.resolve() }
-  const vt = document.startViewTransition(() => flushSync(update))
-  return vt.finished.catch(() => {})
+  const root = document.documentElement
+  // while carrying, the new page's own entrance on the carried element is off:
+  // the browser captures it mid-entrance otherwise (invisible)
+  root.setAttribute('data-carrying', '')
+  const vt = document.startViewTransition(async () => {
+    flushSync(update)
+    if (arrive) await appeared(arrive)
+  })
+  return vt.finished.catch(() => {}).finally(() => {
+    // Lifting the override would restart the CSS entrance it suppressed, so
+    // the carried elements keep it off for as long as they are on screen.
+    document.querySelectorAll(CARRIED).forEach((el) => el.classList.add('sw-carried'))
+    root.removeAttribute('data-carrying')
+  })
 }
 
 // ── smooth scroll, everywhere ──────────────────────────────────────────────

@@ -535,3 +535,17 @@
   text-transform: uppercase;
   vertical-align: 1px;
 }
+
+/* The tree carried in from the sign-in page (SW-ADR-160). While it is being
+   carried, its own rise is off: the browser would capture it mid-entrance,
+   invisible. It is named so the browser morphs it into place. */
+.dash-tree .mt-stage { view-transition-name: sw-tree; }
+[data-carrying] .dash-tree,
+[data-carrying] .dash-tree.sw-focus,
+[data-carrying] .state-first-run,
+.sw-carried { animation: none; }
+/* a new account's first screen: the tree above the invitation to start */
+.first-run-tree {
+  width: min(78%, 380px);
+  margin: 0 auto var(--sw-space-4);
+}
