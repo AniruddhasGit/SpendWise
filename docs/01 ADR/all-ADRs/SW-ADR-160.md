@@ -73,9 +73,14 @@ reduced motion thing".
    app keeps its existing reduced-motion behaviour.
 8. **Hosting.** The front is a Render free static site serving the same `client/dist`. Rewrites
    send `/api/*` and `/healthz` to the web service, so the browser stays same-origin (no CORS,
-   `SW-ADR-020`), and it carries the API's security headers. Creating that service needs the
-   owner's approval in this session. Until it exists, the web service serves this same build, and
-   there the server is always awake by the time the page loads.
+   `SW-ADR-020`), and it carries the API's security headers. **Created 2026-10-21 with the owner's
+   permission:** `spendwise-front`, service `srv-dbbu5rg473hc73cias3g`,
+   https://spendwise-front.onrender.com. Verified through it: the page and its security headers,
+   `/healthz` (200, empty), a GET to `/api/auth/me` (401 JSON), and a POST to `/api/auth/login`
+   (401 JSON, shown as "Wrong email or password" in a real browser). A real sign-in carrying the
+   session cookie through the rewrite was not tested by the build session (no test credentials),
+   so it is **unverified until the owner signs in there**. It does not auto-deploy: deploy it
+   alongside the web service.
 
 ## Consequences
 

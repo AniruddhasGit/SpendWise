@@ -43,3 +43,13 @@ Your live URL is `https://spendwise-XXXX.onrender.com`. Put it on your portfolio
   to remove the cold start.
 - HTTPS and the `*.onrender.com` subdomain are free. A custom domain can be
   pointed at Render later with a CNAME (free TLS).
+
+
+## The always-on front (SW-ADR-160)
+
+`spendwise-front` is a free Render **static site** (`srv-dbbu5rg473hc73cias3g`,
+https://spendwise-front.onrender.com). It serves the same `client/dist`, and its rewrite rules pass
+`/api/*` and `/healthz` to the web service, so the browser stays same-origin. Static sites never
+sleep, so the landing page's tree and fog appear at once while the web service wakes behind the
+countdown. It does **not** auto-deploy. After deploying the web service, deploy the front too:
+`POST /v1/services/srv-dbbu5rg473hc73cias3g/deploys`.
