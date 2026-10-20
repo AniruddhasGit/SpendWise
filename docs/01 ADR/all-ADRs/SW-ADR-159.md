@@ -69,6 +69,9 @@ The owner rejected the bright poster atmosphere ("that fog and the sun") and ask
      owner described. A steady wind blows right to left. The fog banks drift left slowly, fading in
      at the right of the band and out at the left, and the falling bills drift left too (MoneyTree
      `breeze`, -34 px/s, with the gusts in the same direction). `Smoke.jsx` is deleted.
+   - **Then widened by the owner:** the same low band (a sixth of the tree) runs edge to edge
+     across the whole first screen, heaping and dipping. It is clipped to that first screen, so it
+     never follows the page as it scrolls to the details below.
    - The tree's own mist, sun, orbits and spark stars are off here. Its motes are faint ivory dust.
 5. **Below the fold.**
    - Four plain statements about what the product does, plus a closing call to action.

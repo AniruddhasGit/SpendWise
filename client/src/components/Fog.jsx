@@ -3,8 +3,9 @@ import { prefersReducedMotion } from '../lib/motion.js'
 
 /**
  * Ground fog for the landing scene (SW-ADR-159). Small, dense banks that
- * linger on the glass floor round the trunk and roots only, a sixth of the
- * tree's height, drifting slowly right to left on the wind. The owner's idea
+ * linger on the glass floor, a sixth of the tree's height, edge to edge across
+ * the first screen and clipped to it, drifting slowly right to left on the
+ * wind. The owner's idea
  * (2026-10-20): fog kept small makes the tree above it read huge, the way
  * Hometree does in Avatar.
  *
@@ -135,46 +136,50 @@ export default function Fog({ ground: groundDefault = 0.72, floor = null, stage 
     // the fog lives in a short band round the trunk only: L..R across, and
     // `reach` above the floor (a sixth of the tree's height, owner 2026-10-20).
     // Kept small on purpose: small clumps make the tree above them read huge.
-    let L = 0; let R = 1; let trunkX = 0.5; let unit = 1
+    let L = 0; let R = 1; let trunkX = 0.5; let unit = 1; let stageW = 600
 
     const seed = () => {
       const rand = seeded(base + 77)
       const phone = W < 700
+      // as many banks as the width needs: the band runs edge to edge
+      const many = Math.max(1, (R - L) / Math.max(1, stageW * 0.8))
       const plan = layer === 'back'
-        ? [['on', phone ? 6 : 10], ['mid', phone ? 2 : 4]]
-        : [['on', phone ? 9 : 14], ['mid', phone ? 3 : 5]]
+        ? [['on', Math.round((phone ? 6 : 10) * many)], ['mid', Math.round((phone ? 2 : 4) * many)]]
+        : [['on', Math.round((phone ? 9 : 14) * many)], ['mid', Math.round((phone ? 3 : 5) * many)]]
       const span = H * reach
       banks = plan.flatMap(([kind, n]) => Array.from({ length: n }, (_, i) => {
         // clumps heaped ON the floor around the trunk and roots; a few smaller
         // ones ride on top of them
-        const h = kind === 'on' ? span * (0.6 + rand() * 0.4) : span * (0.35 + rand() * 0.25)
+        // heights vary a lot along the band, so it heaps and dips instead of
+        // reading as one even strip
+        const h = kind === 'on' ? span * (0.4 + rand() * rand() * 1.1) : span * (0.3 + rand() * 0.3)
         const w = h * (1.8 + rand() * 0.6)
-        const bottom = kind === 'on' ? H * ground + h * (0.1 + rand() * 0.15)
+        const bottom = kind === 'on' ? H * ground + h * (0.05 + rand() * 0.3)
           : H * ground - span * (0.25 + rand() * 0.3) + h * 0.5
         return {
           kind,
           img: clumps[(i * 2 + (kind === 'mid' ? 1 : 0)) % clumps.length],
           flip: rand() < 0.5,
-          x: L - w + ((i + rand() * 0.8) / n) * (R - L + w),
+          x: L - w + rand() * (R - L + w),
           y: bottom - h / 2,
           w,
           h,
           // the wind blows right to left, slowly
           vx: -(5 + rand() * 7) * unit,
-          a: kind === 'on' ? 0.75 + rand() * 0.25 : 0.45 + rand() * 0.25,
+          a: kind === 'on' ? 0.4 + rand() * 0.6 : 0.35 + rand() * 0.3,
           bob: rand() * 6.28,
         }
       }))
     }
 
-    // fades a bank in as it enters the band on the right and out as it leaves
-    // on the left, so nothing pops; in front of the trunk it thins
+    // the band runs past both edges of the screen, so banks enter and leave
+    // unseen; in front of the trunk it thins
     const alphaAt = (cx) => {
-      const edge = (R - L) * 0.22
+      const edge = (R - L) * 0.06
       const k = Math.min(1, Math.max(0, (cx - L) / edge), Math.max(0, (R - cx) / edge))
       const fade = k * k * (3 - 2 * k)
       if (layer === 'back') return fade
-      const off = Math.abs(cx - trunkX) / Math.max(1, (R - L) * 0.12)
+      const off = Math.abs(cx - trunkX) / Math.max(1, stageW * 0.2)
       return fade * (0.6 + 0.4 * Math.min(1, off))
     }
 
@@ -190,9 +195,15 @@ export default function Fog({ ground: groundDefault = 0.72, floor = null, stage 
         const treeTop = (sr.top - r.top) / H
         reach = Math.max(0.03, (ground - treeTop) / 6)
         trunkX = sr.left - r.left + sr.width / 2
-        L = trunkX - sr.width * 0.4
-        R = trunkX + sr.width * 0.4
+        stageW = sr.width
         unit = sr.width / 600
+      }
+      {
+        // edge to edge across the first screen (owner 2026-10-20); the scene
+        // clips it, so it never leaves its box when the page scrolls
+        const pad = W * 0.08
+        L = -pad
+        R = W + pad
       }
       canvas.width = Math.round(W * SCALE)
       canvas.height = Math.round(H * SCALE)
