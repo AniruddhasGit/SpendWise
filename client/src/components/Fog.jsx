@@ -26,10 +26,9 @@ import { prefersReducedMotion } from '../lib/motion.js'
  * tree's height (a sixth of it).
  */
 const SRC = '/assets/fog/ground-fog.jpg'
-// where the band sits in the texture, as fractions of its height
-const BAND_CORE = 0.42
-const SEA_FROM = 0.55
-const EDGE = 0.53 // the hard line under the band, softened in `tint`
+// where the fog surface starts in the texture (its soft far edge), as a
+// fraction of the texture's height; below that it fills to the bottom
+const FAR_EDGE = 0.22
 
 function tint(img, colour) {
   const c = document.createElement('canvas')
@@ -40,31 +39,17 @@ function tint(img, colour) {
   const data = g.getImageData(0, 0, c.width, c.height)
   const px = data.data
   const [r, gr, b] = colour.split(/\s+/).map(Number)
-  // the texture has a hard horizontal edge under the band: blend it away with
-  // a vertical blur that is strongest on that edge and fades out either side
   const w = c.width; const h = c.height
-  const edge = Math.round(h * EDGE); const reach = Math.round(h * 0.16); const rad = Math.round(h * 0.08)
-  const src = new Float32Array(w * h)
-  for (let i = 0; i < w * h; i += 1) src[i] = px[i * 4] / 255
-  const lumAt = new Float32Array(src)
-  for (let y = Math.max(rad, edge - reach); y < Math.min(h - rad, edge + reach); y += 1) {
-    const d = Math.abs(y - edge) / reach
-    const mix = (1 - d) * (1 - d) * (3 - 2 * (1 - d)) // smooth, 1 on the edge
-    for (let x = 0; x < w; x += 1) {
-      let sum = 0
-      for (let k = -rad; k <= rad; k += 1) sum += src[(y + k) * w + x]
-      lumAt[y * w + x] = src[y * w + x] * (1 - mix) + (sum / (2 * rad + 1)) * mix
-    }
-  }
-  // and its top and bottom fade to nothing, so no layer ends on a straight line
+  // its top and sides of the far edge fade to nothing, so no layer ends on a
+  // straight line; the bottom stays full, the nearest fog is the densest
   const ramp = (y) => {
-    const top = Math.min(1, y / (h * 0.06))
-    const bottom = Math.min(1, (h - y) / (h * 0.3))
+    const top = Math.min(1, Math.max(0, (y - h * (FAR_EDGE - 0.12)) / (h * 0.2)))
+    const bottom = 1
     const v = Math.min(top, bottom)
     return v * v * (3 - 2 * v)
   }
   for (let i = 0; i < px.length; i += 4) {
-    const lum = lumAt[i / 4] * ramp(Math.floor(i / 4 / w))
+    const lum = (px[i] / 255) * ramp(Math.floor(i / 4 / w))
     px[i] = r; px[i + 1] = gr; px[i + 2] = b
     px[i + 3] = Math.round(255 * Math.min(1, lum * 1.15))
   }
@@ -119,21 +104,36 @@ export default function Fog({ ground: groundDefault = 0.72, floor = null, stage 
       canvas.width = Math.round(W * SCALE)
       canvas.height = Math.round(H * SCALE)
       ctx.setTransform(SCALE, 0, 0, SCALE, 0, 0)
+      strips.clear()
     }
 
-    // one strip of mirrored tiles, scrolled left by `offset` px
-    const strip = (sx, sy, sw, sh, dy, dh, offset, alpha) => {
+    // A strip of mirrored tiles, joined ONCE on an offscreen canvas at whole
+    // pixels (no gap, no overlap: on see-through fog either shows as a line),
+    // then slid as one image by fractional amounts, so the drift stays smooth.
+    // Built per size and kept until the next resize.
+    const strips = new Map()
+    const buildStrip = (sx, sw, dh) => {
+      const key = `${sx}|${sw}|${Math.round(dh)}`
+      if (strips.has(key)) return strips.get(key)
       const [a, b] = tiles
-      const dw = dh * (sw / sh)
-      const period = dw * 2
-      let x = -(offset % period)
-      let i = 0
-      ctx.globalAlpha = alpha
-      while (x < W) {
-        if (x + dw > 0) ctx.drawImage(i % 2 ? b : a, i % 2 ? a.width - sx - sw : sx, sy, sw, sh, x, dy, dw + 1, dh) // 1px overlap: no hairline at the joins
-        x += dw
-        i += 1
+      const tilePx = Math.max(1, Math.round(dh * (sw / a.height) * SCALE))
+      const hPx = Math.max(1, Math.round(dh * SCALE))
+      const count = Math.ceil((W * SCALE) / tilePx) + 3
+      const c = document.createElement('canvas')
+      c.width = tilePx * (count + (count % 2))
+      c.height = hPx
+      const g = c.getContext('2d')
+      for (let i = 0; i * tilePx < c.width; i += 1) {
+        g.drawImage(i % 2 ? b : a, i % 2 ? a.width - sx - sw : sx, 0, sw, a.height, i * tilePx, 0, tilePx, hPx)
       }
+      const made = { c, period: (tilePx * 2) / SCALE }
+      strips.set(key, made)
+      return made
+    }
+    const strip = (sx, sw, dy, dh, offset, alpha) => {
+      const { c, period } = buildStrip(sx, sw, dh)
+      ctx.globalAlpha = alpha
+      ctx.drawImage(c, -(offset % period), dy, c.width / SCALE, dh)
     }
 
     const draw = () => {
@@ -143,40 +143,34 @@ export default function Fog({ ground: groundDefault = 0.72, floor = null, stage 
       const iw = a.width; const ih = a.height
       const gy = H * ground
       const k = Math.min(1, fadeIn)
-      // the band: its bright core on the ground line, a sixth of the tree tall
-      const bandH = span * 4.2
-      const bandTop = gy - bandH * BAND_CORE
-      const speed = (stageW / 600) * 14 // px a second
+      // the fog is a surface lying on the ground: its soft far edge a little
+      // above the line where the trunk meets the ground, its densest part at
+      // the bottom of the screen. No band, no line (owner, 2026-10-21).
+      const farY = gy - span * 0.8
+      const hImg = (H - farY) / (1 - FAR_EDGE)
+      const top = H - hImg
+      const speed = (stageW / 600) * 12 // px a second
+      // trim a few columns off each side: the texture's own edge columns are
+      // a touch lighter, and would show as seams where the tiles meet
+      const sx = Math.round(iw * 0.006); const sw = iw - sx * 2
       if (layer === 'back') {
-        strip(0, 0, iw, ih, bandTop, bandH, t * speed, 0.9 * k)
+        strip(sx, sw, top, hImg, t * speed, 0.8 * k)
         ctx.globalAlpha = 1
         return
       }
-      // the sea below: bigger, dimmer, nearer, so it moves faster
-      const seaTop = gy + span * 0.3
-      const seaH = Math.max(H - seaTop, span) * 1.25
-      strip(0, ih * SEA_FROM, iw, ih * (1 - SEA_FROM), seaTop, seaH, t * speed * 1.7 + 400, 0.55 * k)
-      // feather the sea's top so it melts into the band instead of starting
-      // on a straight line
-      ctx.globalAlpha = 1
-      ctx.globalCompositeOperation = 'destination-out'
-      const fh = seaH * 0.3
-      const fg = ctx.createLinearGradient(0, seaTop, 0, seaTop + fh)
-      fg.addColorStop(0, 'rgb(0 0 0 / 1)')
-      fg.addColorStop(1, 'rgb(0 0 0 / 0)')
-      ctx.fillStyle = fg
-      ctx.fillRect(0, seaTop - 1, W, fh + 1)
-      ctx.globalCompositeOperation = 'source-over'
-      strip(0, 0, iw, ih, bandTop, bandH, t * speed, 0.85 * k)
+      // two passes of the same surface for depth: a fainter, larger one that
+      // moves faster (nearer), under the main one
+      strip(sx, sw, top + hImg * 0.08, hImg * 1.15, t * speed * 1.6 + 500, 0.35 * k)
+      strip(sx, sw, top, hImg, t * speed, 0.9 * k)
       // thinner in front of the trunk, so the tree stays readable
       ctx.globalAlpha = 1
       ctx.globalCompositeOperation = 'destination-out'
       const rx = Math.max(40, stageW * 0.12)
-      const g = ctx.createRadialGradient(trunkX, gy - span * 0.4, 0, trunkX, gy - span * 0.4, rx)
-      g.addColorStop(0, 'rgb(0 0 0 / 0.45)')
+      const g = ctx.createRadialGradient(trunkX, gy - span * 0.3, 0, trunkX, gy - span * 0.3, rx)
+      g.addColorStop(0, 'rgb(0 0 0 / 0.5)')
       g.addColorStop(1, 'rgb(0 0 0 / 0)')
       ctx.fillStyle = g
-      ctx.fillRect(trunkX - rx, gy - span * 0.4 - rx, rx * 2, rx * 2)
+      ctx.fillRect(trunkX - rx, gy - span * 0.3 - rx, rx * 2, rx * 2)
       ctx.globalCompositeOperation = 'source-over'
     }
 

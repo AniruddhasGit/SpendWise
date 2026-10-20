@@ -82,6 +82,15 @@ The owner rejected the bright poster atmosphere ("that fog and the sun") and ask
      second copy of the band sits behind the tree, so the trunk rises out of it. On a phone the line
      and the action ride above the fog. Measured at a steady 60 frames a second on desktop and phone
      sizes, worst frame 16.8ms. The procedural clumps are gone.
+   - **Revised the same night, owner 2026-10-21.** The owner rejected the bright band ("no sharp
+     line... do not make a sharp very dense fog line"). They wanted fog seen from above: a patchy,
+     billowing surface lying on the ground, densest at the front and thinning to a soft far edge a
+     little above the trunk's base, as in their reference photos. A second Runway texture was made
+     from their reference (20 credits, 25 left) and replaces the first in `ground-fog.jpg`. It is
+     laid as a ground surface, far edge at the trunk, densest at the bottom edge, in two passes for
+     depth plus a copy behind the tree. The tiles are joined once on an offscreen strip at whole
+     pixels and slid by fractional amounts: seamless and smooth, a steady 60 fps. On a phone the
+     line under the tree carries a dark text shadow so it reads over the fog.
    - The tree's own mist, sun, orbits and spark stars are off here. Its motes are faint ivory dust.
 5. **Below the fold.**
    - Four plain statements about what the product does, plus a closing call to action.
