@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react'
-import Smoke from '../components/Smoke.jsx'
+import Fog from '../components/Fog.jsx'
 import MoneyTree from '../components/MoneyTree.jsx'
 
 /**
@@ -76,7 +76,7 @@ export default function Landing({ onSignIn, onRegister }) {
                 <img className="landing-reflection" src={TREE_SRC} alt="" decoding="async" />
               </div>
             </div>
-            <MoneyTree variant="landing" atmosphere orbits={false} mist={false} dust ground={false}
+            <MoneyTree variant="landing" atmosphere orbits={false} mist={false} dust ground={false} breeze={-34}
                        alt="A bonsai tree whose leaves are banknotes, standing on a glass floor in mist, with bills drifting down from it" />
           </div>
 
@@ -90,7 +90,9 @@ export default function Landing({ onSignIn, onRegister }) {
             </button>
           </div>
 
-          <Smoke className="landing-fog" floor=".landing-floor" stage=".landing-stage" />
+          <Fog className="landing-fog landing-fog-back" layer="back"
+               floor=".landing-floor" stage=".landing-stage" />
+          <Fog className="landing-fog" floor=".landing-floor" stage=".landing-stage" />
           <span className="landing-cue sw-focus" style={at(8)} aria-hidden="true">Scroll</span>
         </section>
 

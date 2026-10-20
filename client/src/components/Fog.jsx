@@ -2,9 +2,11 @@ import { useEffect, useRef } from 'react'
 import { prefersReducedMotion } from '../lib/motion.js'
 
 /**
- * Ground mist for the landing scene (SW-ADR-159). Rolling banks of fog that
- * lurk on the glass floor and drift across the whole first screen, the words
- * included. Thin wisps ride higher up.
+ * Ground fog for the landing scene (SW-ADR-159). Small, dense banks that
+ * linger on the glass floor round the trunk and roots only, a sixth of the
+ * tree's height, drifting slowly right to left on the wind. The owner's idea
+ * (2026-10-20): fog kept small makes the tree above it read huge, the way
+ * Hometree does in Avatar.
  *
  * The banks are billowed, the way the owner's reference is (2026-10-20):
  * clumps heaped like cauliflower, lit along their tops, dark underneath, with
@@ -103,36 +105,11 @@ function makeBank(colour, seed) {
   return c
 }
 
-/** A thin soft wisp for the fog that rides higher up. */
-function makePuff(colour, seed) {
-  const S = 256
-  const c = document.createElement('canvas')
-  c.width = S
-  c.height = S
-  const g = c.getContext('2d')
-  let r = seed
-  const rand = () => { r = (r * 16807) % 2147483647; return r / 2147483647 }
-  for (let i = 0; i < 14; i += 1) {
-    const x = S * (0.25 + rand() * 0.5)
-    const y = S * (0.35 + rand() * 0.3)
-    const rad = S * (0.12 + rand() * 0.2)
-    const grd = g.createRadialGradient(x, y, 0, x, y, rad)
-    grd.addColorStop(0, `rgb(${colour} / 0.16)`)
-    grd.addColorStop(1, `rgb(${colour} / 0)`)
-    g.fillStyle = grd
-    g.beginPath()
-    g.arc(x, y, rad, 0, Math.PI * 2)
-    g.fill()
-  }
-  return c
-}
-
 /**
  * `layer` is 'front' (over the tree and the words) or 'back' (behind the
- * tree, so the mist is seen between the trunk and the lower branches).
- * `stage` is a selector for the tree's box: the fog stays below its lower
- * third, around the trunk and the lowest branches, and the crown and the sky
- * above it stay clear.
+ * tree, so the trunk rises out of the fog rather than being painted over).
+ * `stage` is a selector for the tree's box: it sets the band's height (a
+ * sixth of the tree), its width (round the trunk) and the drift speed.
  */
 export default function Fog({ ground: groundDefault = 0.72, floor = null, stage = null,
                               layer = 'front', className = '' }) {
@@ -146,7 +123,6 @@ export default function Fog({ ground: groundDefault = 0.72, floor = null, stage 
     const colour = getComputedStyle(canvas).getPropertyValue('--sw-dusk-fog').trim() || '220 228 220'
     const base = layer === 'back' ? 900 : 0
     const clumps = [7, 101, 4242, 55, 909].map((s) => makeBank(colour, base + s))
-    const wisp = makePuff(colour, base + 31)
     const SCALE = 0.5
     let W = 1; let H = 1
     let ground = groundDefault
@@ -156,49 +132,50 @@ export default function Fog({ ground: groundDefault = 0.72, floor = null, stage 
     let pageVisible = !document.hidden
     const reduced = prefersReducedMotion()
 
+    // the fog lives in a short band round the trunk only: L..R across, and
+    // `reach` above the floor (a sixth of the tree's height, owner 2026-10-20).
+    // Kept small on purpose: small clumps make the tree above them read huge.
+    let L = 0; let R = 1; let trunkX = 0.5; let unit = 1
+
     const seed = () => {
       const rand = seeded(base + 77)
       const phone = W < 700
       const plan = layer === 'back'
-        ? [['on', phone ? 6 : 10], ['mid', phone ? 3 : 5]]
-        : [['on', phone ? 7 : 12], ['near', phone ? 3 : 5], ['mid', phone ? 2 : 4], ['veil', 3]]
-      const top = H * (ground - reach) // nothing heaps above this line
+        ? [['on', phone ? 6 : 10], ['mid', phone ? 2 : 4]]
+        : [['on', phone ? 9 : 14], ['mid', phone ? 3 : 5]]
+      const span = H * reach
       banks = plan.flatMap(([kind, n]) => Array.from({ length: n }, (_, i) => {
-        const span = H * reach
-        // clumps heaped ON the floor, rising around the trunk; the nearer glass
-        // carries lower, broader banks; a few smaller clumps hang at the
-        // lowest branches; a flat veil ties them together
-        const h = kind === 'on' ? span * (0.75 + rand() * 0.45)
-          : kind === 'near' ? span * (0.7 + rand() * 0.5)
-            : kind === 'mid' ? span * (0.4 + rand() * 0.3)
-              : span * 0.35
-        const w = kind === 'veil' ? W * (0.7 + rand() * 0.5) : h * (1.8 + rand() * 0.6)
-        const bottom = kind === 'on' ? H * ground + h * (0.12 + rand() * 0.18)
-          : kind === 'near' ? H * ground + h * (0.55 + rand() * 0.45)
-            : kind === 'mid' ? top + h * (0.9 + rand() * 0.5)
-              : H * ground + h * 0.4
+        // clumps heaped ON the floor around the trunk and roots; a few smaller
+        // ones ride on top of them
+        const h = kind === 'on' ? span * (0.6 + rand() * 0.4) : span * (0.35 + rand() * 0.25)
+        const w = h * (1.8 + rand() * 0.6)
+        const bottom = kind === 'on' ? H * ground + h * (0.1 + rand() * 0.15)
+          : H * ground - span * (0.25 + rand() * 0.3) + h * 0.5
         return {
           kind,
-          img: kind === 'veil' ? wisp : clumps[(i * 2 + (kind === 'mid' ? 1 : 0) + (kind === 'near' ? 3 : 0)) % clumps.length],
+          img: clumps[(i * 2 + (kind === 'mid' ? 1 : 0)) % clumps.length],
           flip: rand() < 0.5,
-          x: ((i + rand() * 0.8) / n) * (W + w) - w,
+          x: L - w + ((i + rand() * 0.8) / n) * (R - L + w),
           y: bottom - h / 2,
           w,
           h,
-          vx: (4 + rand() * 9) * (W / 1400) * (rand() < 0.8 ? 1 : -0.7),
-          a: kind === 'on' ? 0.7 + rand() * 0.3 : kind === 'near' ? 0.55 + rand() * 0.3
-            : kind === 'mid' ? 0.3 + rand() * 0.25 : 0.35,
+          // the wind blows right to left, slowly
+          vx: -(5 + rand() * 7) * unit,
+          a: kind === 'on' ? 0.75 + rand() * 0.25 : 0.45 + rand() * 0.25,
           bob: rand() * 6.28,
         }
       }))
     }
 
-    // in front of the trunk the mist thins, the way the reference keeps a
-    // clearer path down the middle; behind it, it stays whole
-    const veilAt = (cx) => {
-      if (layer === 'back') return 1
-      const off = Math.abs(cx - W / 2) / Math.max(1, W * 0.22)
-      return 0.55 + 0.45 * Math.min(1, off)
+    // fades a bank in as it enters the band on the right and out as it leaves
+    // on the left, so nothing pops; in front of the trunk it thins
+    const alphaAt = (cx) => {
+      const edge = (R - L) * 0.22
+      const k = Math.min(1, Math.max(0, (cx - L) / edge), Math.max(0, (R - cx) / edge))
+      const fade = k * k * (3 - 2 * k)
+      if (layer === 'back') return fade
+      const off = Math.abs(cx - trunkX) / Math.max(1, (R - L) * 0.12)
+      return fade * (0.6 + 0.4 * Math.min(1, off))
     }
 
     const measure = () => {
@@ -207,11 +184,15 @@ export default function Fog({ ground: groundDefault = 0.72, floor = null, stage 
       const el = floor && canvas.parentElement?.querySelector(floor)
       if (el) ground = Math.min(0.95, Math.max(0.3, (el.getBoundingClientRect().top - r.top) / H))
       const st = stage && canvas.parentElement?.querySelector(stage)
+      L = W * 0.3; R = W * 0.7; trunkX = W / 2
       if (st) {
-        // the tree stands from the stage's top to the floor; the fog may climb
-        // about a third of that, to the lowest branches
-        const treeTop = (st.getBoundingClientRect().top - r.top) / H
-        reach = Math.max(0.06, (ground - treeTop) * 0.32)
+        const sr = st.getBoundingClientRect()
+        const treeTop = (sr.top - r.top) / H
+        reach = Math.max(0.03, (ground - treeTop) / 6)
+        trunkX = sr.left - r.left + sr.width / 2
+        L = trunkX - sr.width * 0.4
+        R = trunkX + sr.width * 0.4
+        unit = sr.width / 600
       }
       canvas.width = Math.round(W * SCALE)
       canvas.height = Math.round(H * SCALE)
@@ -224,12 +205,11 @@ export default function Fog({ ground: groundDefault = 0.72, floor = null, stage 
       for (const b of banks) {
         b.x += b.vx * dt
         b.bob += dt * 0.25
-        if (b.vx > 0 && b.x > W) b.x = -b.w
-        if (b.vx < 0 && b.x + b.w < 0) b.x = W
+        if (b.x + b.w < L) b.x = R
         // a slow roll: each bank breathes a little wider and lower, and back
         const roll = 1 + 0.04 * Math.sin(b.bob)
         const w = b.w * roll; const h = b.h * (2 - roll)
-        ctx.globalAlpha = b.a * (0.85 + 0.15 * Math.sin(b.bob * 0.7)) * veilAt(b.x + b.w / 2)
+        ctx.globalAlpha = b.a * (0.85 + 0.15 * Math.sin(b.bob * 0.7)) * alphaAt(b.x + b.w / 2)
         const left = b.x - (w - b.w) / 2
         if (b.flip) {
           // mirrored, so five shapes read as many

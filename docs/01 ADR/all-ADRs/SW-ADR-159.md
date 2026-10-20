@@ -62,6 +62,13 @@ The owner rejected the bright poster atmosphere ("that fog and the sun") and ask
      lowest branches and below the floor's near edge, and a moving pointer stirs it. The painted
      `Fog.jsx` remains as the fallback for reduced motion and for browsers without WebGL2 float
      targets. Measured at 60 frames a second on a desktop GPU.
+   - **Withdrawn, also the same evening.** The owner rejected the simulation ("not good enough").
+     Approved by wireframe, the dense clumped fog came back, but small: a band a sixth of the
+     tree's height, lying only round the trunk and roots (about 0.4 of the tree's width either side
+     of the trunk). Small clumps make the tree above them read huge, the Avatar Hometree feel the
+     owner described. A steady wind blows right to left. The fog banks drift left slowly, fading in
+     at the right of the band and out at the left, and the falling bills drift left too (MoneyTree
+     `breeze`, -34 px/s, with the gusts in the same direction). `Smoke.jsx` is deleted.
    - The tree's own mist, sun, orbits and spark stars are off here. Its motes are faint ivory dust.
 5. **Below the fold.**
    - Four plain statements about what the product does, plus a closing call to action.

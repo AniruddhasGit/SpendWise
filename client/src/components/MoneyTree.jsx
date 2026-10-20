@@ -158,7 +158,7 @@ function drawSpark(ctx, s, colour) {
 
 export default function MoneyTree({
   bills, variant = 'dashboard', atmosphere = false, orbits = atmosphere, mist = atmosphere,
-  dust = false, ground = true, dropRequest = null,
+  dust = false, ground = true, dropRequest = null, breeze = 0,
   alt = 'A bonsai tree whose leaves are banknotes', className = '',
 }) {
   const rootRef = useRef(null)
@@ -184,7 +184,8 @@ export default function MoneyTree({
     let raf = 0; let last = 0; let running = false; let visible = true
     let pageVisible = !document.hidden
     let spawnClock = 0; let feedIndex = 0
-    let wind = 0; let gust = null; let nextGust = 6 + Math.random() * 5
+    // `breeze`: a steady wind in px/s (negative blows right to left) under the gusts
+    let wind = breeze; let gust = null; let nextGust = 6 + Math.random() * 5
     const live = []
     // the air around the tree (landing only): specks of the poster's ink
     // drifting up through warm light, twinkling, pushed by the breeze
@@ -217,7 +218,7 @@ export default function MoneyTree({
         x, y, featured,
         label: String(item.label || 'Uncategorised').slice(0, 18),
         amount: amountText(item.paise) || '',
-        vx: push + (Math.random() - 0.5) * 14,
+        vx: breeze + push + (Math.random() - 0.5) * 14,
         vy: featured ? 4 : 8 + Math.random() * 10,
         rot: (Math.random() - 0.5) * 0.9,
         spin: (Math.random() - 0.5) * 0.6,
@@ -266,7 +267,7 @@ export default function MoneyTree({
       if (atmosphere) {
         nextGust -= dt
         if (!gust && nextGust <= 0) {
-          gust = { t: 0, len: 2.6 + Math.random() * 1.4, peak: (Math.random() < 0.5 ? -1 : 1) * (70 + Math.random() * 50) }
+          gust = { t: 0, len: 2.6 + Math.random() * 1.4, peak: (breeze ? Math.sign(breeze) : (Math.random() < 0.5 ? -1 : 1)) * (70 + Math.random() * 50) }
           for (let i = 0; i < 3; i += 1) {
             const p = leafPoint()
             spawn({ ...p, item: nextItem(), push: gust.peak * 0.4 })
@@ -275,10 +276,10 @@ export default function MoneyTree({
         if (gust) {
           gust.t += dt
           const k = gust.t / gust.len
-          wind = gust.peak * Math.sin(Math.min(1, k) * Math.PI)
-          if (k >= 1) { gust = null; wind = 0; nextGust = 7 + Math.random() * 6 }
+          wind = breeze + gust.peak * Math.sin(Math.min(1, k) * Math.PI)
+          if (k >= 1) { gust = null; wind = breeze; nextGust = 7 + Math.random() * 6 }
         }
-        img.style.setProperty('--mt-sway', `${(wind / 120) * 1.1}deg`)
+        img.style.setProperty('--mt-sway', `${((wind - breeze) / 120) * 1.1}deg`)
       }
 
       if (MOTES) {
@@ -470,7 +471,7 @@ export default function MoneyTree({
       root.removeEventListener('pointerleave', onLeave)
       api.current = null
     }
-  }, [variant, atmosphere, dust])
+  }, [variant, atmosphere, dust, breeze])
 
   // A drop request is played once, even if it arrived before the tree mounted.
   const played = useRef(null)
