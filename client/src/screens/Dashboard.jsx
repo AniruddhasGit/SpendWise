@@ -303,9 +303,9 @@ export default function Dashboard({ principal, draft, onDraft }) {
             <section className="dash-hero" aria-label="Total">
               {/* The poster's orbit: one line from the canopy across to the
                   total, and two sparks beside it. Decoration, wide panes only. */}
-              <svg className="dash-orbit" viewBox="0 0 1000 400" preserveAspectRatio="none"
+              <svg className="dash-orbit" viewBox="0 0 1000 300" preserveAspectRatio="none"
                    aria-hidden="true" focusable="false">
-                <ellipse cx="520" cy="190" rx="470" ry="120" />
+                <path d="M120 250 C 260 40, 560 -10, 760 70 S 900 150, 905 175" />
               </svg>
               <svg className="dash-sparks" viewBox="0 0 100 60" aria-hidden="true" focusable="false">
                 <path d="M14 4L16 14L26 16L16 18L14 28L12 18L2 16L12 14Z" />

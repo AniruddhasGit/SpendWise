@@ -102,9 +102,9 @@ function drawBill(ctx, b, pal, sprites) {
   ctx.translate(b.x, b.y)
   ctx.rotate(b.rot)
   // The paper tumbling: a cosine on one axis reads as a sheet turning over.
-  // Never thinner than a third, so an edge-on bill never becomes a sliver.
+  // Never thinner than half, so an edge-on bill never becomes a sliver.
   const flip = Math.cos(b.phase)
-  ctx.scale(1, Math.max(0.35, Math.abs(flip)) * Math.sign(flip || 1))
+  ctx.scale(1, Math.max(0.5, Math.abs(flip)) * Math.sign(flip || 1))
   const front = flip >= 0
   const sprite = front ? sprites.front : sprites.back
 
