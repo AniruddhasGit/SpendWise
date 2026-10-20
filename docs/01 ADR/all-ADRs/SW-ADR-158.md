@@ -1,5 +1,8 @@
 # SW-ADR-158 — The reel's motion: a staggered blur-in, a liquid theme flood, a fuller tree
 
+> **⚠ AMENDED 2026-10-20 by `SW-ADR-159`.** The landing's sun, orbits and bright atmosphere are
+> replaced by a gloomy dusk with ground mist. The blur-in and the theme flood stand.
+
 | Field | Value |
 |---|---|
 | ADR | `SW-ADR-158` |
@@ -64,7 +67,8 @@ The same day the owner also asked for:
    - Falling bills use one sprite (the reverse side is removed, so a bill never changes colour as it
      turns) and are drawn at leaf size.
    - The landing adds drifting motes, a halftone vermilion sun behind the canopy, a third orbit and
-     two more sparks. Mist and orbit lines are stronger.
+     two more sparks. Mist and orbit lines are stronger. (Superseded the same day by `SW-ADR-159`:
+     the owner rejected the sun and the bright atmosphere for a gloomy scene.)
 
 ## Judgment calls (`SW-ADR-015`)
 

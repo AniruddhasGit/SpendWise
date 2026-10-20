@@ -1,145 +1,326 @@
-/* The landing page (SW-ADR-156), composed like the owner's festival poster.
-   Desktop: headline | tree | vermilion statement. Phone: one column, the
-   tree between the headline and the statement. */
+/* The landing page (SW-ADR-156; the scene is SW-ADR-159).
+
+   An overcast dusk, the same in both themes. The money tree stands at the
+   centre on a glass floor seen from a raised camera: on a tree 10cm tall,
+   the camera is about 8cm up and 35cm away, so the floor dips about 13 degrees
+   below the eye and a round floor reads about 4.5 times wider than it is
+   deep (--floor-ratio). Mist lurks on the floor and drifts over everything on
+   the first screen, words included. Very little text sits beside the tree.
+   The details arrive further down, as they are scrolled into view.
+
+   Layers inside the scene, back to front: sky, stage (tree < floor < bills),
+   words, fog, the scroll cue. The bar is fixed above all of it. */
 
 .landing {
+  --tree: min(68svh, 44vw, 760px);
+  --floor-ratio: 0.22;
+  --mt-dust: var(--sw-dusk-ink);
+  --sw-extrude: var(--sw-brand-emerald-deep);
   position: relative;
   isolation: isolate;
   min-height: 100dvh;
-  display: flex;
-  flex-direction: column;
   overflow-x: clip;
-  background:
-    radial-gradient(70% 55% at 18% 8%, var(--sw-wash-1), transparent 70%),
-    radial-gradient(60% 50% at 88% 20%, var(--sw-wash-2), transparent 70%),
-    linear-gradient(180deg, var(--sw-bg-1), var(--sw-bg-2) 70%, var(--sw-bg-3));
-  color: var(--sw-ink);
+  background: var(--sw-dusk-sky);
+  color: var(--sw-dusk-ink);
 }
 /* risograph grain over the whole sheet: fixed, never repainted on scroll */
 .landing::after {
   content: "";
   position: fixed;
   inset: 0;
-  z-index: 4;
+  z-index: 8;
   pointer-events: none;
   background-image: var(--sw-grain);
-  opacity: calc(var(--sw-grain-opacity) * 2.6);
-  mix-blend-mode: multiply;
-}
-:root[data-theme="dark"] .landing::after { mix-blend-mode: overlay; }
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) .landing::after { mix-blend-mode: overlay; }
+  opacity: calc(var(--sw-grain-opacity) * 2.2);
+  mix-blend-mode: overlay;
 }
 
-/* ── the bar: a glass strip, wordmark left, Sign in top right ──────────── */
+/* ── the bar: smoked glass, wordmark left, Sign in top right ───────────── */
 .landing-bar {
-  position: sticky;
-  top: 0;
-  z-index: 5;
+  position: fixed;
+  top: var(--sw-space-4);
+  left: clamp(var(--sw-space-4), 3vw, var(--sw-space-10));
+  right: clamp(var(--sw-space-4), 3vw, var(--sw-space-10));
+  z-index: 10;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: var(--sw-space-4);
-  margin: var(--sw-space-4) clamp(var(--sw-space-4), 3vw, var(--sw-space-10)) 0;
   padding: var(--sw-space-2) var(--sw-space-2) var(--sw-space-2) var(--sw-space-5);
   border-radius: var(--sw-radius-full);
-  background: var(--sw-glass);
-  border: 1px solid var(--sw-glass-border);
-  box-shadow: var(--sw-highlight), var(--sw-shadow-sm);
-  -webkit-backdrop-filter: blur(var(--sw-blur-md)) saturate(var(--sw-glass-saturate));
-  backdrop-filter: blur(var(--sw-blur-md)) saturate(var(--sw-glass-saturate));
+  background: rgb(24 32 28 / 0.42);
+  border: 1px solid rgb(243 230 210 / 0.16);
+  box-shadow: inset 0 1px 0 rgb(243 230 210 / 0.10), 0 10px 30px -12px rgb(0 0 0 / 0.5);
+  -webkit-backdrop-filter: blur(var(--sw-blur-md)) saturate(120%);
+  backdrop-filter: blur(var(--sw-blur-md)) saturate(120%);
 }
 .landing-brand {
   font-family: var(--sw-font-display);
   font-weight: 800;
   font-size: 1.5rem;
   letter-spacing: 0.01em;
-  color: var(--sw-pine);
+  color: var(--sw-dusk-ink);
 }
 .landing-signin { border-radius: var(--sw-radius-full); padding-inline: var(--sw-space-5); }
 
-/* ── the sheet ─────────────────────────────────────────────────────────── */
-.landing-hero {
-  flex: 1;
+/* ── the scene ─────────────────────────────────────────────────────────── */
+.landing-scene {
+  position: relative;
+  min-height: 100svh;
   display: grid;
-  grid-template-columns: minmax(0, 1.05fr) minmax(0, 1.7fr) minmax(0, 0.8fr);
+  grid-template-columns: minmax(0, 1fr) var(--tree) minmax(0, 1fr);
   align-items: center;
-  gap: clamp(var(--sw-space-4), 2.5vw, var(--sw-space-10));
-  width: 100%;
-  max-width: 1440px;
-  margin: 0 auto;
-  padding: clamp(var(--sw-space-4), 3vw, var(--sw-space-10));
+  column-gap: clamp(var(--sw-space-4), 3vw, var(--sw-space-12));
+  padding: calc(4rem + var(--sw-space-4)) clamp(var(--sw-space-4), 4vw, 4rem) 4rem;
+  overflow: clip;
+  background:
+    radial-gradient(34% 40% at 50% 38%, var(--sw-dusk-glow), transparent 72%),
+    radial-gradient(70% 58% at 50% 44%, var(--sw-dusk-haze), transparent 76%),
+    linear-gradient(180deg, var(--sw-dusk-sky) 0%, var(--sw-dusk-mid) 46%, var(--sw-dusk-mid) 70%, var(--sw-dusk-sky) 100%);
+}
+/* the vignette: the edges of the frame fall away into the gloom */
+.landing-scene::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background: radial-gradient(ellipse 72% 70% at 50% 46%, transparent 45%, rgb(8 12 10 / 0.55) 100%);
 }
 
-/* the headline: extruded block letters, like the poster's lettering. The
-   extrusion is a stack of offset copies in the deep green, so the letters
-   stay real text (selectable, readable, scalable). */
+/* the words: few, either side of the tree, under the fog */
+.landing-title,
+.landing-side {
+  position: relative;
+  z-index: 3;
+}
 .landing-title {
+  justify-self: end;
   margin: 0;
   font-family: var(--sw-font-display);
   font-weight: 900;
   text-transform: uppercase;
-  font-size: clamp(2.5rem, 4.4vw, 5rem);
+  text-align: right;
+  font-size: clamp(2rem, 3.1vw, 3.75rem);
   line-height: 0.96;
-  color: var(--sw-pine);
+  color: var(--sw-dusk-ink);
 }
 .landing-title span { display: block; }
 
-/* the tree is the hero: it may grow past its column a little, the way the
-   poster's art spills into the type around it */
-.landing-tree {
-  justify-self: center;
-  width: min(118%, 860px);
-  margin-inline: -9%;
-}
-
-/* The copy sits above the tree's layer: a bill blown sideways by the breeze
-   passes BEHIND the words, never over them. */
-.landing-title,
 .landing-side {
-  position: relative;
-  z-index: 2;
-}
-
-.landing-side {
+  justify-self: start;
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  gap: var(--sw-space-8);
+  gap: var(--sw-space-5);
+  max-width: 20rem;
 }
-.landing-statement {
+.landing-line {
   margin: 0;
-  font-family: var(--sw-font-display);
-  font-weight: 800;
-  text-transform: uppercase;
-  font-size: clamp(1.6rem, 2.3vw, 2.25rem);
-  line-height: 1.02;
-  letter-spacing: 0.01em;
-  color: var(--sw-danger);
+  font-size: var(--sw-text-md);
+  line-height: 1.45;
+  color: var(--sw-dusk-ink-quiet);
 }
-.landing-statement span { display: block; }
 .landing-start { white-space: nowrap; }
 
+/* ── the stage: tree, glass floor, reflection ──────────────────────────── */
+.landing-stage {
+  position: relative;
+  z-index: 2;
+  isolation: isolate;
+  width: var(--tree);
+  justify-self: center;
+}
+/* Let the floor slip between the tree picture (under it) and the falling
+   bills (over it): the tree's own stacking group is opened up here. */
+.landing-stage .mt { isolation: auto; }
+.landing-stage .mt-stage { z-index: 1; }
+.landing-stage .mt-bills { z-index: 3; }
+.landing-stage .mt-stage::before { display: none; }
+
+/* the floor: an ellipse of frosted glass, its top edge where the trunk
+   enters it, so the roots are seen blurred through the glass */
+.landing-floor {
+  position: absolute;
+  left: 50%;
+  top: calc(var(--tree) * 0.715);
+  z-index: 2;
+  width: min(calc(100vw - 2 * var(--sw-space-5)), calc(var(--tree) * 2.4));
+  aspect-ratio: 1 / var(--floor-ratio);
+  transform: translateX(-50%);
+  pointer-events: none;
+}
+.landing-floor-glass {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  border-radius: 50%;
+  background:
+    radial-gradient(ellipse 40% 34% at 50% 18%, rgb(255 255 255 / 0.20), transparent 70%),
+    radial-gradient(ellipse at 50% 40%, rgb(220 228 220 / 0.14), rgb(220 228 220 / 0.05) 60%, transparent 76%);
+  -webkit-backdrop-filter: blur(7px) saturate(115%);
+  backdrop-filter: blur(7px) saturate(115%);
+  box-shadow:
+    inset 0 1.5px 0 rgb(255 255 255 / 0.38),
+    inset 0 -14px 30px -18px rgb(255 255 255 / 0.22);
+  -webkit-mask-image: radial-gradient(ellipse 50% 50% at 50% 50%, rgb(0 0 0) 70%, transparent 100%);
+  mask-image: radial-gradient(ellipse 50% 50% at 50% 50%, rgb(0 0 0) 70%, transparent 100%);
+}
+/* the slab's front edge: the glass has thickness, lit along its lip */
+.landing-floor::after {
+  content: "";
+  position: absolute;
+  left: 2%;
+  right: 2%;
+  top: 6%;
+  bottom: -5%;
+  z-index: -1;
+  border-radius: 50%;
+  border-bottom: 2px solid rgb(255 255 255 / 0.16);
+  background: radial-gradient(ellipse at 50% 70%, rgb(8 12 10 / 0.55), transparent 70%);
+  filter: blur(1px);
+}
+/* the trunk caught in the glass: the picture mirrored about the ground line,
+   only the trunk kept, faint and soft */
+.landing-reflection {
+  position: absolute;
+  left: 50%;
+  top: calc(var(--tree) * -0.715);
+  width: var(--tree);
+  height: var(--tree);
+  max-width: none;
+  transform: translateX(-50%) scaleY(-0.9);
+  transform-origin: 50% 73.5%;
+  opacity: 0.26;
+  filter: blur(2px);
+  -webkit-mask-image: linear-gradient(to bottom, transparent 36%, rgb(0 0 0) 64%, rgb(0 0 0) 73%, transparent 74%);
+  mask-image: linear-gradient(to bottom, transparent 36%, rgb(0 0 0) 64%, rgb(0 0 0) 73%, transparent 74%);
+}
+
+/* the mist, over everything in the scene */
+.landing-fog {
+  position: absolute;
+  inset: 0;
+  z-index: 4;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+.landing-cue {
+  position: absolute;
+  left: 50%;
+  bottom: var(--sw-space-6);
+  z-index: 5;
+  transform: translateX(-50%);
+  font-size: var(--sw-text-xs);
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--sw-dusk-ink-quiet);
+}
+.landing-cue::after {
+  content: "";
+  display: block;
+  width: 1px;
+  height: 28px;
+  margin: var(--sw-space-2) auto 0;
+  background: linear-gradient(var(--sw-dusk-ink-quiet), transparent);
+}
+
+/* ── further down: the details, arriving as they scroll in ─────────────── */
+.landing-details {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: clamp(var(--sw-space-8), 6vw, 4rem) clamp(var(--sw-space-6), 5vw, 4rem);
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: clamp(var(--sw-space-12), 10vw, 9rem) clamp(var(--sw-space-4), 4vw, var(--sw-space-10));
+}
+.landing-detail {
+  display: grid;
+  gap: var(--sw-space-3);
+  padding-top: var(--sw-space-5);
+  border-top: 1px solid rgb(243 230 210 / 0.14);
+}
+.landing-detail-n {
+  font-family: var(--sw-font-display);
+  font-weight: 800;
+  font-size: var(--sw-text-md);
+  color: var(--sw-brand-vermilion);
+}
+.landing-detail-title {
+  margin: 0;
+  font-family: var(--sw-font-display);
+  font-weight: 900;
+  text-transform: uppercase;
+  font-size: clamp(1.75rem, 2.6vw, 2.5rem);
+  line-height: 1;
+  color: var(--sw-dusk-ink);
+}
+.landing-detail-body {
+  margin: 0;
+  max-width: 34ch;
+  line-height: 1.55;
+  color: var(--sw-dusk-ink-quiet);
+}
+
+.landing-final {
+  display: grid;
+  justify-items: center;
+  gap: var(--sw-space-8);
+  padding: var(--sw-space-12) var(--sw-space-4) clamp(4rem, 12vw, 10rem);
+  text-align: center;
+}
+.landing-final-title {
+  margin: 0;
+  font-family: var(--sw-font-display);
+  font-weight: 900;
+  text-transform: uppercase;
+  font-size: clamp(2.25rem, 5vw, 4.5rem);
+  line-height: 0.96;
+  color: var(--sw-dusk-ink);
+}
+.landing-final-actions { display: flex; flex-wrap: wrap; justify-content: center; gap: var(--sw-space-3); }
+.landing .landing-final-signin {
+  background: transparent;
+  color: var(--sw-dusk-ink);
+  border-color: rgb(243 230 210 / 0.36);
+}
+.landing .landing-final-signin:hover:not([aria-disabled='true']) {
+  background: var(--sw-dusk-ink);
+  color: var(--sw-dusk-sky);
+}
+
+/* hidden until scrolled to, then the same blur-in as everything else */
+.landing-reveal { opacity: 0; }
+.landing-reveal.is-in {
+  opacity: 1;
+  animation: sw-rise var(--sw-dur-focus) var(--sw-ease-out) backwards;
+  animation-delay: calc(var(--sw-i, 0) * var(--sw-stagger));
+}
+@media (prefers-reduced-motion: reduce) {
+  .landing-reveal { opacity: 1; }
+  .landing-reveal.is-in { animation: none; }
+}
+
 /* ── narrower sheets ───────────────────────────────────────────────────── */
-@media (max-width: 1100px) {
-  .landing-hero {
-    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-    grid-template-areas: "title side" "tree tree";
+@media (max-width: 860px) {
+  .landing {
+    --tree: min(84vw, 50svh);
   }
-  .landing-title { grid-area: title; }
-  .landing-side { grid-area: side; }
-  .landing-tree { grid-area: tree; width: min(100%, 640px); margin-inline: 0; }
+  .landing-scene {
+    grid-template-columns: minmax(0, 1fr);
+    justify-items: center;
+    row-gap: var(--sw-space-4);
+    padding-top: calc(4rem + var(--sw-space-6));
+  }
+  .landing-title { justify-self: center; text-align: center; font-size: clamp(2.25rem, 10vw, 3.25rem); }
+  .landing-side { justify-self: center; align-items: center; text-align: center; }
+  .landing-details { grid-template-columns: minmax(0, 1fr); }
 }
 @media (max-width: 640px) {
-  .landing-bar { margin-inline: var(--sw-space-3); padding-left: var(--sw-space-4); }
-  .landing-hero {
-    grid-template-columns: minmax(0, 1fr);
-    grid-template-areas: "title" "tree" "side";
-    gap: var(--sw-space-3);
-    padding: var(--sw-space-8) var(--sw-space-4) var(--sw-space-10);
-  }
-  .landing-tree { margin-bottom: calc(-1 * var(--sw-space-8)); }
-  .landing-title { font-size: clamp(2.5rem, 13vw, 3.4rem); }
-  .landing-statement { font-size: 1.5rem; }
+  .landing-bar { padding-left: var(--sw-space-4); }
   .landing-start { width: 100%; }
+  .landing-cue { display: none; }
 }

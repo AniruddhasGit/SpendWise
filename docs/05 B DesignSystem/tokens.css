@@ -146,6 +146,16 @@
   --sw-brand-emerald-deep: #03522b;
   --sw-brand-vermilion: #e34222;
   --sw-brand-vermilion-deep: #b3301a;
+  /* The landing scene (SW-ADR-159): an overcast dusk the tree stands in, the
+     same in both themes, like the brand inks. Ivory type on the dark edges is
+     well past 7:1; the pale centre is the fog lit from behind the tree. */
+  --sw-dusk-sky: #18201c;         /* the darkest edge */
+  --sw-dusk-mid: #2c3a33;         /* overcast */
+  --sw-dusk-haze: #6f7d74;        /* fog lit from behind */
+  --sw-dusk-glow: #a7b2a7;        /* the brightest fog, right behind the canopy */
+  --sw-dusk-fog: 220 228 220;     /* the mist, as an rgb triple for alpha */
+  --sw-dusk-ink: #f3e6d2;         /* type on the scene: the ivory, a touch dimmer */
+  --sw-dusk-ink-quiet: #b9b6a8;
 
   /* the depth of the poster's extruded letters and numerals */
   --sw-extrude: #0b2a1c;

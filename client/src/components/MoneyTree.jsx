@@ -75,6 +75,7 @@ function readPalette(el) {
     ink: v('--sw-brand-vermilion', 'rgb(227 66 34)'),
     inkDeep: v('--sw-brand-vermilion-deep', 'rgb(179 48 26)'),
     leaf: v('--sw-brand-emerald', 'rgb(4 106 56)'),
+    dust: v('--mt-dust', 'rgb(243 230 210)'),
     shadow: v('--mt-bill-shadow', 'rgb(11 42 28 / 0.18)'),
   }
 }
@@ -156,7 +157,8 @@ function drawSpark(ctx, s, colour) {
 }
 
 export default function MoneyTree({
-  bills, variant = 'dashboard', atmosphere = false, orbits = atmosphere, dropRequest = null,
+  bills, variant = 'dashboard', atmosphere = false, orbits = atmosphere, mist = atmosphere,
+  dust = false, ground = true, dropRequest = null,
   alt = 'A bonsai tree whose leaves are banknotes', className = '',
 }) {
   const rootRef = useRef(null)
@@ -349,11 +351,11 @@ export default function MoneyTree({
         // fade in from the ground, out toward the top, and twinkle
         const k = (m.y - box.y) / (box.h * 0.8)
         const a = Math.max(0, Math.min(1, k * 3, (1 - k) * 4 + 0.6)) * (0.45 + 0.55 * Math.abs(Math.sin(m.t * m.tw)))
-        if (m.star) {
+        if (m.star && !dust) {
           drawSpark(ctx, { x: m.x, y: m.y, r: m.r * 2.4, rot: m.rot, alpha: a * 0.85 }, pal.ink)
         } else {
           ctx.globalAlpha = a * 0.7
-          ctx.fillStyle = m.green ? pal.leaf : pal.ink
+          ctx.fillStyle = dust ? pal.dust : m.green ? pal.leaf : pal.ink
           ctx.beginPath()
           ctx.arc(m.x, m.y, m.r, 0, Math.PI * 2)
           ctx.fill()
@@ -361,7 +363,16 @@ export default function MoneyTree({
         }
       }
       const k = billScale(box.w)
-      for (const b of live) drawBill(ctx, b, pal, sprite, k)
+      for (const b of live) {
+        // a bill blown toward the edge of the canvas fades out rather than
+        // being cut in half by it
+        const edge = Math.max(0, Math.min(1, (Math.min(b.x, W - b.x) - 18) / 50))
+        if (edge <= 0) continue
+        const a = b.alpha
+        b.alpha = a * edge
+        drawBill(ctx, b, pal, sprite, k)
+        b.alpha = a
+      }
       for (const p of sparks) drawSpark(ctx, p, pal.ink)
     }
 
@@ -459,7 +470,7 @@ export default function MoneyTree({
       root.removeEventListener('pointerleave', onLeave)
       api.current = null
     }
-  }, [variant, atmosphere])
+  }, [variant, atmosphere, dust])
 
   // A drop request is played once, even if it arrived before the tree mounted.
   const played = useRef(null)
@@ -494,9 +505,8 @@ export default function MoneyTree({
         <img ref={imgRef} className="mt-tree" src={TREE_SRC} alt={alt}
              width="1200" height="1200" decoding="async"
              fetchPriority={variant === 'landing' ? 'high' : 'auto'} draggable="false" />
-        <div className="mt-ground" aria-hidden="true" />
-        {atmosphere && <div className="mt-sun" aria-hidden="true" />}
-        {atmosphere && (
+        {ground && <div className="mt-ground" aria-hidden="true" />}
+        {mist && (
           <div className="mt-mist" aria-hidden="true">
             <span className="mt-mist-a" /><span className="mt-mist-b" /><span className="mt-mist-c" />
           </div>
