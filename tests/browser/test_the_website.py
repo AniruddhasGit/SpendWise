@@ -25,6 +25,13 @@ import pytest
 pytestmark = [pytest.mark.browser, pytest.mark.db]
 
 PASSWORD = "correct-horse-battery-staple"
+
+# Every `wait_for_function` predicate is a FUNCTION string, `"() => (" <expression> ")"`.
+# The app's CSP (`script-src 'self'`, app/core/headers.py, since 2026-10-18) refuses
+# the in-page `eval` Playwright uses to poll a bare EXPRESSION string, so an expression
+# that is false on the first check fails with an EvalError instead of waiting. A
+# function string is polled without `eval` (verified 2026-10-20). The expression inside
+# the wrapper is unchanged; do not "simplify" the wrapper away.
 A_TOTAL = "₹3,790.49"
 
 
@@ -212,7 +219,7 @@ async def test_escape_closes_the_panel_and_focus_returns_to_the_trigger(
     # subtree cannot take focus at all. Reading `activeElement` the instant the
     # panel detaches races that by one tick and reports <body>.
     await page.wait_for_function(
-        "document.activeElement?.dataset?.testid === 'first-add'", timeout=5000)
+        "() => (" "document.activeElement?.dataset?.testid === 'first-add'" ")", timeout=5000)
 
 
 async def test_the_background_is_inert_while_the_panel_is_open(page, clean_db) -> None:
@@ -355,7 +362,7 @@ async def test_enter_filters_and_escape_clears_it_without_a_mouse(page,
     await page.locator(".band").first.focus()
     await page.keyboard.press("Enter")
     await page.wait_for_function(
-        f"document.querySelector('[data-testid=total]').innerText !== {whole_total!r}",
+        "() => (" f"document.querySelector('[data-testid=total]').innerText !== {whole_total!r}" ")",
         timeout=15000)
 
     assert await page.get_by_test_id("total").inner_text() != whole_total
@@ -368,7 +375,7 @@ async def test_enter_filters_and_escape_clears_it_without_a_mouse(page,
 
     await page.keyboard.press("Escape")
     await page.wait_for_function(
-        f"document.querySelector('[data-testid=total]').innerText === {whole_total!r}",
+        "() => (" f"document.querySelector('[data-testid=total]').innerText === {whole_total!r}" ")",
         timeout=15000)
     assert await page.locator(".band").first.get_attribute("aria-pressed") == "false"
 
@@ -401,7 +408,7 @@ async def test_selection_is_never_signalled_by_colour_alone(page, seeded) -> Non
     # the attribute flips reads 1 for every band and reports both cues missing
     # when both are present — which is what the first version of this test did.
     await page.wait_for_function(
-        "getComputedStyle(document.querySelectorAll('.band')[1]).opacity !== '1'",
+        "() => (" "getComputedStyle(document.querySelectorAll('.band')[1]).opacity !== '1'" ")",
         timeout=5000)
 
     chosen_opacity = await page.evaluate(
@@ -428,7 +435,7 @@ async def test_the_period_lives_in_the_url_and_survives_a_reload(page,
     assert "to=2026-08-31" in page.url
 
     await page.get_by_test_id("period-last-month").click()
-    await page.wait_for_function("location.search.includes('from=2026-07-01')",
+    await page.wait_for_function("() => (" "location.search.includes('from=2026-07-01')" ")",
                                  timeout=15000)
 
     await page.reload()
@@ -445,15 +452,15 @@ async def test_the_back_button_returns_to_the_previous_period(page, seeded) -> N
     await page.wait_for_selector('[data-testid="headline"]')
 
     await page.get_by_test_id("period-last-month").click()
-    await page.wait_for_function("location.search.includes('from=2026-07-01')",
+    await page.wait_for_function("() => (" "location.search.includes('from=2026-07-01')" ")",
                                  timeout=15000)
 
     await page.go_back()
-    await page.wait_for_function("location.search.includes('from=2026-08-01')",
+    await page.wait_for_function("() => (" "location.search.includes('from=2026-08-01')" ")",
                                  timeout=15000)
     assert await page.get_by_test_id("whoami").is_visible(), "Back left the application"
     await page.wait_for_function(
-        f"document.querySelector('[data-testid=total]')?.innerText === {A_TOTAL!r}",
+        "() => (" f"document.querySelector('[data-testid=total]')?.innerText === {A_TOTAL!r}" ")",
         timeout=15000)
 
 
@@ -613,7 +620,7 @@ async def test_a_half_typed_expense_survives_the_session_ending(page, seeded) ->
     # the two to land in different frames. The same race as the ribbon's
     # opacity transition and the focus restore, and the same fix.
     await page.wait_for_function(
-        "document.querySelector(\"input[name='amount']\")?.value === '432.10'",
+        "() => (" "document.querySelector(\"input[name='amount']\")?.value === '432.10'" ")",
         timeout=5000)
     assert await page.input_value("input[name='description']") == "Half typed"
 
@@ -652,7 +659,7 @@ async def test_an_expense_can_be_edited_and_the_total_follows(page, seeded) -> N
     expected = 379049 - first["amount_paise"] + 100
     want = f"₹{expected // 100:,}.{expected % 100:02d}"
     await page.wait_for_function(
-        f"document.querySelector('[data-testid=total]').innerText === {want!r}",
+        "() => (" f"document.querySelector('[data-testid=total]').innerText === {want!r}" ")",
         timeout=20000)
 
 
@@ -683,7 +690,7 @@ async def test_deleting_asks_first_and_names_the_amount(page, seeded) -> None:
     page.once("dialog", accept)
     await page.get_by_test_id(f"delete-{first['id']}").click()
     await page.wait_for_function(
-        "document.querySelector('[data-testid=count]').innerText === '3'", timeout=20000)
+        "() => (" "document.querySelector('[data-testid=count]').innerText === '3'" ")", timeout=20000)
 
 
 # ── the ops endpoints, over a real socket ──────────────────────────────────

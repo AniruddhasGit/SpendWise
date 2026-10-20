@@ -16,6 +16,13 @@ pytestmark = [pytest.mark.browser, pytest.mark.db]
 
 PASSWORD = "correct-horse-battery-staple"
 
+# Every `wait_for_function` predicate is a FUNCTION string, `"() => (" <expression> ")"`.
+# The app's CSP (`script-src 'self'`, app/core/headers.py, since 2026-10-18) refuses
+# the in-page `eval` Playwright uses to poll a bare EXPRESSION string, so an expression
+# that is false on the first check fails with an EvalError instead of waiting. A
+# function string is polled without `eval` (verified 2026-10-20). The expression inside
+# the wrapper is unchanged; do not "simplify" the wrapper away.
+
 
 async def _open_gate(page, *, register=False):
     """The front door is the landing page on a fresh tab (SW-ADR-156); a tab
@@ -107,7 +114,7 @@ async def test_dark_mode_changes_what_is_actually_painted(page, seeded) -> None:
 
     await page.get_by_test_id("theme-dark").click()
     await page.wait_for_function(
-        f"getComputedStyle(document.body).backgroundColor !== {light!r}", timeout=5000)
+        "() => (" f"getComputedStyle(document.body).backgroundColor !== {light!r}" ")", timeout=5000)
 
     dark = await _body_background(page)
     assert dark != light
@@ -211,7 +218,7 @@ async def test_a_person_can_make_their_own_category_and_use_it(page, clean_db) -
     await page.fill('[data-testid="new-category-name"]', "Coffee")
     await page.get_by_test_id("create-category").click()
     await page.wait_for_function(
-        "document.querySelectorAll('.cat-row').length === 9", timeout=15000)
+        "() => (" "document.querySelectorAll('.cat-row').length === 9" ")", timeout=15000)
 
     # And it is immediately usable on an expense.
     await page.get_by_test_id("nav-dashboard").click()
@@ -252,7 +259,7 @@ async def test_renaming_a_category_keeps_its_colour(page, clean_db) -> None:
     await page.fill('[data-testid="rename-1"]', "Food shopping")
     await page.get_by_test_id("save-category-1").click()
     await page.wait_for_function(
-        "document.querySelector('[data-testid=category-1]').innerText.includes('Food shopping')",
+        "() => (" "document.querySelector('[data-testid=category-1]').innerText.includes('Food shopping')" ")",
         timeout=15000)
 
     after = await page.locator(".cat-row").first.locator(".cat-dot").evaluate(
@@ -280,7 +287,7 @@ async def test_deleting_a_category_names_the_blast_radius_and_keeps_the_money(
     page.once("dialog", accept)
     await page.get_by_test_id("delete-category-1").click()
     await page.wait_for_function(
-        "document.querySelectorAll('.cat-row').length === 7", timeout=15000)
+        "() => (" "document.querySelectorAll('.cat-row').length === 7" ")", timeout=15000)
 
     assert messages, "no confirmation before a destructive action"
     assert "KEPT" in messages[0], messages[0]
@@ -449,12 +456,12 @@ async def test_the_rail_is_an_overlay_at_phone_width(phone, seeded) -> None:
 
     await phone.get_by_test_id("rail-open").click()
     await phone.wait_for_function(
-        "document.querySelector('[data-testid=sidebar]').getBoundingClientRect().x >= 0",
+        "() => (" "document.querySelector('[data-testid=sidebar]').getBoundingClientRect().x >= 0" ")",
         timeout=5000)
 
     await phone.keyboard.press("Escape")
     await phone.wait_for_function(
-        "document.querySelector('[data-testid=sidebar]').getBoundingClientRect().x < 0",
+        "() => (" "document.querySelector('[data-testid=sidebar]').getBoundingClientRect().x < 0" ")",
         timeout=5000)
 
 
@@ -716,5 +723,5 @@ async def test_a_closed_account_shows_as_closed_and_can_be_restored(
 
     await row.get_by_role("button", name=re.compile("restore", re.I)).click()
     await page.wait_for_function(
-        f"!document.querySelector('[data-testid=admin-user-{a}]')"
-        f".innerText.toLowerCase().includes('deleted')", timeout=20000)
+        "() => (" f"!document.querySelector('[data-testid=admin-user-{a}]')"
+        f".innerText.toLowerCase().includes('deleted')" ")", timeout=20000)

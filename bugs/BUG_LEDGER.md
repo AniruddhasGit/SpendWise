@@ -2326,3 +2326,14 @@ examined an empty list.
 > **Lesson.** Before attributing a red run to your change, run the same tests on the code without your change, in the same environment. An environment that has drifted since the last green (a new browser build here) fails the baseline too. The difference between the two runs is the only signal that belongs to your change. The fix here is not to loosen the CSP or edit the criteria, but to pin the browser build the gate was last green on. Rewriting those predicates as JS function strings (`"() => ..."`) might avoid the in-page `eval`; that is **unverified** and was not tried.
 
 `tests/browser/test_the_shell.py · tests/browser/test_the_website.py · app/core/headers.py:28-39 · session 2026-10-20`
+
+> **Correction, same day (2026-10-20), to the entry above on the CSP failures.** The cause was not a
+> newer browser build. `script-src 'self'` arrived in `app/core/headers.py` on **2026-10-18**
+> ("Harden the service and fix the summary's serialization 500"), and the browser suite, last run
+> green on 2026-09-01, was not re-run after that hardening. Playwright polls a bare EXPRESSION string
+> with an in-page `eval`, which the CSP refuses as soon as the predicate is false on its first check.
+> **Verified** against the running app: the same check written as a FUNCTION string (`"() => (...)"`)
+> polls without `eval` and passes. All 18 expression predicates were wrapped verbatim, no assertion
+> changed. The broader lesson stands, with one addition: a security change (a CSP, a header, a
+> permission) is a change to every test that drives the browser, and the browser suite must be re-run
+> as part of it.
