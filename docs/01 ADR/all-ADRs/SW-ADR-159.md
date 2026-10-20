@@ -29,7 +29,8 @@ The owner rejected the bright poster atmosphere ("that fog and the sun") and ask
 1. **Scene.**
    - The landing is an overcast dusk, the same in both themes, like the brand inks. It uses new
      constant tokens `--sw-dusk-*`.
-   - The pale fog glow sits behind the canopy, and the edges fall into a vignette.
+   - The edges fall into a vignette. *(A pale fog glow behind the canopy was removed later on
+     2026-10-20: the owner rejected it as a white halo around the tree.)*
    - Type is the dimmed ivory `--sw-dusk-ink`, well past 7:1 on the dark edges. The quiet line,
      `--sw-dusk-ink-quiet`, measures about 5.8:1 on `--sw-dusk-mid`.
 2. **Composition.** Three columns: the headline (right-aligned, left of the tree), the tree, then
@@ -53,6 +54,14 @@ The owner rejected the bright poster atmosphere ("that fog and the sun") and ask
      clear. There are two layers. One sits behind the tree, so mist shows between the trunk and the
      branches. The other sits in front and thins over the trunk, leaving a clearer path down the
      middle. The high wisps are gone. This replaces the 70/30 split above.
+   - **Revised again the same evening.** The owner found the painted clumps fake and asked for
+     "simulation clouds which can react to the mouse". `Smoke.jsx` is now a real-time fluid
+     simulation (stable fluids with vorticity confinement) in WebGL2. It uses no library, because
+     three.js would add about 150 KB and give nothing the browser's own WebGL lacks
+     (`SW-ADR-016`). Sources along the floor keep pouring smoke in. The smoke is wiped out above the
+     lowest branches and below the floor's near edge, and a moving pointer stirs it. The painted
+     `Fog.jsx` remains as the fallback for reduced motion and for browsers without WebGL2 float
+     targets. Measured at 60 frames a second on a desktop GPU.
    - The tree's own mist, sun, orbits and spark stars are off here. Its motes are faint ivory dust.
 5. **Below the fold.**
    - Four plain statements about what the product does, plus a closing call to action.

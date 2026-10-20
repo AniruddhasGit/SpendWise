@@ -73,9 +73,8 @@
   column-gap: clamp(var(--sw-space-4), 3vw, var(--sw-space-12));
   padding: calc(4rem + var(--sw-space-4)) clamp(var(--sw-space-4), 4vw, 4rem) 4rem;
   overflow: clip;
+  /* no glow behind the tree: the owner rejected the white halo (2026-10-20) */
   background:
-    radial-gradient(34% 40% at 50% 38%, var(--sw-dusk-glow), transparent 72%),
-    radial-gradient(70% 58% at 50% 44%, var(--sw-dusk-haze), transparent 76%),
     linear-gradient(180deg, var(--sw-dusk-sky) 0%, var(--sw-dusk-mid) 46%, var(--sw-dusk-mid) 70%, var(--sw-dusk-sky) 100%);
 }
 /* the vignette: the edges of the frame fall away into the gloom */
