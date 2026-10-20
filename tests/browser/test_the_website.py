@@ -28,9 +28,21 @@ PASSWORD = "correct-horse-battery-staple"
 A_TOTAL = "₹3,790.49"
 
 
-async def _register(page, email, name="Test Person"):
+async def _open_gate(page, *, register=False):
+    """The front door is the landing page on a fresh tab (SW-ADR-156); a tab
+    that has held a session reloads straight to the sign-in form. Either way,
+    end on the form, in the requested mode."""
     await page.goto("/")
-    await page.get_by_test_id("gate-switch").click()
+    await page.wait_for_selector('[data-testid="landing-sign-in"], #email')
+    if await page.get_by_test_id("landing-sign-in").count():
+        await page.get_by_test_id("landing-start" if register else "landing-sign-in").click()
+        await page.wait_for_selector("#email")
+    elif register:
+        await page.get_by_test_id("gate-switch").click()
+
+
+async def _register(page, email, name="Test Person"):
+    await _open_gate(page, register=True)
     await page.fill("#display_name", name)
     await page.fill("#email", email)
     await page.fill("#password", PASSWORD)
@@ -39,8 +51,7 @@ async def _register(page, email, name="Test Person"):
 
 
 async def _sign_in(page, email, password):
-    await page.goto("/")
-    await page.wait_for_selector("#email")
+    await _open_gate(page)
     await page.fill("#email", email)
     await page.fill("#password", password)
     await page.get_by_test_id("gate-submit").click()
@@ -48,6 +59,47 @@ async def _sign_in(page, email, password):
 
 
 # ── a. register, land, and the cookie ──────────────────────────────────────
+async def test_the_front_door_is_the_landing_page_and_sign_in_opens_the_form(
+        page, clean_db) -> None:
+    """SW-ADR-156. A fresh visit opens on the landing page, not the form; its
+    one Sign in action leads to the form, and the form leads back."""
+    await page.goto("/")
+    await page.wait_for_selector('[data-testid="landing-sign-in"]', timeout=15000)
+    assert await page.locator("#email").count() == 0, "the form showed before it was asked for"
+    # the tree is on the stage, and its picture is a real, loaded image
+    loaded = await page.evaluate(
+        "() => { const i = document.querySelector('.mt-tree');"
+        " return Boolean(i && i.complete && i.naturalWidth > 0) }")
+    assert loaded, "the money tree image did not load"
+
+    await page.get_by_test_id("landing-sign-in").click()
+    await page.wait_for_selector("#email")
+    await page.get_by_test_id("gate-back").click()
+    await page.wait_for_selector('[data-testid="landing-start"]')
+    await page.get_by_test_id("landing-start").click()
+    # "Create your account" opens the form in sign-up mode
+    await page.wait_for_selector("#display_name")
+
+
+async def test_the_landing_page_does_not_overflow_at_375px(phone, clean_db) -> None:
+    """E3-S8 AC1 holds on the front door too: no box past the window's edge,
+    including the drifting mist and the orbit lines."""
+    await phone.goto("/")
+    await phone.wait_for_selector('[data-testid="landing-sign-in"]', timeout=15000)
+    overflow = await phone.evaluate(
+        "document.documentElement.scrollWidth - document.documentElement.clientWidth")
+    assert overflow <= 0, f"the landing page is {overflow}px wider than a 375px window"
+    past = await phone.evaluate("""() => {
+        const w = window.innerWidth
+        const all = [...document.querySelectorAll('.landing *')]
+        return all.filter((e) => { const r = e.getBoundingClientRect(); return r.width && r.right > w + 0.5 })
+                  .map((e) => e.className.baseVal ?? e.className)
+    }""")
+    examined = await phone.evaluate("document.querySelectorAll('.landing *').length")
+    assert examined > 10, "examined nothing: the landing page did not render"
+    assert past == [], f"boxes past the right edge at 375px: {past}"
+
+
 async def test_a_person_can_sign_up_and_lands_on_their_dashboard(page, clean_db) -> None:
     await _register(page, "browser-a@spendwise.test", "Asha")
 

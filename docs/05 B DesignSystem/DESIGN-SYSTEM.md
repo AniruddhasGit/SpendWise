@@ -62,6 +62,27 @@ That is the whole brief. Everything below is that sentence made testable.
 **No component ever references a raw hex.** Components reference semantic tokens; tokens hold
 the hex. This is enforceable by grep and is checked in this goal's Definition of Done.
 
+### Current values: the Festival Poster (`SW-ADR-156`, 2026-10-20)
+
+The owner's palette: **Warm Ivory `#F9EBD7`, Emerald `#046A38`, Vermilion `#E34222`**. Values moved;
+no token name changed. `CONTRAST.md` (regenerated) has every measured pair: light 26/26, dark 26/26.
+
+| Token | Value (light / dark) | Use |
+|---|---|---|
+| `--sw-paper` | `#fbf0e0` / `#0a1c13` | the page ground. The owner's ivory lifted 2%: on `#f9ebd7` the frozen uncategorised band measures 2.89:1, under its 3:1 floor (`SW-ADR-156`). |
+| `--sw-bg-1` | `#f9ebd7` / `#0a1c13` | the backdrop ground: the owner's exact ivory is what surrounds every surface. |
+| `--sw-paper-raised` · `-sunken` | `#fdf6ec` · `#f2e1c7` / `#10271b` · `#07140d` | content tier (opaque) and wells. |
+| `--sw-ink` · `-muted` · `-faint` | `#0b2a1c` · `#3c5446` · `#8b8a76` / `#f9ebd7` · `#c4bba6` · `#7f8a7b` | text: deep emerald-black on ivory, ivory on night green. |
+| `--sw-pine` · `-deep` · `-soft` | `#046a38` · `#03522b` · `#e1e8cf` / `#5fd59a` · `#8ae6b6` · `#12382a` | **the accent: emerald.** |
+| `--sw-gold` · `-fill` · `-deep` · `-soft` | `#b3301a` · `#e34222` · `#c4361a` · `#fadccf` / `#ff8f73` · `#e34222` · `#c4361a` · `#3a1a12` | **vermilion** now, under the old names: the second voice, money leaving. |
+| `--sw-danger` · `-soft` | `#b3301a` · `#f8d6c8` / `#ff8466` · `#3b1a12` | overspend, destructive, errors; also the poster's vermilion statement text. |
+| `--sw-extrude` | `#0b2a1c` / `#046a38` | the depth of the poster's extruded lettering (`.sw-extruded`). |
+| `--sw-brand-ivory` · `-emerald` · `-emerald-deep` · `-vermilion` · `-vermilion-deep` | constant in both themes | **printed objects only** (the money tree's bills: paper is paper in either theme). Never page text. |
+| `--sw-glass*` | ivory glass `rgb(253 246 236 / .62)` / night glass `rgb(16 40 28 / .66)` | chrome tier only (`SW-ADR-147`, `SW-ADR-154`). |
+
+The table below is the previous revision's ("new money", 2026-10-18), kept for the record; where it
+and the table above disagree, the table above is current.
+
 | Token | Value (light / dark) | Use |
 |---|---|---|
 | `--sw-paper` | `#f7f4ec` / `#06140f` | the page's opaque ground; `body` background-color. Uncategorised measures 3.08:1 on it (§2.2). |
@@ -258,6 +279,12 @@ danger-soft 5.23 / 6.95. The coin rim (`--sw-border-strong`) on `--sw-paper-sunk
 ---
 
 ## §3 — Type
+
+**Display face since 2026-10-20 (`SW-ADR-156`): Big Shoulders Display**, variable wght 100–900,
+Fontsource 5.2.5, SIL OFL 1.1, self-hosted as `client/public/fonts/BigShouldersDisplay-latin(-ext).woff2`
+with `OFL-bigshouldersdisplay.txt` beside them. It is the poster's condensed block face: headlines,
+the dashboard total, the landing statement. It has **no ₹**, so the rupee sign falls through to Geist
+on purpose. Body text stays Geist, below.
 
 Liquid-glass revision: **one family**, Geist. It is variable (wght 100–900), from the official
 release `vercel/geist-font` v1.8.1, licensed under the SIL OFL 1.1. It is self-hosted as
@@ -736,6 +763,7 @@ Recipes:
 |---|---|---|
 | guilloché waves + rosette | everywhere | **Generated**, not downloaded: two SVG masks embedded in glass.css (≈18.7KB, no colour). Geometry: a hypotrochoid R100/r36/d52 in two phases plus 3 modulated rings, and 2×10 crossing amplitude-modulated sine lines in a seamless 360×180 tile. The generator script was a session scratch file and is **not in the repo**; committing it under `tools/` is outstanding. |
 | `grain-256.webp` | everywhere | `body::after`, tiled, 5% soft-light (light) / 6% overlay (dark) |
+| `assets/tree/money-tree.webp` | landing, sign-in, dashboard | **The money tree** (`SW-ADR-156`): a poster-print bonsai with banknote leaves, generated with Runway and cleaned locally (fruit removed, cut out, bill interiors refilled). 1200px WebP with alpha, ≈335KB. Provenance (prompt, references, post-processing) in `money-tree.webp.json` beside it. Drawn by `<MoneyTree>`; never behind text. |
 | `liquid-violet-*`, `pearl-holo-*`, `ink-lightwave-*`, `liquid-chrome-*` | **retired** | Violet or iridescent; nothing references them. They remain in `client/public/assets/bg/` until their owner deletes them, and are served only if requested. |
 | `ink-blobs-*` | **retired** | Amber and teal; nothing references it. |
 

@@ -21,6 +21,18 @@ import Settings from './screens/Settings.jsx'
  * second set of conventions for expressing "which pane".
  */
 
+// A tab that has held a session goes straight to the sign-in form when it
+// reloads signed out (a revoked or expired session): that person wants the
+// form, not the landing page. One bit, per tab, nothing personal in it.
+// sessionStorage can throw (privacy modes), and then everyone gets the landing.
+const SEEN = 'spendwise.tab-signed-in'
+function tabHadSession() {
+  try { return sessionStorage.getItem(SEEN) === '1' } catch { return false }
+}
+function markTabSignedIn() {
+  try { sessionStorage.setItem(SEEN, '1') } catch { /* landing next time; harmless */ }
+}
+
 /** Drop `?from&to&category` so the next person does not inherit them. */
 function clearQuery() {
   if (window.location.search) {
@@ -34,9 +46,9 @@ export default function App() {
   const [mode, setMode] = useState('login')
   // What a signed-out visitor sees: the landing page on a first visit
   // (SW-ADR-156), the sign-in form once they ask for it. Anyone leaving the app
-  // (a sign-out, an ended session) goes straight to the form, where the reason
-  // banner and the focused email field are.
-  const [front, setFront] = useState('landing')
+  // (a sign-out, an ended session, a reload after one) goes straight to the
+  // form, where the reason banner and the focused email field are.
+  const [front, setFront] = useState(() => (tabHadSession() ? 'gate' : 'landing'))
   const [reason, setReason] = useState(null)
   const [view, setView] = useState('dashboard')
   const [animateRoute, setAnimateRoute] = useState(false)
@@ -101,7 +113,7 @@ export default function App() {
     // once a session is known to exist.
     let live = true
     api.me()
-      .then((p) => { if (live) { startSession(); setPrincipal(p) } })
+      .then((p) => { if (live) { startSession(); markTabSignedIn(); setPrincipal(p) } })
       .catch(() => { if (live) setPrincipal(null) })
       .finally(() => { if (live) setChecking(false) })
     return () => { live = false }
@@ -128,6 +140,7 @@ export default function App() {
 
   const signedIn = (p) => {
     startSession()
+    markTabSignedIn()
     const r = resume.current
     resume.current = null
     if (r && r.ownerId === p.id && r.search) {

@@ -17,9 +17,21 @@ pytestmark = [pytest.mark.browser, pytest.mark.db]
 PASSWORD = "correct-horse-battery-staple"
 
 
-async def _register(page, email, name="Test Person"):
+async def _open_gate(page, *, register=False):
+    """The front door is the landing page on a fresh tab (SW-ADR-156); a tab
+    that has held a session reloads straight to the sign-in form. Either way,
+    end on the form, in the requested mode."""
     await page.goto("/")
-    await page.get_by_test_id("gate-switch").click()
+    await page.wait_for_selector('[data-testid="landing-sign-in"], #email')
+    if await page.get_by_test_id("landing-sign-in").count():
+        await page.get_by_test_id("landing-start" if register else "landing-sign-in").click()
+        await page.wait_for_selector("#email")
+    elif register:
+        await page.get_by_test_id("gate-switch").click()
+
+
+async def _register(page, email, name="Test Person"):
+    await _open_gate(page, register=True)
     await page.fill("#display_name", name)
     await page.fill("#email", email)
     await page.fill("#password", PASSWORD)
@@ -28,8 +40,7 @@ async def _register(page, email, name="Test Person"):
 
 
 async def _sign_in(page, who):
-    await page.goto("/")
-    await page.wait_for_selector("#email")
+    await _open_gate(page)
     await page.fill("#email", who["email"])
     await page.fill("#password", who["password"])
     await page.get_by_test_id("gate-submit").click()
