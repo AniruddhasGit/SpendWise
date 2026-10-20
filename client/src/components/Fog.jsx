@@ -2,116 +2,84 @@ import { useEffect, useRef } from 'react'
 import { prefersReducedMotion } from '../lib/motion.js'
 
 /**
- * Ground fog for the landing scene (SW-ADR-159). Small, dense banks that
- * linger on the glass floor, a sixth of the tree's height, edge to edge across
- * the first screen and clipped to it, drifting slowly right to left on the
- * wind. The owner's idea
- * (2026-10-20): fog kept small makes the tree above it read huge, the way
- * Hometree does in Avatar.
+ * Ground fog for the landing scene (SW-ADR-159).
  *
- * The banks are billowed, the way the owner's reference is (2026-10-20):
- * clumps heaped like cauliflower, lit along their tops, dark underneath, with
- * a noisy smoke texture, piled either side with a clearer path down the
- * middle where the tree stands. Each bank is rendered ONCE into an offscreen
- * canvas (a metaball silhouette, domain-warped by fractal noise), so a frame
- * is a few dozen drawImage calls at half resolution. Reduced motion draws one
- * still frame. It pauses off screen and in hidden tabs.
+ * The owner's sketch and reference (2026-10-21): fog that starts where the
+ * trunk meets the ground and carries on, a sea of it, down to the bottom of
+ * the first screen, so the scene reads as a 3D world seen from a raised
+ * camera. A bright, dense band lies along the ground line with smoke curling
+ * up off its top; below it the fog is dimmer and softer. A steady wind blows
+ * right to left.
  *
- * `floor` is a selector for the floor element: the mist is laid ON its top
- * edge, rising around whatever stands there, so it never reads as fog under
- * the ground. Without one, `ground` (a fraction of the box's height) is used.
+ * The fog is one real texture (`/assets/fog/ground-fog.jpg`, made with Runway;
+ * provenance beside it), grey on black. It is tinted once into the dusk fog
+ * ink with its brightness as alpha, then tiled across the screen, every other
+ * tile mirrored so the joins never show. Two layers drift at different speeds
+ * for depth: the band, and a larger, dimmer, faster sea below it. Positions
+ * move by sub-pixel amounts on a time base, never stepped, so the drift is
+ * smooth. Reduced motion draws one still frame. It pauses off screen and in
+ * hidden tabs, and the scene clips it to the first screen.
+ *
+ * `layer`: 'front' (over the tree, thinned over the trunk) or 'back' (behind
+ * the tree, so the trunk rises out of the fog). `floor` and `stage` are
+ * selectors: the band sits on the floor's top edge, and its size follows the
+ * tree's height (a sixth of it).
  */
-function seeded(seed) {
-  let r = seed
-  return () => { r = (r * 16807) % 2147483647; return r / 2147483647 }
-}
+const SRC = '/assets/fog/ground-fog.jpg'
+// where the band sits in the texture, as fractions of its height
+const BAND_CORE = 0.42
+const SEA_FROM = 0.55
+const EDGE = 0.53 // the hard line under the band, softened in `tint`
 
-/** Value noise summed over five octaves, in about 0..1. */
-function fractalNoise(seed) {
-  const hash = (x, y) => {
-    let h = Math.imul(x, 374761393) ^ Math.imul(y, 668265263) ^ Math.imul(seed, 2246822519)
-    h = Math.imul(h ^ (h >>> 13), 1274126177)
-    return ((h ^ (h >>> 16)) >>> 0) / 4294967295
-  }
-  const ease = (t) => t * t * (3 - 2 * t)
-  const noise = (x, y) => {
-    const xi = Math.floor(x); const yi = Math.floor(y)
-    const u = ease(x - xi); const v = ease(y - yi)
-    const a = hash(xi, yi); const b = hash(xi + 1, yi)
-    const c = hash(xi, yi + 1); const d = hash(xi + 1, yi + 1)
-    return a + (b - a) * u + (c - a) * v + (a - b - c + d) * u * v
-  }
-  return (x, y) => {
-    let t = 0; let amp = 0.5; let f = 1
-    for (let o = 0; o < 5; o += 1) { t += amp * noise(x * f, y * f); f *= 2.03; amp *= 0.5 }
-    return t
-  }
-}
-
-const smooth = (a, b, x) => { const t = Math.min(1, Math.max(0, (x - a) / (b - a))); return t * t * (3 - 2 * t) }
-
-/** One billowing bank: heaped clumps, lit tops, shadowed base, smoke texture. */
-function makeBank(colour, seed) {
-  const W = 448; const H = 224
-  const rand = seeded(seed)
-  const fbm = fractalNoise(seed)
-  const balls = []
-  // a row of broad clumps along the base...
-  for (let i = 0; i < 6; i += 1) {
-    balls.push([W * (0.1 + 0.8 * (i / 5) + (rand() - 0.5) * 0.06), H * (0.7 + rand() * 0.06), H * (0.17 + rand() * 0.07)])
-  }
-  // ...heaped higher towards the middle, smaller as they rise
-  for (let i = 0; i < 8; i += 1) {
-    const x = 0.18 + rand() * 0.64
-    const lift = 1 - Math.abs(x - 0.5) * 2
-    balls.push([W * x, H * (0.6 - 0.32 * lift * (0.6 + rand() * 0.4)), H * (0.1 + rand() * 0.08 + 0.05 * lift)])
-  }
-  const field = (x, y) => {
-    let f = 0
-    for (const [cx, cy, r] of balls) {
-      const dx = x - cx; const dy = y - cy
-      f += Math.exp(-(dx * dx + dy * dy) / (r * r))
-    }
-    return f
-  }
-  const [cr, cg, cb] = colour.split(/\s+/).map(Number)
+function tint(img, colour) {
   const c = document.createElement('canvas')
-  c.width = W
-  c.height = H
+  c.width = img.naturalWidth
+  c.height = img.naturalHeight
   const g = c.getContext('2d')
-  const img = g.createImageData(W, H)
-  const px = img.data
-  for (let y = 0; y < H; y += 1) {
-    for (let x = 0; x < W; x += 1) {
-      // warp the silhouette with noise, so the edges curl and tear like smoke
-      const wx = x + (fbm(x * 0.018, y * 0.018) - 0.5) * 46
-      const wy = y + (fbm(x * 0.018 + 5.2, y * 0.018 + 1.3) - 0.5) * 34
-      const f = field(wx, wy)
-      const n = fbm(x * 0.04 + 9.1, y * 0.04 + 3.7)
-      const grain = fbm(x * 0.06 + 2.3, y * 0.06 + 7.9) // the smoke's fine texture
-      const d = f + (n - 0.5) * 1.1
-      let a = smooth(0.2, 0.95, d) * (1 - smooth(H * 0.78, H, y)) * smooth(0, W * 0.1, Math.min(x, W - x))
-      if (a <= 0.003) continue
-      a *= 0.9 + (grain - 0.5) * 0.3
-      // light from above: a surface whose density rises downward faces up
-      const lit = f - field(wx, wy - 9)
-      let shade = 0.48 + lit * 1.2 + (n - 0.5) * 0.8 + (grain - 0.5) * 0.25
-      shade = Math.min(1, Math.max(0, shade)) * (1 - 0.4 * (y / H))
-      const k = 0.24 + 0.76 * shade
-      const o = (y * W + x) * 4
-      px[o] = cr * k; px[o + 1] = cg * k; px[o + 2] = cb * k; px[o + 3] = a * 255
+  g.drawImage(img, 0, 0)
+  const data = g.getImageData(0, 0, c.width, c.height)
+  const px = data.data
+  const [r, gr, b] = colour.split(/\s+/).map(Number)
+  // the texture has a hard horizontal edge under the band: blend it away with
+  // a vertical blur that is strongest on that edge and fades out either side
+  const w = c.width; const h = c.height
+  const edge = Math.round(h * EDGE); const reach = Math.round(h * 0.16); const rad = Math.round(h * 0.08)
+  const src = new Float32Array(w * h)
+  for (let i = 0; i < w * h; i += 1) src[i] = px[i * 4] / 255
+  const lumAt = new Float32Array(src)
+  for (let y = Math.max(rad, edge - reach); y < Math.min(h - rad, edge + reach); y += 1) {
+    const d = Math.abs(y - edge) / reach
+    const mix = (1 - d) * (1 - d) * (3 - 2 * (1 - d)) // smooth, 1 on the edge
+    for (let x = 0; x < w; x += 1) {
+      let sum = 0
+      for (let k = -rad; k <= rad; k += 1) sum += src[(y + k) * w + x]
+      lumAt[y * w + x] = src[y * w + x] * (1 - mix) + (sum / (2 * rad + 1)) * mix
     }
   }
-  g.putImageData(img, 0, 0)
-  return c
+  // and its top and bottom fade to nothing, so no layer ends on a straight line
+  const ramp = (y) => {
+    const top = Math.min(1, y / (h * 0.06))
+    const bottom = Math.min(1, (h - y) / (h * 0.3))
+    const v = Math.min(top, bottom)
+    return v * v * (3 - 2 * v)
+  }
+  for (let i = 0; i < px.length; i += 4) {
+    const lum = lumAt[i / 4] * ramp(Math.floor(i / 4 / w))
+    px[i] = r; px[i + 1] = gr; px[i + 2] = b
+    px[i + 3] = Math.round(255 * Math.min(1, lum * 1.15))
+  }
+  g.putImageData(data, 0, 0)
+  // a mirrored copy, so tiles can alternate and the joins match
+  const m = document.createElement('canvas')
+  m.width = c.width
+  m.height = c.height
+  const mg = m.getContext('2d')
+  mg.translate(c.width, 0)
+  mg.scale(-1, 1)
+  mg.drawImage(c, 0, 0)
+  return [c, m]
 }
 
-/**
- * `layer` is 'front' (over the tree and the words) or 'back' (behind the
- * tree, so the trunk rises out of the fog rather than being painted over).
- * `stage` is a selector for the tree's box: it sets the band's height (a
- * sixth of the tree), its width (round the trunk) and the drift speed.
- */
 export default function Fog({ ground: groundDefault = 0.72, floor = null, stage = null,
                               layer = 'front', className = '' }) {
   const ref = useRef(null)
@@ -122,127 +90,106 @@ export default function Fog({ ground: groundDefault = 0.72, floor = null, stage 
     const ctx = canvas.getContext('2d')
     if (!ctx) return undefined
     const colour = getComputedStyle(canvas).getPropertyValue('--sw-dusk-fog').trim() || '220 228 220'
-    const base = layer === 'back' ? 900 : 0
-    const clumps = [7, 101, 4242, 55, 909].map((s) => makeBank(colour, base + s))
-    const SCALE = 0.5
+    const SCALE = 0.6
     let W = 1; let H = 1
     let ground = groundDefault
-    let reach = 0.18 // how far above the floor the fog may heap, as a fraction of H
-    let banks = []
-    let raf = 0; let last = 0; let running = false; let visible = true
+    let span = 60
+    let trunkX = 0.5; let stageW = 600
+    let tiles = null
+    let raf = 0; let last = 0; let t = 0; let running = false; let visible = true
     let pageVisible = !document.hidden
+    let fadeIn = 0
     const reduced = prefersReducedMotion()
-
-    // the fog lives in a short band round the trunk only: L..R across, and
-    // `reach` above the floor (a sixth of the tree's height, owner 2026-10-20).
-    // Kept small on purpose: small clumps make the tree above them read huge.
-    let L = 0; let R = 1; let trunkX = 0.5; let unit = 1; let stageW = 600
-
-    const seed = () => {
-      const rand = seeded(base + 77)
-      const phone = W < 700
-      // as many banks as the width needs: the band runs edge to edge
-      const many = Math.max(1, (R - L) / Math.max(1, stageW * 0.8))
-      const plan = layer === 'back'
-        ? [['on', Math.round((phone ? 6 : 10) * many)], ['mid', Math.round((phone ? 2 : 4) * many)]]
-        : [['on', Math.round((phone ? 9 : 14) * many)], ['mid', Math.round((phone ? 3 : 5) * many)]]
-      const span = H * reach
-      banks = plan.flatMap(([kind, n]) => Array.from({ length: n }, (_, i) => {
-        // clumps heaped ON the floor around the trunk and roots; a few smaller
-        // ones ride on top of them
-        // heights vary a lot along the band, so it heaps and dips instead of
-        // reading as one even strip
-        const h = kind === 'on' ? span * (0.4 + rand() * rand() * 1.1) : span * (0.3 + rand() * 0.3)
-        const w = h * (1.8 + rand() * 0.6)
-        const bottom = kind === 'on' ? H * ground + h * (0.05 + rand() * 0.3)
-          : H * ground - span * (0.25 + rand() * 0.3) + h * 0.5
-        return {
-          kind,
-          img: clumps[(i * 2 + (kind === 'mid' ? 1 : 0)) % clumps.length],
-          flip: rand() < 0.5,
-          x: L - w + rand() * (R - L + w),
-          y: bottom - h / 2,
-          w,
-          h,
-          // the wind blows right to left, slowly
-          vx: -(5 + rand() * 7) * unit,
-          a: kind === 'on' ? 0.4 + rand() * 0.6 : 0.35 + rand() * 0.3,
-          bob: rand() * 6.28,
-        }
-      }))
-    }
-
-    // the band runs past both edges of the screen, so banks enter and leave
-    // unseen; in front of the trunk it thins
-    const alphaAt = (cx) => {
-      const edge = (R - L) * 0.06
-      const k = Math.min(1, Math.max(0, (cx - L) / edge), Math.max(0, (R - cx) / edge))
-      const fade = k * k * (3 - 2 * k)
-      if (layer === 'back') return fade
-      const off = Math.abs(cx - trunkX) / Math.max(1, stageW * 0.2)
-      return fade * (0.6 + 0.4 * Math.min(1, off))
-    }
 
     const measure = () => {
       const r = canvas.getBoundingClientRect()
       W = Math.max(1, r.width); H = Math.max(1, r.height)
       const el = floor && canvas.parentElement?.querySelector(floor)
       if (el) ground = Math.min(0.95, Math.max(0.3, (el.getBoundingClientRect().top - r.top) / H))
+      trunkX = W / 2
       const st = stage && canvas.parentElement?.querySelector(stage)
-      L = W * 0.3; R = W * 0.7; trunkX = W / 2
       if (st) {
         const sr = st.getBoundingClientRect()
-        const treeTop = (sr.top - r.top) / H
-        reach = Math.max(0.03, (ground - treeTop) / 6)
+        span = Math.max(24, (el ? el.getBoundingClientRect().top - sr.top : sr.height * 0.7) / 6)
         trunkX = sr.left - r.left + sr.width / 2
         stageW = sr.width
-        unit = sr.width / 600
-      }
-      {
-        // edge to edge across the first screen (owner 2026-10-20); the scene
-        // clips it, so it never leaves its box when the page scrolls
-        const pad = W * 0.08
-        L = -pad
-        R = W + pad
+      } else {
+        span = H * 0.08
       }
       canvas.width = Math.round(W * SCALE)
       canvas.height = Math.round(H * SCALE)
       ctx.setTransform(SCALE, 0, 0, SCALE, 0, 0)
-      seed()
     }
 
-    const draw = (dt) => {
-      ctx.clearRect(0, 0, W, H)
-      for (const b of banks) {
-        b.x += b.vx * dt
-        b.bob += dt * 0.25
-        if (b.x + b.w < L) b.x = R
-        // a slow roll: each bank breathes a little wider and lower, and back
-        const roll = 1 + 0.04 * Math.sin(b.bob)
-        const w = b.w * roll; const h = b.h * (2 - roll)
-        ctx.globalAlpha = b.a * (0.85 + 0.15 * Math.sin(b.bob * 0.7)) * alphaAt(b.x + b.w / 2)
-        const left = b.x - (w - b.w) / 2
-        if (b.flip) {
-          // mirrored, so five shapes read as many
-          ctx.save()
-          ctx.setTransform(-SCALE, 0, 0, SCALE, (2 * left + w) * SCALE, 0)
-          ctx.drawImage(b.img, left, b.y + b.h / 2 - h, w, h)
-          ctx.restore()
-        } else {
-          ctx.drawImage(b.img, left, b.y + b.h / 2 - h, w, h)
-        }
+    // one strip of mirrored tiles, scrolled left by `offset` px
+    const strip = (sx, sy, sw, sh, dy, dh, offset, alpha) => {
+      const [a, b] = tiles
+      const dw = dh * (sw / sh)
+      const period = dw * 2
+      let x = -(offset % period)
+      let i = 0
+      ctx.globalAlpha = alpha
+      while (x < W) {
+        if (x + dw > 0) ctx.drawImage(i % 2 ? b : a, i % 2 ? a.width - sx - sw : sx, sy, sw, sh, x, dy, dw + 1, dh) // 1px overlap: no hairline at the joins
+        x += dw
+        i += 1
       }
+    }
+
+    const draw = () => {
+      ctx.clearRect(0, 0, W, H)
+      if (!tiles) return
+      const [a] = tiles
+      const iw = a.width; const ih = a.height
+      const gy = H * ground
+      const k = Math.min(1, fadeIn)
+      // the band: its bright core on the ground line, a sixth of the tree tall
+      const bandH = span * 4.2
+      const bandTop = gy - bandH * BAND_CORE
+      const speed = (stageW / 600) * 14 // px a second
+      if (layer === 'back') {
+        strip(0, 0, iw, ih, bandTop, bandH, t * speed, 0.9 * k)
+        ctx.globalAlpha = 1
+        return
+      }
+      // the sea below: bigger, dimmer, nearer, so it moves faster
+      const seaTop = gy + span * 0.3
+      const seaH = Math.max(H - seaTop, span) * 1.25
+      strip(0, ih * SEA_FROM, iw, ih * (1 - SEA_FROM), seaTop, seaH, t * speed * 1.7 + 400, 0.55 * k)
+      // feather the sea's top so it melts into the band instead of starting
+      // on a straight line
       ctx.globalAlpha = 1
+      ctx.globalCompositeOperation = 'destination-out'
+      const fh = seaH * 0.3
+      const fg = ctx.createLinearGradient(0, seaTop, 0, seaTop + fh)
+      fg.addColorStop(0, 'rgb(0 0 0 / 1)')
+      fg.addColorStop(1, 'rgb(0 0 0 / 0)')
+      ctx.fillStyle = fg
+      ctx.fillRect(0, seaTop - 1, W, fh + 1)
+      ctx.globalCompositeOperation = 'source-over'
+      strip(0, 0, iw, ih, bandTop, bandH, t * speed, 0.85 * k)
+      // thinner in front of the trunk, so the tree stays readable
+      ctx.globalAlpha = 1
+      ctx.globalCompositeOperation = 'destination-out'
+      const rx = Math.max(40, stageW * 0.12)
+      const g = ctx.createRadialGradient(trunkX, gy - span * 0.4, 0, trunkX, gy - span * 0.4, rx)
+      g.addColorStop(0, 'rgb(0 0 0 / 0.45)')
+      g.addColorStop(1, 'rgb(0 0 0 / 0)')
+      ctx.fillStyle = g
+      ctx.fillRect(trunkX - rx, gy - span * 0.4 - rx, rx * 2, rx * 2)
+      ctx.globalCompositeOperation = 'source-over'
     }
 
     const frame = (now) => {
       const dt = Math.min(0.05, (now - last) / 1000 || 0)
       last = now
-      draw(dt)
+      t += dt
+      if (fadeIn < 1) fadeIn += dt / 1.2
+      draw()
       raf = requestAnimationFrame(frame)
     }
     const start = () => {
-      if (running || reduced || !visible || !pageVisible) return
+      if (running || reduced || !visible || !pageVisible || !tiles) return
       running = true
       last = performance.now()
       raf = requestAnimationFrame(frame)
@@ -250,16 +197,24 @@ export default function Fog({ ground: groundDefault = 0.72, floor = null, stage 
     const stop = () => { running = false; cancelAnimationFrame(raf) }
 
     measure()
-    draw(0)
-    const ro = new ResizeObserver(() => { measure(); draw(0) })
+    const img = new Image()
+    img.decoding = 'async'
+    img.onload = () => {
+      tiles = tint(img, colour)
+      if (reduced) fadeIn = 1
+      draw()
+      start()
+    }
+    img.src = SRC
+    const ro = new ResizeObserver(() => { measure(); draw() })
     ro.observe(canvas)
     const io = new IntersectionObserver(([e]) => { visible = e.isIntersecting; if (visible) start(); else stop() })
     io.observe(canvas)
     const onVis = () => { pageVisible = !document.hidden; if (pageVisible) start(); else stop() }
     document.addEventListener('visibilitychange', onVis)
-    start()
     return () => {
       stop()
+      img.onload = null
       ro.disconnect()
       io.disconnect()
       document.removeEventListener('visibilitychange', onVis)

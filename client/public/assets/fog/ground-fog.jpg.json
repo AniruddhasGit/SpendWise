@@ -1,0 +1,8 @@
+{
+  "asset": "ground-fog.jpg",
+  "purpose": "Landing ground fog texture (SW-ADR-159): a bright band of rolling fog with wisps above and a dim fog sea below, on black. Drawn by Fog.jsx with luminance as alpha, tiled with mirrored repeats, drifting right to left.",
+  "source": "Runway image generation, task 6daa70e3-a7bc-489f-94d6-413325e9f45f, 21:9 at 1K (1584x672), 20 credits, owner-approved 2026-10-21",
+  "prompt": "Low rolling ground fog on a pure black background, photographed side-on. A dense, bright, luminous band of white smoke runs horizontally across the whole frame just above the middle, soft and continuous from the left edge to the right edge. Thin curling wisps of smoke rise off the top of the band in small irregular tufts. Below the band, darker, softer, diffuse grey fog spreads downward and fades to black at the bottom edge. Grayscale only, realistic smoke texture, soft volumetric light, no ground, no objects, no horizon line, no text. Even density across the width so it can tile left to right.",
+  "reference": "the owner's screenshot of a fog band on black (not uploaded to Runway)",
+  "post_processing": "ffmpeg: converted to grayscale, saved as JPEG q3. The hard horizontal edge under the band (about 53% down) is blended away at load time in Fog.jsx (a vertical blur weighted onto that edge)."
+}

@@ -326,4 +326,7 @@
   .landing-bar { padding-left: var(--sw-space-4); }
   .landing-start { width: 100%; }
   .landing-cue { display: none; }
+  /* on a phone the line and the action sit in the fog sea, so they ride
+     above it to stay readable */
+  .landing-side { z-index: 5; }
 }

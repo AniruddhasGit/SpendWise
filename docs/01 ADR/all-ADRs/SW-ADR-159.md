@@ -72,6 +72,16 @@ The owner rejected the bright poster atmosphere ("that fog and the sun") and ask
    - **Then widened by the owner:** the same low band (a sixth of the tree) runs edge to edge
      across the whole first screen, heaping and dipping. It is clipped to that first screen, so it
      never follows the page as it scrolls to the details below.
+   - **Final form, 2026-10-21, from the owner's sketch and reference picture.** The fog starts where
+     the trunk meets the ground and carries on as a sea down to the bottom of the first screen, so
+     the scene reads as a 3D ground seen from a raised camera. There is a bright band on the ground
+     line with smoke curling off its top, and dimmer, softer fog below it. The owner approved
+     spending Runway credits on the texture: one image, 20 credits, `assets/fog/ground-fog.jpg`, with
+     provenance beside it. It is tinted to the dusk fog ink with its brightness as alpha, tiled in
+     mirrored pairs and drifted right to left in two layers: the band, and a faster, dimmer sea. A
+     second copy of the band sits behind the tree, so the trunk rises out of it. On a phone the line
+     and the action ride above the fog. Measured at a steady 60 frames a second on desktop and phone
+     sizes, worst frame 16.8ms. The procedural clumps are gone.
    - The tree's own mist, sun, orbits and spark stars are off here. Its motes are faint ivory dust.
 5. **Below the fold.**
    - Four plain statements about what the product does, plus a closing call to action.
