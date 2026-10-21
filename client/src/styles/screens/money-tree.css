@@ -50,6 +50,8 @@
   z-index: -1;
   background: radial-gradient(ellipse 50% 46% at 50% 44%, var(--mt-glow), transparent 72%);
   pointer-events: none;
+  /* no halo behind the tree, anywhere (owner, 2026-10-21) */
+  display: none;
 }
 
 .mt-tree {

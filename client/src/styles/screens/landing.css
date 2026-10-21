@@ -335,15 +335,15 @@
   --sw-dusk-ink: var(--sw-dawn-ink);
   --sw-dusk-ink-quiet: var(--sw-dawn-ink-quiet);
   --scene-bar: rgb(249 235 215 / 0.62);
-  --scene-bar-edge: rgb(46 24 16 / 0.14);
+  --scene-bar-edge: rgb(11 42 28 / 0.14);
   --scene-shade: rgb(249 235 215 / 0.9);
-  --scene-vignette: rgb(140 90 60 / 0.16);
+  --scene-vignette: rgb(60 84 70 / 0.14);
 }
 .scene {
-  --scene-bar: rgb(28 20 17 / 0.48);
+  --scene-bar: rgb(10 28 19 / 0.5);
   --scene-bar-edge: rgb(249 235 215 / 0.16);
-  --scene-shade: rgb(12 8 6 / 0.9);
-  --scene-vignette: rgb(12 8 6 / 0.55);
+  --scene-shade: rgb(4 12 8 / 0.9);
+  --scene-vignette: rgb(4 12 8 / 0.55);
 }
 .landing-bar { background: var(--scene-bar); border-color: var(--scene-bar-edge); }
 .landing-scene::before {
@@ -441,17 +441,10 @@
   from { opacity: 0; transform: scale(1.35); filter: blur(12px); }
 }
 
-/* ── the scene in ivory and vermilion (SW-ADR-160) ───────────────────────── */
-/* Its actions are vermilion with ivory type; links stay ivory (vermilion type
-   on the dark scene would fall under 4.5:1), underlined in vermilion. */
-.scene .btn:not(.btn-quiet):not(.btn-link):not(.icon-btn) {
-  background: var(--sw-ember);
-  color: var(--sw-brand-ivory);
-  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.18), 0 10px 28px -12px rgb(179 48 26 / 0.65);
-}
-.scene .btn:not(.btn-quiet):not(.btn-link):not(.icon-btn):hover:not([aria-disabled='true']) {
-  background: var(--sw-ember-press);
-}
+/* ── the scene's hint colour (SW-ADR-160) ─────────────────────────────── */
+/* Buttons are the app's own emerald (the primary); vermilion is only a hint:
+   link underlines, the countdown's bar, the switch on hover, the headline's
+   depth. Links stay in the scene's ink for contrast. */
 .scene .btn-quiet { color: var(--sw-dusk-ink); border-color: var(--scene-bar-edge); }
 .scene .btn-link {
   color: var(--sw-dusk-ink);
@@ -460,3 +453,28 @@
 }
 .scene-countdown-bar > span { background: var(--sw-ember-glow); }
 .scene-theme:hover { color: var(--sw-ember-glow); }
+
+/* ── vermilion, the poster's second voice (owner, 2026-10-21) ─────────────── */
+/* As on the poster: the headline is the scene's ink with a vermilion depth,
+   the right-hand column is a block of vermilion display type, the orbit lines
+   and spark stars are vermilion (MoneyTree's orbits), and so are the numbers
+   and the closing line.
+   Text uses --sw-gold (vermilion tuned per theme: 5.3:1 on ivory, 6.9:1 or
+   more on the emerald); lines and stars use the brand #E34222. */
+.landing-line {
+  font-family: var(--sw-font-display);
+  font-weight: 800;
+  text-transform: uppercase;
+  font-size: clamp(1.25rem, 1.7vw, 1.75rem);
+  line-height: 1.05;
+  letter-spacing: 0.02em;
+  color: var(--sw-gold);
+}
+.landing-detail-n { color: var(--sw-gold); }
+.landing-detail-title { color: var(--sw-dusk-ink); }
+.landing-final-title { color: var(--sw-gold); --sw-extrude: var(--sw-dusk-sky); }
+.scene .btn-quiet {
+  color: var(--sw-gold);
+  border: 1.5px solid currentColor;
+  background: transparent;
+}

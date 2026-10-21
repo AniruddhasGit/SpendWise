@@ -146,20 +146,28 @@ export default function Fog({ ground: groundDefault = 0.72, floor = null, stage 
     // an oval that fades out at its edges
     const poolMask = (gy) => {
       if (!pool) return
-      // the oval always fits inside the canvas, so its edge never shows as a cut
-      const room = Math.max(40, Math.min(trunkX, W - trunkX) * 0.98)
-      const rx = Math.min(Math.max(60, stageW * 0.72), room); const ry = Math.max(30, span * 3.4)
+      // A soft cloud, never a shape: the oval is sized to fit well inside the
+      // canvas on every side, and its density falls to nothing long before
+      // its rim, so no edge (and no canvas border) can ever show.
+      const cy = Math.min(gy + span * 0.3, H * 0.62)
+      const rx = Math.max(40, Math.min(stageW * 0.95, trunkX * 0.96, (W - trunkX) * 0.96))
+      const ry = Math.max(24, Math.min(span * 3.6, cy * 0.95, (H - cy) * 0.95))
       ctx.save()
       ctx.globalAlpha = 1
       ctx.globalCompositeOperation = 'destination-in'
-      ctx.translate(trunkX, gy + span * 0.4)
+      ctx.translate(trunkX, cy)
       ctx.scale(1, ry / rx)
       const g = ctx.createRadialGradient(0, 0, 0, 0, 0, rx)
-      g.addColorStop(0, 'rgb(0 0 0 / 1)')
-      g.addColorStop(0.55, 'rgb(0 0 0 / 0.85)')
-      g.addColorStop(1, 'rgb(0 0 0 / 0)')
+      // a long, bell-shaped falloff: the fog thins out gradually and is all
+      // but gone well before the rim, so it dissipates instead of ending
+      for (let k = 0; k <= 12; k += 1) {
+        const r = k / 12
+        g.addColorStop(r, `rgb(0 0 0 / ${Math.exp(-4.2 * r * r) * (1 - r)})`)
+      }
       ctx.fillStyle = g
-      ctx.fillRect(-rx, -rx, rx * 2, rx * 2)
+      // clear everything outside the oval too (destination-in keeps only
+      // what the fill covers)
+      ctx.fillRect(-W * 4, -H * 4 * (rx / ry), W * 8, H * 8 * (rx / ry))
       ctx.restore()
     }
 

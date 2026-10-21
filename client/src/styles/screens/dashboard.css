@@ -50,8 +50,10 @@
   justify-self: center;
   animation: sw-rise var(--sw-dur-hero) var(--sw-ease-out) backwards;
 }
+/* no frosted disc or grain behind the tree: it read as a halo (owner) */
 .dash-tree::before,
-.dash-tree::after {
+.dash-tree::after { display: none; }
+.dash-tree-unused::before {
   content: "";
   position: absolute;
   inset: 4% 2% 2%;
@@ -554,10 +556,10 @@
    (SW-ADR-160), and the sign-in fog glides into it (`sw-fog-in`, shell.css).
    The fog follows the app's theme: the dawn ink on a light page. */
 .dash-tree .mt { position: relative; z-index: 1; }
-/* the pool is wider than the tree: keep it from widening the page sideways */
-.dash-hero, .state-first-run { overflow-x: clip; }
 /* narrower than the sign-in page's pool: the side menu is close on the left */
-.dash-tree .gate-fog { left: -35%; width: 170%; }
+/* the pool may drift over the cards beside the tree (owner); it never takes
+   clicks, and it fades out long before its box ends, so nothing is cut */
+.dash-tree .gate-fog { left: -60%; width: 220%; top: 10%; height: 140%; z-index: 2; }
 @media (max-width: 640px) {
   .dash-tree .gate-fog { left: 0; width: 100%; }   /* within a 375px screen */
 }
@@ -565,3 +567,7 @@
 @media (prefers-color-scheme: light) {
   :root:not([data-theme]) .dash-tree { --sw-dusk-fog: var(--sw-dawn-fog); }
 }
+
+/* Vermilion, the poster's second voice (owner, 2026-10-21): the card headings
+   in vermilion type, as the poster sets its blocks of text. */
+.card-heading { color: var(--sw-gold); }

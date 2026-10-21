@@ -146,29 +146,27 @@
   --sw-brand-emerald-deep: #03522b;
   --sw-brand-vermilion: #e34222;
   --sw-brand-vermilion-deep: #b3301a;
-  /* The signed-out scene (SW-ADR-159, warmed by SW-ADR-160 at the owner's
-     request: "more of that ivory and reddish, way too much olive"). An ember
-     dusk, warm near-black and umber, the fog and type in the brand ivory, the
-     actions in vermilion; the tree is the one green. Ivory on the darkest
-     edge is past 15:1, the quiet ink past 7:1 on the umber. */
-  --sw-dusk-sky: #1a1411;         /* the darkest edge, a warm near-black */
-  --sw-dusk-mid: #2d221c;         /* umber */
-  --sw-dusk-haze: #7a6a5e;        /* fog lit from behind */
-  --sw-dusk-glow: #bfae9c;        /* the brightest fog */
-  --sw-dusk-fog: 240 228 210;     /* the mist: warm ivory, as an rgb triple for alpha */
+  /* The signed-out scene (SW-ADR-159; recoloured by the owner's theme rule,
+     SW-ADR-160): emerald is the primary, warm ivory the secondary, vermilion
+     the hint. Dark: a deep emerald night (the app's own dark paper family, so
+     landing -> sign-in -> dashboard never changes colour), ivory type and fog.
+     Ivory on the darkest edge is past 15:1, the quiet ink past 9:1. */
+  --sw-dusk-sky: #07170f;         /* the darkest edge, deep emerald */
+  --sw-dusk-mid: #0e2a1c;         /* the app's dark paper, a shade richer */
+  --sw-dusk-haze: #5d7a6a;        /* fog lit from behind */
+  --sw-dusk-glow: #a9c2b3;        /* the brightest fog */
+  --sw-dusk-fog: 240 232 216;     /* the mist: warm ivory, as an rgb triple for alpha */
   --sw-dusk-ink: #f9ebd7;         /* type on the scene: the brand ivory */
-  --sw-dusk-ink-quiet: #c7b7a2;
-  /* The same scene at dawn: light mode on the landing and sign-in pages
-     (SW-ADR-160). Warm brown ink on the brand ivory, the fog a soft taupe so
-     it still reads on a light ground. */
-  --sw-dawn-sky: #efdfc6;         /* the edges */
+  --sw-dusk-ink-quiet: #c4bba6;   /* the app's dark muted ink */
+  /* Light mode swaps them: the ivory is the ground, the emerald the ink. */
+  --sw-dawn-sky: #f2e1c7;         /* the edges: the app's sunken ivory */
   --sw-dawn-mid: #f9ebd7;         /* the brand ivory */
-  --sw-dawn-fog: 150 124 106;     /* the mist on ivory: warm taupe, as an rgb triple */
-  --sw-dawn-ink: #2e1810;         /* type on the dawn scene */
-  --sw-dawn-ink-quiet: #6b4a3a;
-  /* the scene's actions: vermilion deep enough for ivory type (5.33:1, measured) */
+  --sw-dawn-fog: 104 132 116;     /* the mist on ivory: a soft emerald grey */
+  --sw-dawn-ink: #0b2a1c;         /* the app's ink: deepest emerald */
+  --sw-dawn-ink-quiet: #3c5446;   /* the app's muted ink */
+  /* the hint: vermilion, for accents only (the headline's depth, underlines,
+     the countdown's bar), never a surface */
   --sw-ember: #b3301a;
-  --sw-ember-press: #8f2514;
   --sw-ember-glow: #e34222;
 
   /* the depth of the poster's extruded letters and numerals */

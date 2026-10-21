@@ -112,6 +112,29 @@ reduced motion thing".
       - dawn quiet ink on ivory 6.71:1;
       - every other pair above 13:1.
 
+11. **The owner's colour rule for the whole site** (2026-10-21), superseding the "ember dusk" of item 10.
+    - **Emerald is primary, warm ivory secondary, vermilion the third colour.** Light mode swaps
+      emerald and ivory.
+    - The signed-out scene now uses the app's own emerald-and-ivory family, so the landing, the
+      sign-in page and the dashboard share one palette. Dark mode is a deep emerald night with
+      ivory type and fog. Light mode is ivory ground with emerald ink and a soft emerald-grey fog.
+    - Buttons are the app's emerald.
+    - Vermilion is used the way the poster uses it, more than a hint:
+      - the landing's right-hand line as a block of vermilion display type;
+      - the orbit lines and spark stars around the tree, now on;
+      - the detail numbers and the closing line;
+      - the sign-in card title and lede;
+      - the outlined quiet buttons and the link underlines;
+      - the headline's 3D depth;
+      - the dashboard's card headings, alongside its existing vermilion total label, orbit and
+        projection.
+    - Vermilion text uses `--sw-gold` (vermilion per theme): 5.33:1 on ivory and 6.9:1 or more on
+      the emerald. Lines and stars use the brand `#E34222`.
+    - **No halo:** the tree's glow (`.mt-stage::before`) and the dashboard's frosted disc behind
+      the tree are gone.
+    - The fog pools fade with a long bell-shaped falloff and never show an edge. On the dashboard
+      the pool may drift over neighbouring cards, by the owner's ruling. It never takes clicks.
+
 ## Consequences
 
 - The front lives at a new `*.onrender.com` address. The old address keeps working, but a visit

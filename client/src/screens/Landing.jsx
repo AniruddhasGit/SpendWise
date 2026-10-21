@@ -123,7 +123,7 @@ export default function Landing({ ready, since, theme, onTheme, onSignIn, onRegi
                 <img className="landing-reflection" src={TREE_SRC} alt="" decoding="async" />
               </div>
             </div>
-            <MoneyTree variant="landing" atmosphere orbits={false} mist={false} dust ground={false}
+            <MoneyTree variant="landing" atmosphere orbits mist={false} dust ground={false}
                        breeze={-34} alwaysMove
                        alt="A bonsai tree whose leaves are banknotes, standing on a glass floor in mist, with bills drifting down from it" />
           </div>
