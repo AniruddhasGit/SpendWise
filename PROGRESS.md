@@ -767,3 +767,9 @@ revoked, so any future database work needs a temporary security-group rule.
 - Scope set by llm-council (loader-focused, no URL repoint overnight). Build done
   main-thread (background Workflow crashed twice).
 - **Session closed 2026-10-20_0027 by ani87** → handoff: handoffs/HANDOFF_2026-10-20_0027_ani87.md
+
+## 2026-10-21 — the money-tree scene, locked
+
+See handoffs/HANDOFF_2026-10-21_0607_ani87.md: SW-ADR-156…160 shipped (tree, fog, scene, carry-over, palette rule), the always-on front created, the AWS repo ported to main.
+
+- **Session closed 2026-10-21_0607 by AniruddhaDynpro** → handoff: handoffs/HANDOFF_2026-10-21_0607_ani87.md
